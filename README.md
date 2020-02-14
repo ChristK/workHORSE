@@ -24,7 +24,7 @@ Boston, MA 02110-1301 USA.
 ## Instalation
 The current version of workHORSE only supports Linux. Windows users will have to manually change the paths.  
 
-workHORSE uses some large R objects that cannot be uploaded to GitHub due to their size. After you clone the GitHub repo please download the data files from (https://filedn.com/lj14yWNHbMFXQ0F4Fkti6a8/workHORSE_data_files) and untar them to your local workHORSE folder.
+workHORSE uses some large R objects that cannot be uploaded to GitHub due to their size. After you clone the GitHub repo please download the data files from (https://filedn.com/lj14yWNHbMFXQ0F4Fkti6a8/workHORSE_data_files.tar) and untar them to your local workHORSE folder.
 
 We will release soon a Docker image to make installation of workHORSE straight forward
 
