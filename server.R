@@ -1,3 +1,23 @@
+## workHORSE is an implementation of the IMPACTncd framework, developed by Chris
+## Kypridemos with contributions from Peter Crowther (Melandra Ltd), Maria
+## Guzman-Castillo, Amandine Robert, and Piotr Bandosz. This work has been
+## funded by NIHR  HTA Project: 16/165/01 - workHORSE: Health Outcomes
+## Research Simulation Environment.  The views expressed are those of the
+## authors and not necessarily those of the NHS, the NIHR or the Department of
+## Health.
+##
+## Copyright (C) 2018-2020 University of Liverpool, Chris Kypridemos
+##
+## workHORSE is free software; you can redistribute it and/or modify it under
+## the terms of the GNU General Public License as published by the Free Software
+## Foundation; either version 3 of the License, or (at your option) any later
+## version. This program is distributed in the hope that it will be useful, but
+## WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+## FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+## details. You should have received a copy of the GNU General Public License
+## along with this program; if not, see <http://www.gnu.org/licenses/> or write
+## to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
+## Boston, MA 02110-1301 USA.
 
 server = function(input, output, session) {
 
@@ -117,23 +137,23 @@ server = function(input, output, session) {
                                      input$scenarios_number_slider)]], {
 
     parameters <- reactiveValuesToList(input)
-    qsave(reactiveValuesToList(input), "./parameters.qs") # TODO delete for production
+    # qsave(reactiveValuesToList(input), "./parameters.qs") # TODO delete for production
 
     # progress$inc(1/n, detail = paste("Doing part", i))
     withProgress(message = 'Running workHORSE model.',
                  detail = 'This may take a couple of minutes...', value = 0, {
 
                    # TODO remove before release
-                   if (file.exists("./output/test_results.fst")) {
-
-                     out <- read_fst("./output/test_results.fst", as.data.table = TRUE)
-                     out
-
-                   } else {
+                   # if (file.exists("./output/test_results.fst")) {
+                   #
+                   #   out <- read_fst("./output/test_results.fst", as.data.table = TRUE)
+                   #   out
+                   #
+                   # } else {
 
                      run_simulation(parameters, 1:design$iteration_n)
 
-                   }
+                   # }
                  })
   })
 
