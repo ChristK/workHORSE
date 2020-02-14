@@ -1,0 +1,26 @@
+Package: workHORSEmisc
+Type: Package
+Title: Utility Functions For workHORSE Model
+Version: 0.0.1
+Date: 2019-09-29
+Author: Chris Kypridemos
+Maintainer: Chris Kypridemos <christodoulosk@gmail.com>
+Description: This package contains the functions that are necessary for workHORSE model. 
+License: GPL (>=3)
+Encoding: UTF-8
+LazyData: true
+NeedsCompilation: yes
+Byte-Compile: yes
+Imports: Rcpp (>= 1.0.2),
+         data.table (>= 1.12.2),
+         fst (>= 0.9.0),
+         dqrng,
+         CKutils, 
+         gamlss,
+         cowplot,
+         mc2d,
+         digest,
+         SimJoint
+LinkingTo: Rcpp, 
+           dqrng
+RoxygenNote: 7.0.2
