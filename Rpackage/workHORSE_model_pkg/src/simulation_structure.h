@@ -1,16 +1,16 @@
 /* IMPACTncd: A decision support tool for primary prevention of NCDs
  Copyright (c) 2015-2019 Chris Kypridemos
- 
+
  IMPACTncd is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation; either version 3 of the License, or
  (at your option) any later version.
- 
+
  This program is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
- 
+
  You should have received a copy of the GNU General Public License
  along with this program; if not, see <http://www.gnu.org/licenses/>
  or write to the Free Software Foundation, Inc., 51 Franklin Street,
@@ -36,6 +36,7 @@ using namespace std;
 class Processable
 {
   public:
+    virtual ~Processable(){}
     //* simulant_year_index is known to be an appropriate year to process (i.e. >= init_year).  Do whatever the Processable needs to do before anything runs its main phase.
     virtual void preprocess(unsigned int simulant_year_index, bool is_new_simulant) = 0;
 
@@ -76,6 +77,7 @@ class Incidence: public Processable
       , _can_recur(can_recur)
     {
     }
+
 
     //* Set to true to mark a disease as cured; it may recur depending on the value of can_recur.
     virtual void cured(unsigned int simulant_year_index, bool value)
@@ -262,6 +264,7 @@ class Simulation
     {
     }
 
+    virtual ~Simulation(){}
     void scenario_name(const string &scenario_name)
     {
       _scenario_name = scenario_name;
@@ -285,14 +288,14 @@ class Simulation
     /**
      * Run the simulation to completion. The simulation's concrete subclass is free to take any approach it wishes to fulfil this request:
      * run single-threaded, multi-threaded, on a GPU if it can find one, distribute across a cluster, find a quantum computer, use clairvoyance...
-     * 
+     *
      * Postcondition: run() threw an exception *or* the simulation ran to successful completion and all temporary resources have been cleaned up.
      */
     virtual void run() = 0;
 
     /**
      * Gather output vectors from all parts of the simulation and return these in a DataFrame.
-     * 
+     *
      * Precondition: Simulation has run to successful completion.
      */
     virtual DataFrame output_frame() const = 0;
