@@ -152,16 +152,6 @@ hc_effect <- function(x, prb_of_continuation, pid) {
 }
 
 #' @export
-fquantile <- function(x, probs, na_rm = TRUE) {
-    .Call('_workHORSEmisc_fquantile', PACKAGE = 'workHORSEmisc', x, probs, na_rm)
-}
-
-#' @export
-fquantile_byid <- function(x, q, id, rounding = FALSE, na_rm = TRUE) {
-    .Call('_workHORSEmisc_fquantile_byid', PACKAGE = 'workHORSEmisc', x, q, id, rounding, na_rm)
-}
-
-#' @export
 fbound <- function(x, a, b) {
     .Call('_workHORSEmisc_fbound', PACKAGE = 'workHORSEmisc', x, a, b)
 }
