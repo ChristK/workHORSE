@@ -28,7 +28,7 @@
 #
 #' @docType package
 #' @author Chris Kypridemos
-#' @import Rcpp data.table CKutils
+#' @import Rcpp R6 data.table CKutils
 #' @importFrom Rcpp evalCpp
 #' @importFrom fst read_fst
 #' @importFrom dqrng dqrunif dqsample
@@ -39,7 +39,7 @@
 #' @importFrom stats quantile rbinom rpois runif sigma
 #' @importFrom utils tail
 #' @importFrom digest digest2int
-#' @importFrom SimJoint postSimOpt SJpearson
+#' @importFrom yaml read_yaml write_yaml
 #' @useDynLib workHORSEmisc
 #' @name workHORSEmisc
 NULL
