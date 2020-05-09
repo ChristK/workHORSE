@@ -196,13 +196,13 @@ if (plots) {
 
   future({
     zz[, weight := wt_int / sum(wt_int), by = .(type)]
-    dir.create("./preparatory_work/plots", FALSE)
-    tiff(
-      "./preparatory_work/plots/Smoking_cess_rel_dist.tiff",
+    dir.create("./validation/synthpop_models", FALSE)
+    png(
+      "./validation/synthpop_models/Smoking_cess_rel_dist.png",
       3840,
       2160,
-      pointsize = 48,
-      compression = "lzw"
+      pointsize = 48
+      
     )
     reldist_diagnostics(zz[type == "Observed", event],
                         zz[type == "Modelled", event],

@@ -270,13 +270,13 @@ if (plots) {
 
   future({
     zz[, weight := wt_nurse / sum(wt_nurse), by = .(type)]
-    dir.create("./preparatory_work/plots", FALSE)
-    tiff(
-      "./preparatory_work/plots/SBP_rel_dist.tiff",
+    dir.create("./validation/synthpop_models", FALSE)
+    png(
+      "./validation/synthpop_models/SBP_rel_dist.png",
       3840,
       2160,
-      pointsize = 48,
-      compression = "lzw"
+      pointsize = 48
+      
     )
     reldist_diagnostics(zz[type == "Observed", sbp],
                         zz[type == "Modelled", sbp],
