@@ -11,6 +11,14 @@ R6 Class representing a simulation design
 \details{
 A design has a sim_prm list that holds the simulation parameters.
 }
+\examples{
+
+## ------------------------------------------------
+## Method `Design$new`
+## ------------------------------------------------
+
+design <- Design("./validation/design_for_trends_validation.yaml")
+}
 \section{Public fields}{
 \if{html}{\out{<div class="r6-fields">}}
 \describe{
@@ -46,6 +54,14 @@ Create a new design object.
 \subsection{Returns}{
 A new `Design` object.
 }
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{design <- Design("./validation/design_for_trends_validation.yaml")
+}
+\if{html}{\out{</div>}}
+
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-save_to_disk"></a>}}

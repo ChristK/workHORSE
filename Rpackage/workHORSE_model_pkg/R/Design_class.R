@@ -23,7 +23,7 @@
 #' R6 Class representing a simulation design
 #'
 #' A design has a sim_prm list that holds the simulation parameters.
-
+#' @export
 Design <-
   R6::R6Class(classname = "Design",
           public = list(
@@ -35,6 +35,8 @@ Design <-
             #' Create a new design object.
             #' @param l Either a path to a yaml file or a list with appropriate format.
             #' @return A new `Design` object.
+            #' @examples
+            #' design <- Design("./validation/design_for_trends_validation.yaml")
             initialize = function(l) {
 
               data_type <- typeof(l)
@@ -114,4 +116,3 @@ Design <-
             }
           ))
 
-# design <- Design$new("./validation/design_for_validation.yaml") # or Design$new(design)
