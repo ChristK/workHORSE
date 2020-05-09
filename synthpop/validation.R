@@ -54,7 +54,7 @@ roxygen2::roxygenise("./Rpackage/workHORSE_model_pkg/") # TODO remove before dep
 remotes::install_local("./Rpackage/workHORSE_model_pkg/", force = TRUE)
 library(workHORSEmisc)
 
-output_dir <- function(x = character(0)) paste0("./preparatory_work/plots_trends/", x)
+output_dir <- function(x = character(0)) paste0("./validation/plot_trends/", x)
 
 synthpop_dir <- function(x = character(0)) paste0("/mnt/storage_slow/synthpop/", x)
 
