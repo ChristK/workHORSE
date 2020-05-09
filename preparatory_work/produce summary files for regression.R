@@ -1263,8 +1263,8 @@ gg <- ggplot(salt3, aes(salt, colour = type)) +
         legend.position = "bottom",
         legend.text = element_text(
           margin = margin(r = 24, unit = "pt")))
-cowplot::ggsave("./Exposure/itsgamlss_lin_validation.tiff", gg, dpi = 600, width = 8, height = 6,
-                units = "cm", compression = "lzw", scale = 3)
+cowplot::ggsave("./Exposure/itsgamlss_lin_validation.png", gg, dpi = 600, width = 8, height = 6,
+                units = "cm", scale = 3)
 
 gg <- ggplot(salt4, aes(salt, colour = type)) +
   geom_density() +
@@ -1275,8 +1275,8 @@ gg <- ggplot(salt4, aes(salt, colour = type)) +
         legend.position = "bottom",
         legend.text = element_text(
           margin = margin(r = 24, unit = "pt")))
-cowplot::ggsave("./Exposure/itsgamlss_log_validation.tiff", gg, dpi = 600, width = 8, height = 6,
-                units = "cm", compression = "lzw", scale = 3)
+cowplot::ggsave("./Exposure/itsgamlss_log_validation.png", gg, dpi = 600, width = 8, height = 6,
+                units = "cm", scale = 3)
 
 
 

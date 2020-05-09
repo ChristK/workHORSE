@@ -208,14 +208,14 @@ if (plots) {
   zz[, education := as.integer(education) ]
 
   future({
-    dir.create("./preparatory_work/plots", FALSE)
+    dir.create("./validation/synthpop_models", FALSE)
     zz[, weight := wt_int/sum(wt_int), by = type]
-    tiff(
-      "./preparatory_work/plots/Education_rel_dist.tiff",
+    png(
+      "./validation/synthpop_models/Education_rel_dist.png",
       3840,
       2160,
-      pointsize = 48,
-      compression = "lzw"
+      pointsize = 48
+      
     )
     reldist_diagnostics(zz[type == "Observed", education],
                         zz[type == "Modelled", education],
