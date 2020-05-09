@@ -29,6 +29,7 @@
 #' @docType package
 #' @author Chris Kypridemos
 #' @import Rcpp R6 data.table CKutils
+#' @importFrom R6 R6Class
 #' @importFrom Rcpp evalCpp
 #' @importFrom fst read_fst
 #' @importFrom dqrng dqrunif dqsample
