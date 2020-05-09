@@ -174,8 +174,7 @@ plot_synthpop_val <- function(dt, x, grp, wt, title, x_label, standardised_to_gr
                      units = "cm",
                      scale = 2,
                      dpi = 300,
-                     # compression = "lzw",
-                     path = "./preparatory_work/plots"
+                     path = "./validation/synthpop_models"
     )
   )
 
@@ -200,8 +199,7 @@ plot_synthpop_val <- function(dt, x, grp, wt, title, x_label, standardised_to_gr
                      units = "cm",
                      scale = 2,
                      dpi = 300,
-                     # compression = "lzw",
-                     path = "./preparatory_work/plots"
+                     path = "./validation/synthpop_models"
     )
   )
 }

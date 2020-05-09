@@ -89,7 +89,7 @@ for (disease_ in nam) {
           units = "cm",
           dpi = 300,
           scale = 2.5,
-          path = "./lifecourse_models/validation_mrtl_projections"
+          path = "./validation/mrtl_projections"
         )
         lifetable_all <- rbind(lifetable_all, tt)
       }
