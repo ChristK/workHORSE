@@ -4,12 +4,52 @@
 \alias{SynthPop}
 \title{R6 Class representing a synthetic population}
 \description{
-A synthpop has a pop data.table that has the synthetic population.
+A synthpop has a `pop` field that contains the life course of simulants in a
+`data.table`.
+}
+\details{
+To be completed...
+}
+\examples{
+
+## ------------------------------------------------
+## Method `SynthPop$new`
+## ------------------------------------------------
+
+design <- Design$new("./validation/design_for_trends_validation.yaml")
+POP$write_synthpop(1:6, design, "./test")
+POP <- SynthPop$new(4L, design, "./test")
+POP$print()
+POP$count_synthpop()
+
+POP$delete_synthpop(1L)
+POP$delete_synthpop(5:6)
+POP$get_filename()
+}
+\section{Public fields}{
+\if{html}{\out{<div class="r6-fields">}}
+\describe{
+\item{\code{mc}}{The Monte Carlo iteration of the synthetic population. Every
+integer generates a unique synthetic population.}
+
+\item{\code{metadata}}{Metadata of the synthpop.}
+
+\item{\code{pop}}{The data.table that contains the life-course of simulants.
+If the file exists, it is loaded from disk. If it doesn't, it is
+first generated, then saved to disk, and then loaded from disk.}
+}
+\if{html}{\out{</div>}}
 }
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-new}{\code{SynthPop$new()}}
+\item \href{#method-delete_synthpop}{\code{SynthPop$delete_synthpop()}}
+\item \href{#method-delete_incomplete_synthpop}{\code{SynthPop$delete_incomplete_synthpop()}}
+\item \href{#method-count_synthpop}{\code{SynthPop$count_synthpop()}}
+\item \href{#method-get_filename}{\code{SynthPop$get_filename()}}
+\item \href{#method-get_design}{\code{SynthPop$get_design()}}
+\item \href{#method-write_synthpop}{\code{SynthPop$write_synthpop()}}
 \item \href{#method-print}{\code{SynthPop$print()}}
 \item \href{#method-clone}{\code{SynthPop$clone()}}
 }
@@ -18,19 +58,171 @@ A synthpop has a pop data.table that has the synthetic population.
 \if{html}{\out{<a id="method-new"></a>}}
 \if{latex}{\out{\hypertarget{method-new}{}}}
 \subsection{Method \code{new()}}{
+Create a new SynthPop object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{SynthPop$new(l)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{SynthPop$new(mc_, design_, synthpop_dir_)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{mc_}}{The Monte Carlo iteration of the synthetic population. Each
+integer generates a unique synthetic population.}
+
+\item{\code{design_}}{A \code{\link[workHORSEmisc]{Design}} object.}
+
+\item{\code{synthpop_dir_}}{The directory where 'SynthPop' objects are stored.
+The synthpop file in \code{\link[fst]{fst-package}} format. If
+`filename` already exists, then the synthpop is loaded from there.
+Otherwise it is generated from scratch and then saved as `filename`
+in \code{\link[fst]{fst-package}} format. Two additional files are
+saved for each 'synthpop'. A metadata file, and an index file.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+A new `SynthPop` object.
+}
+\subsection{Examples}{
+\if{html}{\out{<div class="r example copy">}}
+\preformatted{design <- Design$new("./validation/design_for_trends_validation.yaml")
+POP$write_synthpop(1:6, design, "./test")
+POP <- SynthPop$new(4L, design, "./test")
+POP$print()
+POP$count_synthpop()
+
+POP$delete_synthpop(1L)
+POP$delete_synthpop(5:6)
+POP$get_filename()
+}
+\if{html}{\out{</div>}}
+
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-delete_synthpop"></a>}}
+\if{latex}{\out{\hypertarget{method-delete_synthpop}{}}}
+\subsection{Method \code{delete_synthpop()}}{
+Delete (all) synthpop files in the synthpop directory.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{SynthPop$delete_synthpop(mc_)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{mc_}}{If `mc_ = NULL`, delete all files in the synthpop directory.
+If `mc_` is an integer vector delete the specific synthpop files
+including the metadata and index files.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+The invisible `SynthPop` object.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-delete_incomplete_synthpop"></a>}}
+\if{latex}{\out{\hypertarget{method-delete_incomplete_synthpop}{}}}
+\subsection{Method \code{delete_incomplete_synthpop()}}{
+Check that every synthpop file has a metafile and an index file. Delete
+any orphan files.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{SynthPop$delete_incomplete_synthpop()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+The invisible `SynthPop` object.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-count_synthpop"></a>}}
+\if{latex}{\out{\hypertarget{method-count_synthpop}{}}}
+\subsection{Method \code{count_synthpop()}}{
+Count the synthpop files in a directory. It includes files without
+metafiles and index files.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{SynthPop$count_synthpop()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+The invisible `SynthPop` object.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-get_filename"></a>}}
+\if{latex}{\out{\hypertarget{method-get_filename}{}}}
+\subsection{Method \code{get_filename()}}{
+Get the synthpop file paths.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{SynthPop$get_filename(x = c("all", "synthpop", "metafile", "indxfile"))}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{x}}{One of "all", "synthpop", "metafile", or "indxfile". Can be
+abbreviated.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+The invisible `SynthPop` object.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-get_design"></a>}}
+\if{latex}{\out{\hypertarget{method-get_design}{}}}
+\subsection{Method \code{get_design()}}{
+Get the synthpop design.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{SynthPop$get_design()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+The invisible `SynthPop` object.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-write_synthpop"></a>}}
+\if{latex}{\out{\hypertarget{method-write_synthpop}{}}}
+\subsection{Method \code{write_synthpop()}}{
+Generate synthpop files in parallel and writes them to disk. It skips
+files that are already on disk.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{SynthPop$write_synthpop(mc_, design_, synthpop_dir_)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{mc_}}{An integer vector for the Monte-Carlo iteration of the
+synthetic population. Each integer generates a unique synthetic
+population.}
+
+\item{\code{design_}}{A \code{\link[workHORSEmisc]{Design}} object.}
+
+\item{\code{synthpop_dir_}}{The directory where 'SynthPop' objects are stored.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+The invisible `SynthPop` object.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-print"></a>}}
 \if{latex}{\out{\hypertarget{method-print}{}}}
 \subsection{Method \code{print()}}{
+Prints the synthpop object metadata.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{SynthPop$print(...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{SynthPop$print()}\if{html}{\out{</div>}}
 }
 
+\subsection{Returns}{
+The invisible `SynthPop` object.
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-clone"></a>}}

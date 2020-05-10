@@ -4,12 +4,10 @@
 \alias{Design}
 \title{R6 Class representing a simulation design}
 \description{
-R6 Class representing a simulation design
-
-R6 Class representing a simulation design
+A design has a sim_prm list that holds the simulation parameters.
 }
 \details{
-A design has a sim_prm list that holds the simulation parameters.
+To be completed...
 }
 \examples{
 
@@ -31,6 +29,7 @@ design <- Design$new("./validation/design_for_trends_validation.yaml")
 \itemize{
 \item \href{#method-new}{\code{Design$new()}}
 \item \href{#method-save_to_disk}{\code{Design$save_to_disk()}}
+\item \href{#method-update_fromGUI}{\code{Design$update_fromGUI()}}
 \item \href{#method-print}{\code{Design$print()}}
 \item \href{#method-clone}{\code{Design$clone()}}
 }
@@ -41,13 +40,14 @@ design <- Design$new("./validation/design_for_trends_validation.yaml")
 \subsection{Method \code{new()}}{
 Create a new design object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Design$new(l)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Design$new(sim_prm)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{l}}{Either a path to a yaml file or a list with appropriate format.}
+\item{\code{sim_prm}}{Either a path to a yaml file or a list with appropriate
+format.}
 }
 \if{html}{\out{</div>}}
 }
@@ -75,7 +75,28 @@ Create a new design object.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{path}}{Path including filename and extension to save a yaml file with the simulation parameters.}
+\item{\code{path}}{Path including filename and extension to save a yaml
+file with the simulation parameters.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+The `Design` object.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-update_fromGUI"></a>}}
+\if{latex}{\out{\hypertarget{method-update_fromGUI}{}}}
+\subsection{Method \code{update_fromGUI()}}{
+Updates the design object from GUI.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Design$update_fromGUI(GUI_prm = parameters)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{GUI_prm}}{A GUI parameter object.}
 }
 \if{html}{\out{</div>}}
 }
