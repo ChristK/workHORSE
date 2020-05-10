@@ -49,6 +49,7 @@ first generated, then saved to disk, and then loaded from disk.}
 \item \href{#method-count_synthpop}{\code{SynthPop$count_synthpop()}}
 \item \href{#method-get_filename}{\code{SynthPop$get_filename()}}
 \item \href{#method-get_design}{\code{SynthPop$get_design()}}
+\item \href{#method-get_dir}{\code{SynthPop$get_dir()}}
 \item \href{#method-write_synthpop}{\code{SynthPop$write_synthpop()}}
 \item \href{#method-print}{\code{SynthPop$print()}}
 \item \href{#method-clone}{\code{SynthPop$clone()}}
@@ -67,7 +68,8 @@ Create a new SynthPop object.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{mc_}}{The Monte Carlo iteration of the synthetic population. Each
-integer generates a unique synthetic population.}
+integer generates a unique synthetic population. If `mc = 0` an
+object with an empty synthpop is initiated.}
 
 \item{\code{design_}}{A \code{\link[workHORSEmisc]{Design}} object.}
 
@@ -185,13 +187,26 @@ The invisible `SynthPop` object.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-get_dir"></a>}}
+\if{latex}{\out{\hypertarget{method-get_dir}{}}}
+\subsection{Method \code{get_dir()}}{
+Get the synthpop dir.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{SynthPop$get_dir()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+The invisible `SynthPop` object.
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-write_synthpop"></a>}}
 \if{latex}{\out{\hypertarget{method-write_synthpop}{}}}
 \subsection{Method \code{write_synthpop()}}{
 Generate synthpop files in parallel and writes them to disk. It skips
 files that are already on disk.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{SynthPop$write_synthpop(mc_, design_, synthpop_dir_)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{SynthPop$write_synthpop(mc_)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -200,10 +215,6 @@ files that are already on disk.
 \item{\code{mc_}}{An integer vector for the Monte-Carlo iteration of the
 synthetic population. Each integer generates a unique synthetic
 population.}
-
-\item{\code{design_}}{A \code{\link[workHORSEmisc]{Design}} object.}
-
-\item{\code{synthpop_dir_}}{The directory where 'SynthPop' objects are stored.}
 }
 \if{html}{\out{</div>}}
 }
