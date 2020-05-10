@@ -1,11 +1,11 @@
 iteration_n: 20
-clusternumber: 20.0
-n_cpus: 1
+clusternumber: 20 # explicit parallelisation
+n_cpus: 1 # implicit parallelisation
 logs: no
 process_output: yes
 scenarios: ''
 cols_for_output:
-- pid
+- pid # NEED TO be 1st
 - year
 - pid_mrk
 - age
@@ -39,9 +39,8 @@ exposures:
 - sbp
 - tchol
 'n': 200000
-init_year: 13
 init_year_long: 2013
-sim_horizon_max: 18
+sim_horizon_max: 28
 ageL: 30
 ageH: 89
 cvd_lag: 4
@@ -52,17 +51,10 @@ maxlag: 10
 smoking_relapse_limit: 3
 stochastic: yes
 kismet: yes
-jumpiness: 1.0
+jumpiness: 1.0 # increase for more erratic jumps in trajectories
 export_xps: no
 simsmok_calibration: yes
 output_dir: ./output/
-cancer_cure: 10
-validation: no
-max_prvl_for_outputs: 2
-cvd_lag_enum: 1
-copd_lag_enum: 1
-cancer_lag_enum: 1
-nonmodelled_lag_enum: 2
-locality: England
-init_year_fromGUI: 13
-sim_horizon_fromGUI: 18
+cancer_cure: 10 # need to be >2 & <= 10
+validation: no # or yes. Note, no true/false
+max_prvl_for_outputs: 2 # duration 1 is incidence and 2 is prevalence
