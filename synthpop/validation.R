@@ -51,7 +51,8 @@ if (file.exists("./Rpackage/.version_snapshot.rds")) {
     readRDS("./Rpackage/.version_snapshot.rds")
   tt <- changedFiles(snapshot)
   if (sum(sapply(tt[1:3], length)) > 0) {
-    roxygen2::roxygenise("./Rpackage/workHORSE_model_pkg/") # TODO remove before deployment
+    roxygen2::roxygenise("./Rpackage/workHORSE_model_pkg/")
+    # TODO remove before deployment
     remotes::install_local("./Rpackage/workHORSE_model_pkg/", force = TRUE)
     to_delete <- NULL
     file.remove(list.files(output_dir(), full.names = TRUE, recursive = TRUE))
@@ -127,20 +128,20 @@ summarise_distr <-
                                 weighted.mean(value, pop_size),
                                 sum(value)),
                       by = c("scenario", "year", "variable", "mc")][, fquantile_byid(V1, probabilities,
-                                                                                     as.character(variable), rounding),
-                                                                    by = c("scenario", "year")],
+                       as.character(variable), rounding),
+                        by = c("scenario", "year")],
                    dt[, fifelse(grepl("_rate$", variable),
                                 weighted.mean(value, pop_size),
                                 sum(value)),
                       by =  c("scenario", "year", "sex", "variable", "mc")][, fquantile_byid(V1, probabilities,
-                                                                                             as.character(variable), rounding),
-                                                                            by =  c("scenario", "year", "sex")],
+                       as.character(variable), rounding),
+                       by =  c("scenario", "year", "sex")],
                    dt[, fifelse(grepl("_rate$", variable),
                                 weighted.mean(value, pop_size),
                                 sum(value)),
                       by =  c("scenario", "year", "sex", "agegroup", "variable", "mc")][, fquantile_byid(V1, probabilities,
-                                                                                                         as.character(variable), rounding),
-                                                                                        by =  c("scenario", "year", "sex", "agegroup")],
+                        as.character(variable), rounding),
+                        by =  c("scenario", "year", "sex", "agegroup")],
                    fill = TRUE)
     } else {
       out <-
