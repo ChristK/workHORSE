@@ -38,6 +38,8 @@ output
 *.pdf
 preparatory_work/plots/
 preparatory_work/plots_trends/
+**/.*
+*meta.yaml
 ## git commands after updating .gitignore
 # git rm -r --cached .
 # git add -A

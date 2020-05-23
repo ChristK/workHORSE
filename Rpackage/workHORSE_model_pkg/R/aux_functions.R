@@ -27,7 +27,7 @@
   library.dynam.unload("workHORSEmisc", libpath)
 }
 
-# Ensures that when fwrites appent file colnames of file to be written, match those already in the file
+# Ensures that when fwrite appends file colnames of file to be written, match those already in the file
 #' @export
 fwrite_safe <- function(x,
                         file = "",
@@ -477,7 +477,7 @@ get_lifetable_all <-
       disease2 <- disease
     }
     prb <- get_disease_epi_mc(mc, disease = disease2, "fatality", "p", stochastic = design$stochastic)
-    # NOTE fatality column is poorely named. It is a probability which is correlated with incidence & prevalence
+    # NOTE fatality column is poorly named. It is a probability which is correlated with incidence & prevalence
     colnam <- c("year", "age", "sex", "qimd", "disease",
                 paste0(type, c("_total", "_total_1", "_total_99", "_total_10",
                                "_total_20", "_total_30", "_total_40", "_total_60",

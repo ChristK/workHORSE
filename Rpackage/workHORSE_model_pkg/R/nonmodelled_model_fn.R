@@ -134,7 +134,7 @@ nonmodelled_model <- function(
     rm(nonmodelledparf)
   }
   if (!nzchar(scenario_nam)) { # first run for scenario ""
-    # Estimate nonmodelled mortaluty prbl -------------------------------
+    # Estimate nonmodelled mortality prbl -------------------------------
     #cat("Estimating nonmodelled incidence without diabetes...\n\n")
     set(dt, NULL, "prb_nonmodelled_mrtl_not2dm", 0)
     dt[, prb_nonmodelled_mrtl_not2dm :=
