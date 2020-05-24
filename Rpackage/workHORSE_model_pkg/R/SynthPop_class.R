@@ -263,8 +263,9 @@ SynthPop <-
       #' Get the synthpop design.
       #' @return The invisible `SynthPop` object.
       get_design = function() {
-        print(private$design)
-        invisible(self)
+        # print(private$design)
+        # invisible(self)
+        private$design
       },
 
       #' @description
