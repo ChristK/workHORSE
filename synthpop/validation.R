@@ -22,7 +22,102 @@
 cat("Validating workHORSE model...\n\n")
 setwd("~/My Models/workHORSE/")
 XPS <- FALSE
-delete_previous_results <- FALSE # any change to workHORSEmisc deletes output
+delete_previous_results <- TRUE # any change to workHORSEmisc deletes output
+
+clb_factors <- list(
+  "chd"       = 0.0,#0.01,
+  "stroke"    = 0.0,#0.01,
+  "copd"      = 0.0,#0.01,
+  "lung_ca"   = 0.0,#0.95,
+  "colon_ca"  = 0.0,#0.02,
+  "breast_ca" = 0.0#0.01
+)
+
+update_diseases <- function(sp, clb_factors) {
+  # Recalculates the diseases epidemiology.
+  # Useful to update diseases wnen the disease models change, without regenerate
+  # the full population
+
+  setkey(sp$pop, pid, year)
+  lags_mc <-
+    get_lag_mc(sp$mc, sp$get_design()$sim_prm)
+  max_lag_mc <- max(unlist(lags_mc))
+
+  sp$pop[, ncc := clamp(
+    ncc + (chd_prvl > 0) + (stroke_prvl > 0) +
+      (poststroke_dementia_prvl > 0) +
+      (htn_prvl > 0) + (t2dm_prvl > 0) + (af_prvl > 0) +
+      (copd_prvl > 0) + (lung_ca_prvl > 0) +
+      (colon_ca_prvl > 0) +
+      (breast_ca_prvl > 0),
+    0L,
+    10L
+  )]
+
+  sp[, c("prb_poststroke_dementia_incd_nostroke",
+         "breast_ca_prvl", "colon_ca_prvl", "lung_ca_prvl") := NULL]
+  finalise_synthpop(sp$mc, sp$pop, sp$get_design()$sim_prm, lags_mc)
+
+  output <- list()
+  output <-
+    gen_output("", sp$get_design()$sim_prm, lags_mc, sp$pop, output, TRUE)
+  invisible(lapply(output, setDT))
+  output <-
+    rbindlist(output)[between(age, sp$get_design()$sim_prm$ageL, sp$get_design()$sim_prm$ageH) &
+                        year >= sp$get_design()$sim_prm$init_year]
+
+
+  tt <-
+    calibrate_to_mrtl(sp$mc, output, "chd", sp$get_design()$sim_prm, clb_factors$chd)
+  # tt[, sum(prb_chd_mrtl)]
+  absorb_dt(sp$pop, tt, on = c("year", "age", "sex", "qimd"))
+  tt <-
+    calibrate_to_mrtl(sp$mc, output, "stroke", sp$get_design()$sim_prm, clb_factors$stroke)
+  absorb_dt(sp$pop, tt, on = c("year", "age", "sex", "qimd"))
+  tt <-
+    calibrate_to_mrtl(sp$mc, output, "copd", sp$get_design()$sim_prm, clb_factors$copd)
+  absorb_dt(sp$pop, tt, on = c("year", "age", "sex", "qimd"))
+  tt <-
+    calibrate_to_mrtl(sp$mc, output, "lung_ca", sp$get_design()$sim_prm, clb_factors$lung_ca) # 0.8
+  absorb_dt(sp$pop, tt, on = c("year", "age", "sex", "qimd"))
+  tt <-
+    calibrate_to_mrtl(sp$mc, output, "colon_ca", sp$get_design()$sim_prm, clb_factors$colon_ca)
+  absorb_dt(sp$pop, tt, on = c("year", "age", "sex", "qimd"))
+  tt <-
+    calibrate_to_mrtl(sp$mc, output, "breast_ca", sp$get_design()$sim_prm, clb_factors$breast_ca) # 0.05
+  absorb_dt(sp$pop, tt, on = c("year", "age", "sex", "qimd"))
+  # it doesn't matter that I get breast_ca fatality for men
+  # there is no breast_ca incidence for men anyway
+
+  # second run with fatalities
+  output <- list()
+  output <-
+    gen_output("", sp$get_design()$sim_prm, lags_mc, sp$pop, output)
+  invisible(lapply(output, setDT))
+  output <- rbindlist(output, idcol = "scenario")
+
+  absorb_dt(sp$pop, output, on = c("year", "pid"))
+  rm(output, tt)
+
+  sp$pop[, ncc := clamp(
+    ncc - (chd_prvl > 0) - (stroke_prvl > 0) -
+      (poststroke_dementia_prvl > 0) -
+      (htn_prvl > 0) - (t2dm_prvl > 0) - (af_prvl > 0) -
+      (copd_prvl > 0) - (lung_ca_prvl > 0) -
+      (colon_ca_prvl > 0) -
+      (breast_ca_prvl > 0),
+    0L,
+    10L
+  )]
+  # to be added back in the qaly fn. Otherwise when I prevent disease the
+  # ncc does not decrease.
+
+  sp$pop[, pid_mrk := mk_new_simulant_markers(pid)] # Necessary because of pruning above
+
+  sp$pop[, dead := identify_longdeads(all_cause_mrtl, pid_mrk)] # do not delete them yet
+  sp$pop[, `:=` (scenario = NULL)]
+
+}
 
 output_dir <-
   function(x = character(0))
@@ -285,8 +380,8 @@ if (all(file.exists(output_dir(filenames)))) {
   POP <-
     SynthPop$
     new(0, design, "./test")$
-    delete_synthpop(to_delete)$
-    write_synthpop(1:design$sim_prm$iteration_n)$
+    # delete_synthpop(to_delete)$
+    # write_synthpop(1:design$sim_prm$iteration_n)$
     count_synthpop()
 
 
@@ -313,7 +408,7 @@ if (all(file.exists(output_dir(filenames)))) {
       POP <- SynthPop$new(mc_iter, design, synthpop_dir())
 
       POP$pop <- POP[dead == FALSE, ]
-
+      update_diseases(POP, clb_factors)
 
       if (XPS)
         export_xps(mc_iter, POP$pop, TRUE, "val_xps_output_post.csv")
