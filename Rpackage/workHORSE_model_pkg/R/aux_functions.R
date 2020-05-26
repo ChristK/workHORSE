@@ -1478,6 +1478,7 @@ sim_init_prvl <- function(mc, disease, design = design, dt = POP) {
   absorb_dt(dt, tbl)
   nam <- paste0(disease, "_prvl")
   dt[year == design$init_year, (nam) := as.integer(dqrunif(.N) < prevalence)] # faster than rbinom
+  dt[year > design$init_year & age == design$ageL, (nam) := as.integer(dqrunif(.N) < prevalence)] # faster than rbinom
   setnafill(dt, "c", 0L, cols = nam)
   dt[, (col_nam) := NULL]
 }
