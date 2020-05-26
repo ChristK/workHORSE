@@ -1,5 +1,5 @@
 iteration_n: 20
-clusternumber: 20
+clusternumber: 10
 n_cpus: 1
 logs: no
 process_output: yes

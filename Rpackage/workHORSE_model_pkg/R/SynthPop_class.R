@@ -44,6 +44,7 @@ SynthPop <-
   R6::R6Class(
     classname = "SynthPop",
 
+    # public ------------------------------------------------------------------
     public = list(
       #' @field mc The Monte Carlo iteration of the synthetic population. Every
       #'   integer generates a unique synthetic population.
@@ -116,8 +117,7 @@ SynthPop <-
             private$gen_synthpop(mc_,
                                  private$filename,
                                  design_,
-                                 lsoas,
-                                 include_diseases = TRUE)
+                                 lsoas)
 
           } else if (file.exists(private$filename$metafile) &&
                      !all(files_exist)) {
@@ -146,15 +146,14 @@ SynthPop <-
             private$gen_synthpop(mc_,
                                  private$filename,
                                  design_,
-                                 lsoas,
-                                 include_diseases = TRUE)
+                                 lsoas)
           }
           # No need to provision for case when all file present. The following
           # lines handle this case anyway
 
           self$pop <-
             private$get_synthpop(mc_, private$filename, design_)
-          self$metadata <- read_yaml(private$filename$metafile)
+          self$metadata <- yaml::read_yaml(private$filename$metafile)
 
           if (design_$sim_prm$logs)
             self$print()
@@ -293,15 +292,14 @@ SynthPop <-
 
         checksum <- private$gen_checksum(private$design, lsoas)
 
-        if (Sys.info()[1] == "Windows") {
+        if (Sys.info()["sysname"] == "Windows") {
           cl <- makeCluster(private$design$sim_prm$clusternumber)
           registerDoParallel(cl)
         } else {
           registerDoParallel(private$design$sim_prm$clusternumber)
         }
 
-        on.exit((if (exists("cl"))
-          stopCluster(cl)), add = TRUE)
+        on.exit((if (exists("cl")) stopCluster(cl)), add = TRUE)
         on.exit(self$delete_incomplete_synthpop(), add = TRUE)
 
         foreach(
@@ -321,6 +319,8 @@ SynthPop <-
           .export = NULL,
           .noexport = NULL # c("time_mark")
         ) %dopar% {
+          data.table::setDTthreads(private$design$sim_prm$n_cpus)
+          fst::threads_fst(private$design$sim_prm$n_cpus)
           filename <-
             private$gen_synthpop_filename(mc_iter, private$synthpop_dir, checksum)
 
@@ -331,15 +331,14 @@ SynthPop <-
             private$gen_synthpop(mc_iter,
                                  filename,
                                  private$design,
-                                 lsoas,
-                                 include_diseases = TRUE)
+                                 lsoas)
 
           } else if (file.exists(filename$metafile) &&
                      !all(files_exist)) {
-            # Metafile exists but not all three files. It means that most likely a
-            # generate_synthpop() is still running. So the function waits until
-            # the file is created before it proceeds to load it. Note that if this
-            # is not the case then the loop is infinite!!!
+            # Metafile exists but not all three files. It means that most likely
+            # a generate_synthpop() is still running. So the function waits
+            # until the file is created before it proceeds to load it. Note that
+            # if this is not the case then the loop is infinite!!!
             while (!all(sapply(filename, file.exists)))
               Sys.sleep(5)
 
@@ -361,13 +360,9 @@ SynthPop <-
             private$gen_synthpop(mc_iter,
                                  filename,
                                  private$design,
-                                 lsoas,
-                                 include_diseases = TRUE)
+                                 lsoas)
           }
-          # No need to provision for case when all file present. The following
-          # lines handle this case anyway
-
-
+          # No need to provision for case when all files present.
 
           return(NULL)
         }
@@ -389,12 +384,28 @@ SynthPop <-
 
 
 
+    # private -----------------------------------------------------------------
     private = list(
       filename = NA,
       checksum = NA,
       # The design object with the simulation parameters.
       design = NA,
       synthpop_dir = NA,
+
+      # Special deep copy for data.table. Use POP$clone(deep = TRUE) to
+      # dispatch. Otherwise a reference is created
+      deep_clone = function(name, value) {
+        if ("data.table" %in% class(value)) {
+          data.table::copy(value)
+        } else if ("R6" %in% class(value)) {
+          value$clone()
+        } else {
+          # For everything else, just return it. This results in a shallow
+          # copy of s3.
+          value
+        }
+      },
+
 
       # get all unique LSOAs included in locality vector
       get_unique_LSOAs = function(design_) {
@@ -572,8 +583,7 @@ SynthPop <-
         function(mc_,
                  filename_,
                  design_,
-                 lsoas_,
-                 include_diseases = TRUE) {
+                 lsoas_) {
           # increase design_$sim_prm$jumpiness for more erratic jumps in trajectories
 
           # In Shiny app this function runs as a future. It is not
@@ -585,8 +595,8 @@ SynthPop <-
 
           # Save synthpop metadata
           if (!file.exists(filename_$metafile)) {
-            write_yaml(private$get_unique_characteristics(design_),
-                       filename_$metafile)
+            yaml::write_yaml(private$get_unique_characteristics(design_),
+                             filename_$metafile)
           }
           # NOTE In shiny app if 2 users click the  button at the same time, 2
           # functions will run almost concurrently with potential race condition
@@ -615,6 +625,7 @@ SynthPop <-
           dt <- private$gen_synthpop_demog(design_, lsoas_)
 
           # Calculate local qimd (lqimd) ----
+          message("Calculate local qimd (lqimd)")
           if ("England" %in% design_$sim_prm$locality) {
             dt[, lqimd := qimd]
           } else {
@@ -630,6 +641,8 @@ SynthPop <-
           }
 
           # Generate the cohorts of 30 year old to enter the simulation every year ----
+          message("Generate the cohorts of 30 year old")
+
           # new
           tt <- dt[age == design_$sim_prm$ageL, .N]
           design2_ <- design_$clone()
@@ -664,6 +677,8 @@ SynthPop <-
 
 
           # Generate correlated ranks for the individuals ----
+          message("Generate correlated ranks for the individuals")
+
           cm_mean <- as.matrix(
             read_fst(
               "./lifecourse_models/exposure_corr_mean.fst",
@@ -671,29 +686,28 @@ SynthPop <-
             ),
             rownames = "rn"
           )
-          rank_mtx <-
-            suppressMessages(generate_corr_unifs(new_n, cm_mean))
+
+          rank_mtx <- generate_corr_unifs(new_n, cm_mean)
+          message("generate correlated uniforms")
 
           # Restrict the range of some RNs to avoid unrealistic exposures
           # This scaling does not affect correlations
           # /0.999 because I multiplied all the columns below
           rank_mtx <- rank_mtx * 0.999
-          rank_mtx[, "frtpor_r"]        <-
-            rank_mtx[, "frtpor_r"] * 0.99 / 0.999
-          rank_mtx[, "vegpor_r"]        <-
-            rank_mtx[, "vegpor_r"] * 0.93 / 0.999
-          rank_mtx[, "smok_cig_ex_r"]   <-
+          rank_mtx[, "frtpor_r"] <- rank_mtx[, "frtpor_r"] * 0.99 / 0.999
+          rank_mtx[, "vegpor_r"] <- rank_mtx[, "vegpor_r"] * 0.93 / 0.999
+          rank_mtx[, "smok_cig_ex_r"] <-
             rank_mtx[, "smok_cig_ex_r"] * 0.99 / 0.999
-          rank_mtx[, "totalwu_r"]       <-
-            rank_mtx[, "totalwu_r"] * 0.99 / 0.999
+          rank_mtx[, "totalwu_r"] <- rank_mtx[, "totalwu_r"] * 0.99 / 0.999
           rank_mtx[, "smok_quit_yrs_r"] <-
             rank_mtx[, "smok_quit_yrs_r"] * 0.99 / 0.999
-          rank_mtx[, "smok_dur_ex_r"]   <-
+          rank_mtx[, "smok_dur_ex_r"] <-
             rank_mtx[, "smok_dur_ex_r"] * 0.99 / 0.999
           rank_mtx[, "smok_dur_curr_r"] <-
             rank_mtx[, "smok_dur_curr_r"] * 0.88 / 0.999
 
           # sum((cor(rank_mtx) - cm_mean) ^ 2)
+          message("correlated ranks matrix to data.table")
 
           rank_mtx <- data.table(rank_mtx)
 
@@ -742,6 +756,8 @@ SynthPop <-
             set(dt, NULL, nam, dqrunif(new_n)) # NOTE do not replace with generate_rns function.
 
           # Generate education (exception as it remains stable through lifecourse) ----
+          message("Generate education")
+
           tbl <-
             read_fst("./lifecourse_models/education_table.fst",
                      as.data.table = TRUE)
@@ -775,9 +791,12 @@ SynthPop <-
           dt[, rank_education := NULL]
 
           # Project forward for simulation and back project for lags  ----
+          message("Project forward and back project")
+
           dt <-
             clone_dt(dt,
-                     design_$sim_prm$sim_horizon_max + design_$sim_prm$maxlag + 1L)
+                     design_$sim_prm$sim_horizon_max +
+                       design_$sim_prm$maxlag + 1L)
 
           dt[.id <= design_$sim_prm$maxlag, `:=` (age  = age  - .id,
                                                   year = year - .id)]
@@ -810,6 +829,8 @@ SynthPop <-
           # Simulate exposures -----
 
           # Random walk for ranks ----
+          message("Random walk for ranks")
+
           setkeyv(dt, c("pid", "year"))
           setindexv(dt, c("year", "age", "sex", "sha", "qimd", "ethnicity"))
 
@@ -823,6 +844,8 @@ SynthPop <-
           # ggplot2::qplot(year, rank_income, data = dt[pid %in% sample(1e5, 1)], ylim = c(0,1))
 
           # Generate income ----
+          message("Generate income")
+
           tbl <-
             read_fst("./lifecourse_models/income_table.fst", as.data.table = TRUE)
           nam <- intersect(names(dt), names(tbl))
@@ -837,6 +860,8 @@ SynthPop <-
           dt[, rank_income := NULL]
 
           # Generate active days ----
+          message("Generate active days")
+
           tbl <-
             read_fst("./lifecourse_models/active_days_table.fst",
                      as.data.table = TRUE)
@@ -848,6 +873,8 @@ SynthPop <-
           # dt[, active_days := factor(active_days, levels = 0:7)]
 
           # Generate fruit consumption (ZISICHEL) ----
+          message("Generate fruit consumption")
+
           tbl <-
             read_fst("./lifecourse_models/frtpor_table.fst", as.data.table = TRUE)
           col_nam <-
@@ -855,22 +882,26 @@ SynthPop <-
           absorb_dt(dt, tbl)
           dt[, fruit :=
                my_qZISICHEL(rank_fruit,
-                            mu, sigma, nu, tau, n_cpu = design_$sim_prm$n_cpu) * 80]  # g/d
+                            mu, sigma, nu, tau, n_cpu = design_$sim_prm$n_cpu) * 80L]  # g/d
           dt[, (col_nam) := NULL]
           dt[, rank_fruit := NULL]
 
           # Generate veg consumption (DEL) ----
+          message("Generate veg consumption")
+
           tbl <-
             read_fst("./lifecourse_models/vegpor_table.fst", as.data.table = TRUE)
           col_nam <-
             setdiff(names(tbl), intersect(names(dt), names(tbl)))
           absorb_dt(dt, tbl)
           dt[, veg :=
-               my_qDEL(rank_veg, mu, sigma, nu, n_cpu = design_$sim_prm$n_cpu) * 80]  # g/d
+               my_qDEL(rank_veg, mu, sigma, nu, n_cpu = design_$sim_prm$n_cpu) * 80L]  # g/d
           dt[, (col_nam) := NULL]
           dt[, rank_veg := NULL]
 
           # Smoking simulation ----
+          message("Smoking simulation")
+
           # Assign smok_status when pid_mrk == true (the first year an individul enters the simulation (with lags))
           tbl <-
             read_fst("./lifecourse_models/smok_status_table.fst",
@@ -1174,6 +1205,8 @@ SynthPop <-
           ) := NULL]
 
           # Generate ETS (BI) ----
+          message("Generate ETS")
+
           # Note at the moment this is independent of smoking prevalence
           # TODO calculate how many each smoker pollutes by year, SHA (not qimd) to be used in
           # scenarios. Ideally correct for mortality
@@ -1188,6 +1221,8 @@ SynthPop <-
           # View(dt[, prop_if(ets == 1)/prop_if(smok_status == "4"), keyby = .(year, sha)])
 
           # Generate alcohol (ZINBI) ----
+          message("Generate alcohol")
+
           tbl <-
             read_fst("./lifecourse_models/alcohol_table.fst", as.data.table = TRUE)
           col_nam <-
@@ -1198,6 +1233,8 @@ SynthPop <-
           dt[, (col_nam) := NULL]
 
           # Generate BMI (BCPEo) ----
+          message("Generate BMI")
+
           tbl <-
             read_fst("./lifecourse_models/bmi_table.fst", as.data.table = TRUE)
           col_nam <-
@@ -1208,6 +1245,8 @@ SynthPop <-
           dt[, (col_nam) := NULL]
 
           # Generate SBP (BCPEo) ----
+          message("Generate SBP")
+
           tbl <-
             read_fst("./lifecourse_models/sbp_table.fst", as.data.table = TRUE)
           col_nam <-
@@ -1218,6 +1257,8 @@ SynthPop <-
           dt[, (col_nam) := NULL]
 
           # Generate BP medication (BI) -----
+          message("Generate BP medication")
+
           dt[, `:=` (sbp_acc = sbp,
                      sbp = round(clamp(sbp, 110, 200), -1))]
           tbl <-
@@ -1234,6 +1275,8 @@ SynthPop <-
           # TODO calculate probability of dgn HTN
 
           # Generate tchol (BCT) ----
+          message("Generate tchol")
+
           tbl <-
             read_fst("./lifecourse_models/tchol_table.fst", as.data.table = TRUE)
           col_nam <-
@@ -1244,6 +1287,8 @@ SynthPop <-
           dt[, (col_nam) := NULL]
 
           # Generate HDL (to tchol ratio) (GB1) ----
+          message("Generate HDL (to tchol ratio)")
+
           # NOTE this very highly correlated with hdl level (~0.76) and
           #  highly to tchol (~-0.47). The latter is captured by the correlated RNs
           tbl <-
@@ -1257,6 +1302,8 @@ SynthPop <-
           dt[, (col_nam) := NULL]
 
           # Generate statins medication (BI) -----
+          message("Generate statins medication")
+
           dt[, `:=` (tchol_acc = tchol,
                      tchol = round(clamp(tchol, 2, 12), 0))]
           tbl <-
@@ -1273,7 +1320,9 @@ SynthPop <-
 
 
           # Generate AF dgn (BI) ----
-          # NOTE AF prealence ~6.9%. This is higher than the QOF prevalence of 1.6% for 2019 and 1.7% for 2015/6
+          message("Generate AF dgn")
+
+          # NOTE AF prevalence ~6.9%. This is higher than the QOF prevalence of 1.6% for 2019 and 1.7% for 2015/6
           # although PHE includes all ages and my estimates only ~30-89
           tbl <-
             read_fst("./lifecourse_models/af_dgn_table.fst", as.data.table = TRUE)
@@ -1303,6 +1352,8 @@ SynthPop <-
           }
 
           # Generate AF undgn + diagn (BI) ----
+          message("Generate AF undgn + diagn")
+
           # TODO alt method for Turakhia et al. 2018 Table 3
           # From PHE that estimate .44 undiagnosed AF cases for every diagnosed case
           dt[, af_prvl := as.integer(rankstat_af_dgn < mu)]
@@ -1326,6 +1377,8 @@ SynthPop <-
           dt[, (col_nam) := NULL]
 
           # Generate family CVD dgn (BI) ----
+          message("Generate family CVD dgn")
+
           tbl <-
             read_fst("./lifecourse_models/famcvd_table.fst", as.data.table = TRUE)
           col_nam <-
@@ -1336,7 +1389,9 @@ SynthPop <-
           dt[, (col_nam) := NULL]
 
 
-          # Generate CKD 4/5 prevalence --------------------------------------------------
+          # Generate CKD 4/5 prevalence -----------
+          message("Generate CKD 4/5 prevalence")
+
           tbl <-
             read_fst("./lifecourse_models/ckd_table.fst", as.data.table = TRUE)
           nam <- intersect(names(dt), names(tbl))
@@ -1348,6 +1403,8 @@ SynthPop <-
 
 
           # Generate rheumatoid arthritis prevalence -------
+          message("Generate rheumatoid arthritis prevalence")
+
           # FROM Symmons et al 2002 table 1
           RA_prvl <- fread(
             "./lifecourse_models/RA_prvl.csv",
@@ -1373,6 +1430,8 @@ SynthPop <-
           rm(RA_prvl)
 
           # Generate corticosteroids ------
+          message("Generate corticosteroids")
+
           # Assuming cst independent from RA (although both covary with age).
           cst_prvl <- fread(
             "./lifecourse_models/corticosteroids_prvl.csv",
@@ -1388,6 +1447,8 @@ SynthPop <-
           rm(cst_prvl)
 
           # Generate T2DM (BI) -----
+          message("Generate T2DM")
+
           # Both dgn and undgn (move to apply on initial year only)
           dt[, `:=` (bmi_acc = bmi,
                      bmi = round(clamp(bmi, 18, 50)))]
@@ -1403,6 +1464,8 @@ SynthPop <-
           dt[, (col_nam) := NULL]
 
           # Generate probability of dgn T2DM (BI) -----
+          message("Generate probability of dgn T2DM")
+
           dt[, `:=` (bmi = round(clamp(bmi, 18, 50), -1))]
           tbl <-
             read_fst("./lifecourse_models/dm_dgn_table.fst", as.data.table = TRUE)
@@ -1432,6 +1495,8 @@ SynthPop <-
           # use qrisk diabetes for probability of t2dm incidence
 
           # Generate family history of diabetes ------------
+          message("Generate family history of T2DM")
+
           # If the prob of being diab is ~8%. So the probability of having at least
           # one of 3 family members with diabetes is 1 - (1-0.08)^3.
           # I let family members vary between 2 and 2+rpois(n, 1)
@@ -1448,7 +1513,10 @@ SynthPop <-
 
 
 
-          # Estimate number of comorbidities (ncc) to be used in QALY calculation ----
+          # Estimate number of comorbidities (ncc) calculation ----
+          # to be used in QALY
+          message("Generate ncc")
+
           dt[, ncc := clamp(qbinom(rankstat_ncc, ceiling(age / 8L), fifelse(age < 55, 0.25, 0.40)), 0, 10)]
           # calibrated to Sullivan et all 2011 (web table 1)
           # to_agegrp(output, 10L, 89L, "age", "agegrp10", to_factor = TRUE)
@@ -1516,123 +1584,97 @@ SynthPop <-
           }
 
           # Include diseases ----
-          if (include_diseases) {
-            setkey(dt, pid, year)
-            # I need to delete rows here so the RN with the file are
-            # reproducible and don't need to save them
-            # TODO lag of 10 crashes shift_byID
-            lags_mc <-
-              get_lag_mc(mc_, design_$sim_prm)
-            max_lag_mc <- max(unlist(lags_mc))
-            dt <-
-              dt[year >= (design_$sim_prm$init_year - max_lag_mc) &
-                   between(dt$age, design_$sim_prm$ageL, design_$sim_prm$ageH)]
+          message("Include diseases")
+          setkey(dt, pid, year)
+          # I need to delete rows here so the RN with the file are
+          # reproducible and don't need to save them
+          # TODO lag of 10 crashes shift_byID
+          lags_mc <-
+            get_lag_mc(mc_, design_$sim_prm)
+          max_lag_mc <- max(unlist(lags_mc))
+          dt <-
+            dt[year >= (design_$sim_prm$init_year - max_lag_mc) &
+                 between(dt$age, design_$sim_prm$ageL, design_$sim_prm$ageH)]
 
-            setkey(dt, pid, year)
-            dt[, pid_mrk := mk_new_simulant_markers(pid)]
+          setkey(dt, pid, year)
+          dt[, pid_mrk := mk_new_simulant_markers(pid)]
 
-            finalise_synthpop(mc_, dt, design_$sim_prm, lags_mc)
+          finalise_synthpop(mc_, dt, design_$sim_prm, lags_mc)
 
-            generate_rns(
-              mc_,
-              dt,
-              c(
-                "rn_t2dm_incd",
-                "rn_chd_incd",
-                "rn_stroke_incd",
-                "rn_copd_incd",
-                "rn_lung_ca_incd",
-                "rn_colon_ca_incd",
-                "rn_breast_ca_incd",
-                "rn_poststroke_dementia_incd",
-                "rn_t2dm_dgn",
-                "rn_chd_dgn",
-                "rn_stroke_dgn",
-                "rn_copd_dgn",
-                "rn_htn_dgn",
-                "rn_af_dgn",
-                "rn_lung_ca_dgn",
-                "rn_colon_ca_dgn",
-                "rn_breast_ca_dgn",
-                "rn_poststroke_dementia_dgn",
-                "rn_chd_mrtl",
-                "rn_stroke_mrtl",
-                "rn_copd_mrtl",
-                "rn_lung_ca_mrtl",
-                "rn_colon_ca_mrtl",
-                "rn_breast_ca_mrtl",
-                "rn_nonmodelled_mrtl",
-                "rn_multi_mrtl"
-              )
+          generate_rns(
+            mc_,
+            dt,
+            c(
+              "rn_af_dgn"                  ,  "rn_breast_ca_dgn"          ,
+              "rn_breast_ca_incd"          ,  "rn_breast_ca_mrtl"         ,
+              "rn_chd_dgn"                 ,  "rn_chd_incd"               ,
+              "rn_chd_mrtl"                ,  "rn_colon_ca_dgn"           ,
+              "rn_colon_ca_incd"           ,  "rn_colon_ca_mrtl"          ,
+              "rn_copd_dgn"                ,  "rn_copd_incd"              ,
+              "rn_copd_mrtl"               ,  "rn_htn_dgn"                ,
+              "rn_lung_ca_dgn"             ,  "rn_lung_ca_incd"           ,
+              "rn_lung_ca_mrtl"            ,  "rn_multi_mrtl"             ,
+              "rn_nonmodelled_mrtl"        ,  "rn_poststroke_dementia_dgn",
+              "rn_poststroke_dementia_incd",  "rn_stroke_dgn"             ,
+              "rn_stroke_incd"             ,  "rn_stroke_mrtl"            ,
+              "rn_t2dm_dgn"                ,  "rn_t2dm_incd"
             )
+          )
 
-            output <- list()
-            output <-
-              gen_output("", design_$sim_prm, lags_mc, dt, output, TRUE)
-            invisible(lapply(output, setDT))
-            output <-
-              rbindlist(output)[between(age, design_$sim_prm$ageL, design_$sim_prm$ageH) &
-                                  year >= design_$sim_prm$init_year]
+          # Run to estimate prevalence ignoring mortality
+          output <- list()
+          output <-
+            gen_output("", design_$sim_prm, lags_mc, dt, output, TRUE)
+          invisible(lapply(output, setDT))
+          output <-
+            rbindlist(output)[between(age, design_$sim_prm$ageL, design_$sim_prm$ageH) &
+                                year >= design_$sim_prm$init_year]
 
-            tt <-
-              calibrate_to_mrtl(mc_, output, "chd", design_$sim_prm, 0.01)
-            # tt[, sum(prb_chd_mrtl)]
+          # estimate fatality rates for all diseases
+          for (disease_nam in c("chd", "stroke", "copd", "lung_ca", "colon_ca", "breast_ca")) {
+            tt <- simulate_fatality(mc_, output, disease_nam, design_$sim_prm)
             absorb_dt(dt, tt, on = c("year", "age", "sex", "qimd"))
-            tt <-
-              calibrate_to_mrtl(mc_, output, "stroke", design_$sim_prm, 0.01)
-            absorb_dt(dt, tt, on = c("year", "age", "sex", "qimd"))
-            tt <-
-              calibrate_to_mrtl(mc_, output, "copd", design_$sim_prm, 0.01)
-            absorb_dt(dt, tt, on = c("year", "age", "sex", "qimd"))
-            tt <-
-              calibrate_to_mrtl(mc_, output, "lung_ca", design_$sim_prm, 0.95) # 0.8
-            absorb_dt(dt, tt, on = c("year", "age", "sex", "qimd"))
-            tt <-
-              calibrate_to_mrtl(mc_, output, "colon_ca", design_$sim_prm, 0.02) # 0.05
-            absorb_dt(dt, tt, on = c("year", "age", "sex", "qimd"))
-            tt <-
-              calibrate_to_mrtl(mc_, output, "breast_ca", design_$sim_prm, 0.01) # 0.05
-            absorb_dt(dt, tt, on = c("year", "age", "sex", "qimd"))
-            # it doesn't matter that I get breast_ca fatality for men
-            # there is no breast_ca incidence for men anyway
-
-            # second run with fatalities
-            output <- list()
-            output <-
-              gen_output("", design_$sim_prm, lags_mc, dt, output)
-            invisible(lapply(output, setDT))
-            output <- rbindlist(output, idcol = "scenario")
-
-            absorb_dt(dt, output, on = c("year", "pid"))
-            rm(output, tt, tbl)
-
-            dt[, ncc := clamp(
-              ncc - (chd_prvl > 0) - (stroke_prvl > 0) -
-                (poststroke_dementia_prvl > 0) -
-                (htn_prvl > 0) - (t2dm_prvl > 0) - (af_prvl > 0) -
-                (copd_prvl > 0) - (lung_ca_prvl > 0) -
-                (colon_ca_prvl > 0) -
-                (breast_ca_prvl > 0),
-              0L,
-              10L
-            )]
-            # to be added back in the qaly fn. Otherwise when I prevent disease the
-            # ncc does not decrease.
-
-            dt[, pid_mrk := mk_new_simulant_markers(pid)] # Necessary because of pruning above
-
-            dt[, dead := identify_longdeads(all_cause_mrtl, pid_mrk)] # do not delete them yet
-            dt[, `:=` (scenario = NULL)]
-
-            # del rn as they are reproducible
-            nam <- grep("^rn_", names(dt), value = TRUE)
-            dt[, (nam) := NULL]
-
           }
+          # it doesn't matter that I get breast_ca fatality for men
+          # there is no breast_ca incidence for men anyway
+
+          # second run with fatalities
+          output <- list()
+          output <- gen_output("", design_$sim_prm, lags_mc, dt, output)
+          invisible(lapply(output, setDT))
+          output <- rbindlist(output, idcol = "scenario")
+
+          absorb_dt(dt, output, on = c("year", "pid"))
+          rm(output, tt, tbl)
+
+          dt[, ncc := clamp(
+            ncc - (chd_prvl > 0) - (stroke_prvl > 0) -
+              (poststroke_dementia_prvl > 0) -
+              (htn_prvl > 0) - (t2dm_prvl > 0) - (af_prvl > 0) -
+              (copd_prvl > 0) - (lung_ca_prvl > 0) -
+              (colon_ca_prvl > 0) -
+              (breast_ca_prvl > 0),
+            0L,
+            10L
+          )]
+          # to be added back in the qaly fn. Otherwise when I prevent disease the
+          # ncc does not decrease.
+
+          dt[, pid_mrk := mk_new_simulant_markers(pid)] # Necessary because of pruning above
+
+          dt[, dead := identify_longdeads(all_cause_mrtl, pid_mrk)] # do not delete them yet
+          dt[, `:=` (scenario = NULL)]
+
+          # del rn as they are reproducible
+          nam <- grep("^rn_", names(dt), value = TRUE)
+          dt[, (nam) := NULL]
+
 
 
 
           # Write to disk ----
+          message("Write to disk")
+
           setkey(dt, pid, year) # Just in case
           write_fst(dt,
                     filename_$synthpop,

@@ -140,7 +140,7 @@ run_simulation <- function(parameters, iteration_n) {
     for (i in seq_along(i.list)) {
       i.vec <- i.list[[i]]
       result.list[i.vec] <- {
-        if (Sys.info()[1] == "Windows") {
+        if (Sys.info()["sysname"] == "Windows") {
           cl <- makeCluster(maxjobs) # used for clustering. Windows compatible
           registerDoParallel(cl)
         } else {
@@ -205,7 +205,7 @@ run_simulation <- function(parameters, iteration_n) {
   for (i in seq_along(i.list)) {
     i.vec <- i.list[[i]]
     result.list[i.vec] <- {
-      if (Sys.info()[1] == "Windows") {
+      if (Sys.info()["sysname"] == "Windows") {
         cl <- makeCluster(maxjobs) # used for clustering. Windows compatible
         registerDoParallel(cl)
       } else {
