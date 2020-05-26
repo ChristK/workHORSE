@@ -31,7 +31,6 @@ uncertainty_space <- 1.2
 library(data.table)
 library(fst)
 library(future.apply)
-library(SimJoint)
 library(dqrng)
 library(rriskDistributions)
 if (!require(workHORSEmisc)) {
