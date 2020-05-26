@@ -38,8 +38,8 @@ if (!require(workHORSEmisc)) {
   library(workHORSEmisc)
 }
 
-dependencies(c("Rcpp", "dqrng", "fst", "qs", "gamlss.dist", "future", "future.apply",
-               "SimJoint", "ggplot2", "data.table"))
+dependencies(c("Rcpp", "dqrng", "fst", "qs", "gamlss.dist", "future",
+               "future.apply", "ggplot2", "data.table"))
 options(future.fork.enable = TRUE) # enable fork in Rstudio
 plan(multiprocess, workers = n_cpu)
 
