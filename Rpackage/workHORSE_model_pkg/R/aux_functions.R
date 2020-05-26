@@ -563,87 +563,6 @@ generate_pop_adj_for_mrtl <- function(mc, dt, design, update_dt = FALSE) {
 #
 # dt[is.na(pops_adj) & between(year, design$init_year, design$init_year + design$sim_horizon) & between(age, design$ageL, design$ageH), .N]
 
-#' @export
-simulate_fatality <-
-  function(mc, dt, design, disease, prvl_constr = 2) {
-    # To calculate fatality based on mortality projections I need to have an estimate of
-    # disease prevalence by year. Then fatality rate = qx rate / prev rate
-    # To estimate prevalence I need to run a macrosimulation. This is what I do below
-    tt <- generate_pop_adj_for_mrtl(mc = mc, dt, design)
-    absorb_dt(tt, get_lifetable_all(mc = mc, disease, design, "qx")) # disease mortality
-    absorb_dt(tt,
-              get_disease_epi_mc(mc = mc, disease, "p", "v", design$stochastic)[, year := design$init_year])
-    colnam <- paste0("prb_", disease, "_inc")
-    setnames(dt, colnam, "V1___")
-    ttt <-
-      dt[, .(incd = sum(V1___) / .N), # No need for N_adj for mortality
-         keyby = .(year, age, sex, qimd)]
-    setnames(dt, "V1___", colnam)
-    absorb_dt(tt, ttt)
-
-    # Estimate N_adj as pop adjustment for all non-disease
-    # mortl rather than all mrtl
-    tt[, N_adj := N_adj + N * qx_mc]
-
-    # With the method below very low or even -ve prevalence is produced.
-    # I will constrain prevalence to 1/2 of the observed in init_year.
-
-    ttt <- tt[year == design$init_year]
-    # With the method below very low or even -ve prevalence is produced.
-    # I will constrain prevalence between 1/2 and *2 of the observed in init_year. If this
-    # limit is reached then I will adjust qx_mc
-    constrain <-
-      ttt[, .(
-        age,
-        sex,
-        qimd,
-        prvl_limL = prevalence * 1 / prvl_constr,
-        prvl_limU = clamp(prevalence * prvl_constr)
-      )]
-
-    # this method does not work for age == 30. Hence I will calculate the
-    # ratio of prevalence between age 30 and 31 for init_year and I will
-    # apply it in all concecutive years
-    ttt30 <-
-      ttt[age == design$ageL, .(age, sex, qimd, prvl30 = prevalence)]
-    ttt31 <-
-      ttt[age == design$ageL + 1L, .(sex, qimd, prvl31 = prevalence)]
-    absorb_dt(ttt30, ttt31)
-    ttt30[, `:=` (
-      prvl30_ratio = prvl30 / prvl31,
-      age = NULL,
-      prvl30 = NULL,
-      prvl31 = NULL
-    )]
-
-    for (i in (seq_along(unique(tt$year)) - 1L)) {
-      ttt <- tt[year == design$init_year + i]
-      ttt[, cases := N_adj * (prevalence + incd - qx_mc)]
-      ttt[, `:=`(year = year + 1L, age = age + 1L)] # move to next year
-      ttt31 <-
-        ttt[age == design$ageL + 1L, .(sex, qimd, prevalence)]
-      ttt31[ttt30, on = c("sex", "qimd"), `:=` (prevalence = prevalence * i.prvl30_ratio,
-                                                age = design$ageL)]
-      ttt[age == design$ageH + 1L, age := design$ageL]
-      suppressMessages(absorb_dt(ttt, ttt31, on = c("age", "sex", "qimd")))
-      tt[ttt, on = c("year", "age", "sex", "qimd"), prevalence := cases / N_adj]
-      # check constrain
-      ttt <-
-        tt[year == design$init_year + i + 1L, .(year, age, sex, qimd, prevalence)]
-      if (ttt[constrain, on = .NATURAL,][prevalence < prvl_limL, .N] > 0) {
-        ttt[constrain, on = .NATURAL, prevalence := fifelse(prevalence < i.prvl_limL,
-                                                            i.prvl_limL, prevalence)]
-        suppressMessages(absorb_dt(tt, ttt, c("year", "age", "sex", "qimd")))
-      }
-      if (ttt[constrain, on = .NATURAL,][prevalence > prvl_limU, .N] > 0) {
-        ttt[constrain, on = .NATURAL, prevalence := fifelse(prevalence > i.prvl_limU,
-                                                            i.prvl_limU, prevalence)]
-        suppressMessages(absorb_dt(tt, ttt, c("year", "age", "sex", "qimd")))
-      }
-    }
-    tt[, fatality := clamp(qx_mc / clamp(prevalence))]
-    tt[, .(year, age, sex, qimd, fatality)]
-  }
 
 #' @export
 generate_rns <- function(mc, dt, colnams) {
@@ -668,31 +587,32 @@ generate_corr_unifs <- function(n, M) {
   # from http://comisef.wikidot.com/tutorial:correlateduniformvariates
   stopifnot(is.matrix(M))
   # Check that matrix is semi-positive definite
-  stopifnot(min(eigen(M)$values) >= 0)
+  # NOTE next line crashes frequently!! see
+  # https://stat.ethz.ch/pipermail/r-help/2006-March/102703.html for a
+  # workaround and https://stat.ethz.ch/pipermail/r-help/2006-March/102647.html
+  # for some explanation
+  # stopifnot(min(eigen(M, only.values = TRUE)$values) >= 0)
 
   M_original <- M
 
 
-  X <- matrix(dqrnorm(n * dim(M)[[2]]), n)
-  colnames(X) <- colnames(M)
-
   # adjust correlations for uniforms
-  for (i in 1:dim(M)[[2]]){
-    for (j in 1:dim(M)[[2]]){
-      if (i != j){
+  for (i in seq_len(dim(M)[[1L]])) {
+    for (j in seq_len(dim(M)[[2L]])) {
+      if (i != j) {
         M[i, j] <- 2 * sin(pi * M[i, j] / 6)
         M[j, i] <- 2 * sin(pi * M[j, i] / 6)
       }
     }
   }
 
-  # induce correlation, check correlations
-  C <- chol(M)
-  Y <- X %*% C
-  cor(Y)
+  X <- matrix(dqrnorm(n * dim(M)[[2]]), n)
+  colnames(X) <- colnames(M)
 
-  Y <- pnorm(Y)
-  message(paste0("Mean square error is: ", signif(sum((cor(Y) - M_original) ^ 2), 3)))
+  # induce correlation, check correlations
+  Y <- pnorm(X %*% chol(M))
+
+  # message(paste0("Mean square error is: ", signif(sum((cor(Y) - M_original) ^ 2), 3)))
   return(Y)
 }
 
@@ -1562,59 +1482,142 @@ sim_init_prvl <- function(mc, disease, design = design, dt = POP) {
   dt[, (col_nam) := NULL]
 }
 
+#' @export
+simulate_fatality <-
+  function(mc_, dt, disease_, design) {
+    # To calculate fatality based on mortality projections I need to have an
+    # estimate of disease prevalence by year. Then fatality rate = qx rate /
+    # prev rate To estimate prevalence I need to run a macrosimulation as below.
+    disease_prvl <- paste0(disease_, "_prvl")
+    # Only keep prevalent cases
+    dt_prvl <- dt[, .SD,
+                  .SDcols = c("pid", "year", "age", "sex", "qimd", disease_prvl)]
+    setnames(dt_prvl, disease_prvl, "disease_prvl")
+    dt_prvl[, pop := as.numeric(.N), by = .(age, sex, qimd, year)]
+    dt_prvl <- dt_prvl[disease_prvl > 0L]
+    dt_prvl[, disease_prvl := 1L] # form now on all prvl is 1L
+
+    mrtl <- get_lifetable_all(mc_, disease_, design, "mx") # mx is not a typo
+
+    all_mrtl <- get_lifetable_all(mc_, "allcause", design, "mx")
+    mrtl[all_mrtl, on = .(year, age, sex, qimd),
+         qx_mc_bgr := clamp(i.qx_mc - qx_mc)]
+    absorb_dt(dt_prvl, mrtl)
+    rm(mrtl, all_mrtl, disease_prvl)
+
+    # clone it to minimise rounding error from low prevalence
+    mltp_factor <- 10L
+    dt_prvl <- clone_dt(dt_prvl, mltp_factor )
+    dt_prvl[, `:=`(pop = pop * mltp_factor)]
+    # update pid to eradicate duplicates
+    setkey(dt_prvl, .id, pid, year)
+    dt_prvl[, `:=`(pid = rleidv(.SD, cols = c(".id", "pid")), .id = NULL)]
+    setkey(dt_prvl, year, pid)
+
+    # start loop over years
+    hlp <- CJ(age = design$ageL:design$ageH,
+              sex = unique(dt_prvl$sex),
+              qimd = unique(dt_prvl$qimd))
+    setkey(hlp, qimd, sex, age)
+    for (yr in design$init_year:max(dt$year)) {
+      dt_prvl[year == yr, prv_pop := sum(disease_prvl), by = .(age, sex, qimd)]
+      # sample simulants to kill
+      # use rbinom. sample because sample only calculates int (truncation error)
+      pid_to_kill <-
+        dt_prvl[year == yr & disease_prvl == 1L,
+                .(pid = pid * rbinom(.N, 1L, clamp(qx_mc_bgr + qx_mc * pop /
+                                                     prv_pop)))
+        ][pid > 0, pid]
+
+      # remove them from the prevalence of following years, so they can't be
+      # selected
+      dt_prvl[year > yr & pid %in% pid_to_kill, disease_prvl := 0L]
+
+      # remove deads from the total population (and interpolate NA)
+      tt <- dt_prvl[year == yr, .(deads = first(pop * (qx_mc + qx_mc_bgr))), keyby = .(sex, qimd, age)]
+      ttt <- copy(hlp)
+      absorb_dt(ttt, tt)
+      rm(tt)
+      ttt[, `:=`(deads2 = nafill(deads, "locf"), deads3 = nafill(deads, "nocb")), by = .(sex, qimd)]
+      ttt[is.na(deads), deads := (deads2 + deads3)/2]
+      ttt[is.na(deads) & is.na(deads2), deads := deads3]
+      ttt[is.na(deads) & is.na(deads3), deads := deads2]
+      ttt[,`:=`(age = age + 1L, year = yr + 1L, deads2 = NULL, deads3 = NULL)]
+      dt_prvl[ttt, on = .NATURAL, pop := pop - i.deads]
+    }
+
+    dt_prvl <- dt_prvl[, .(qx_mc = first(qx_mc),
+                           pop = first(pop),
+                           prv_pop = first(prv_pop)),
+                       keyby = .(year, age, sex, qimd)]
+    dt_prvl[, ftlt := clamp(qx_mc * pop / prv_pop)] # this is the fatality rate
+    out <- CJ(
+      age = design$ageL:design$ageH,
+      sex = dt_prvl$sex,
+      qimd = dt_prvl$qimd,
+      year = dt_prvl$year,
+      unique = TRUE
+    )
+    setkey(out, qimd, sex, year, age)
+    absorb_dt(out, dt_prvl)
+    # interpolate
+    out[, `:=`(ftlt2 = nafill(ftlt, "locf"), ftlt3 = nafill(ftlt, "nocb")), by = .(sex, qimd, year)]
+    out[is.na(ftlt), ftlt := (ftlt2 + ftlt3)/2]
+    out[is.na(ftlt) & is.na(ftlt2), ftlt := ftlt3]
+    out[is.na(ftlt) & is.na(ftlt3), ftlt := ftlt2]
+
+    # qplot(age, ftlt, col = year, data = out[sex == "men" & qimd == "2"])
+
+
+    setnames(out, "ftlt", (paste0("prb_", disease_, "_mrtl")))
+    out[, `:=`(qx_mc = NULL, pop = NULL, prv_pop = NULL,
+               ftlt2 = NULL, ftlt3 = NULL)]
+    out
+  }
+
 # Calibrate mortality
 # The first run only uses nonmodelled mortality and all other mortalities are set to 0
 # Then calculate expected disease mortality based on population size by age sex qimd
 #' @export
-calibrate_to_mrtl <- function(mc_, dt, disease_, design, calibration_factor = 0) {
-  # for disease mortality
-  disease_prvl <- paste0(disease_, "_prvl")
-  mrtl <- get_lifetable_all(mc_, disease_, design, "qx")
+#'
+calibrate_to_mrtl <- function(mc_, dt, disease_, design) {
+  nam <- grep("_prvl$|_mrtl$", names(dt), value = TRUE)
+  dt <- dt[between(age, design$ageL, design$ageH) &
+             year >= design$init_year, .SD, .SDcols = c("pid", "year", "age", "sex", "qimd", nam)]
+  setkey(dt, pid, year)
+  dt[, pid_mrk := mk_new_simulant_markers(pid)] # Necessary because of pruning above
 
-  # FIX for prvl cancer >
-  # if (grepl("_ca$", disease_)) {
-  #
-  #
-  #
-  #   # dt[get(disease_prvl) > design$cancer_cure, (disease_prvl) := 0L]
-  all_mrtl <- get_lifetable_all(mc_, "nonmodelled", design, "qx")
-  mrtl[all_mrtl, on = .(year, age, sex, qimd), qx_mc := clamp(qx_mc + i.qx_mc * calibration_factor, 0, Inf)]
-  # }
+  dt[, dead := identify_longdeads(all_cause_mrtl, pid_mrk)]
+  dt <- dt[(!dead), .SD, .SDcols = !c("dead", "pid_mrk")]
 
-  absorb_dt(dt, mrtl)
+  out <- CJ(
+    age = design$ageL:design$ageH,
+    sex = dt$sex,
+    qimd = dt$qimd,
+    year = dt$year,
+    all_cause_mrtl = dt$all_cause_mrtl,
+    unique = TRUE
+  )
 
-  # Only keep prevalent cases
-  dt_prvl <- dt[get(disease_prvl) > 0L, ]
-  # clone it to minimise rounding error from low prevalence
-  mltp_factor <- 10L
-  dt_prvl <- clone_dt(dt_prvl, mltp_factor )
-  # update paid to eradicate duplicates
-  setkey(dt_prvl, .id, pid, year)
+  absorb_dt(out,  dt[, .(pop = .N), keyby = .(year, age, sex, qimd)])
+  absorb_dt(out,  dt[, .(deads = .N), keyby = .(year, age, sex, qimd, all_cause_mrtl)])
 
-  dt_prvl[, pid := rleidv(.SD, cols = c(".id", "pid"))]
+  setnafill(out, "c", 0L, cols = c("pop", "deads"))
 
-  # start loop over years
-  for (yr in design$init_year:max(dt$year)) {
-    # sample simulants to kill
-    pid_to_kill <- dt_prvl[year == yr & (disease_prvl) > 0L,
-                           .(pid = pid * rbinom(.N, 1L, qx_mc)),
-                           keyby = .(age, sex, qimd)][pid > 0, pid]
-    # I use rbinom and not sample because sample only uses integer
-    # remove them from the prevalence of following years, so they can't be selected
-    dt_prvl[year > yr & pid %in% pid_to_kill, (disease_prvl) := 0L]
+  disease_list = c("nonmodelled", # NOTE order is important!
+                   "chd",
+                   "stroke",
+                   "copd",
+                   "lung_ca",
+                   "colon_ca",
+                   "breast_ca")
+
+  for (disease_nam in disease_list) {
+    mrtl <- get_lifetable_all(mc_, disease_nam, design, "mx") # mx is not a typo
+    mrtl[, all_cause_mrtl := which(disease_list == disease_nam)]
+    # setnames(mrtl, "qx_mc", paste0("qx_mc_"))
+    absorb_dt(out, mrtl, on = c("year", "age", "sex", "qimd"))
+
   }
 
-  prvl <- dt_prvl[get(disease_prvl) > 0L, .(prvl = .N / mltp_factor), keyby = .(year, age, sex, qimd)]
-  absorb_dt(prvl, mrtl)
-  # tt_pop_size <- generate_pop_adj_for_mrtl(mc_, dt, design)
-  tt_pop_size <- dt[, .N, by = .(year, age, sex, qimd)]
-  absorb_dt(prvl, tt_pop_size)
-  prvl[, ftlt := clamp(qx_mc * N / prvl)]
-  prvl[is.na(ftlt), ftlt := 0] # When 0/0
-  prvl[, c("qx_mc", "prvl", "N") := NULL]
-  dt[, c("qx_mc") := NULL]
-  setnames(prvl, "ftlt", paste0("prb_", disease_, "_mrtl"))
-  prvl
 }
-
-

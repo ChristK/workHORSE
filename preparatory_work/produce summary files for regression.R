@@ -1948,10 +1948,10 @@ salt.rq <- rq(I(salt24h^(1/3)) ~ (I(log(year + 14)) + poly(log(age), 3) + sex + 
 
 # produce a model for each version of population. NOTE year+16 used. steeper decline than +14
 # but works for init.year == 2006 to avoid log(0) (-5 -10(cancer.lag))
-if (Sys.info()[1] == "Linux") {
+if (Sys.info()["sysname"] == "Linux") {
   registerDoParallel(6L) # used for forking. only linux
 }
-if (Sys.info()[1] == "Windows") {
+if (Sys.info()["sysname"] == "Windows") {
   cl <- makeCluster(6) # used for clustering. win compatible
   registerDoParallel(cl)
 }

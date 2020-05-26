@@ -24,16 +24,10 @@ setwd("~/My Models/workHORSE/")
 XPS <- FALSE
 delete_previous_results <- TRUE # any change to workHORSEmisc deletes output
 
-clb_factors <- list(
-  "chd"       = 0.0,#0.01,
-  "stroke"    = 0.0,#0.01,
-  "copd"      = 0.0,#0.01,
-  "lung_ca"   = 0.0,#0.95,
-  "colon_ca"  = 0.0,#0.02,
-  "breast_ca" = 0.0#0.01
-)
+# necessary for Rscript
+.libPaths("~/R/x86_64-pc-linux-gnu-library/4.0")
 
-update_diseases <- function(sp, clb_factors) {
+update_diseases <- function(sp) {
   # Recalculates the diseases epidemiology.
   # Useful to update diseases wnen the disease models change, without regenerate
   # the full population
@@ -66,28 +60,10 @@ update_diseases <- function(sp, clb_factors) {
     rbindlist(output)[between(age, sp$get_design()$sim_prm$ageL, sp$get_design()$sim_prm$ageH) &
                         year >= sp$get_design()$sim_prm$init_year]
 
-
-  tt <-
-    calibrate_to_mrtl(sp$mc, output, "chd", sp$get_design()$sim_prm, clb_factors$chd)
-  # tt[, sum(prb_chd_mrtl)]
-  absorb_dt(sp$pop, tt, on = c("year", "age", "sex", "qimd"))
-  tt <-
-    calibrate_to_mrtl(sp$mc, output, "stroke", sp$get_design()$sim_prm, clb_factors$stroke)
-  absorb_dt(sp$pop, tt, on = c("year", "age", "sex", "qimd"))
-  tt <-
-    calibrate_to_mrtl(sp$mc, output, "copd", sp$get_design()$sim_prm, clb_factors$copd)
-  absorb_dt(sp$pop, tt, on = c("year", "age", "sex", "qimd"))
-  tt <-
-    calibrate_to_mrtl(sp$mc, output, "lung_ca", sp$get_design()$sim_prm, clb_factors$lung_ca) # 0.8
-  absorb_dt(sp$pop, tt, on = c("year", "age", "sex", "qimd"))
-  tt <-
-    calibrate_to_mrtl(sp$mc, output, "colon_ca", sp$get_design()$sim_prm, clb_factors$colon_ca)
-  absorb_dt(sp$pop, tt, on = c("year", "age", "sex", "qimd"))
-  tt <-
-    calibrate_to_mrtl(sp$mc, output, "breast_ca", sp$get_design()$sim_prm, clb_factors$breast_ca) # 0.05
-  absorb_dt(sp$pop, tt, on = c("year", "age", "sex", "qimd"))
-  # it doesn't matter that I get breast_ca fatality for men
-  # there is no breast_ca incidence for men anyway
+  for (disease_nam in c("chd", "stroke", "copd", "lung_ca", "colon_ca", "breast_ca")) {
+    tt <- simulate_fatality(sp$mc, output, disease_nam, sp$get_design()$sim_prm)
+    absorb_dt(sp$pop, tt, on = c("year", "age", "sex", "qimd"))
+  }
 
   # second run with fatalities
   output <- list()
@@ -377,16 +353,16 @@ if (all(file.exists(output_dir(filenames)))) {
 
 } else {
   # create (new) synthpops
-  POP <-
-    SynthPop$
-    new(0, design, "./test")$
-    # delete_synthpop(to_delete)$
-    # write_synthpop(1:design$sim_prm$iteration_n)$
-    count_synthpop()
+  # POP <-
+  #   SynthPop$
+  #   new(0, design, "./test")$
+  # delete_synthpop(to_delete)$
+  # write_synthpop(1:design$sim_prm$iteration_n)$
+  # count_synthpop()
 
 
 
-  if (Sys.info()[1] == "Windows") {
+  if (Sys.info()["sysname"] == "Windows") {
     cl <-
       makeCluster(design$sim_prm$clusternumber) # used for clustering. Windows compatible
     registerDoParallel(cl)
@@ -407,21 +383,22 @@ if (all(file.exists(output_dir(filenames)))) {
     {
       POP <- SynthPop$new(mc_iter, design, synthpop_dir())
 
-      POP$pop <- POP[dead == FALSE, ]
-      update_diseases(POP, clb_factors)
+      update_diseases(POP)
+      nam <- grep("^rn_", names(POP$pop), value = TRUE)
+      POP$pop[, (nam) := NULL]
+      POP$pop <- POP[!(dead), ]
 
-      if (XPS)
-        export_xps(mc_iter, POP$pop, TRUE, "val_xps_output_post.csv")
+      if (XPS) export_xps(mc_iter, POP$pop, TRUE, "val_xps_output_post.csv")
       export_incd(mc_iter, POP$pop, TRUE)
       export_mrtl(mc_iter, POP$pop, TRUE)
 
       export_all_incd(mc_iter, POP$pop, TRUE)
       export_all_prvl(mc_iter, POP$pop, TRUE)
+      rm(POP)
       NULL
     }
 
-  if (exists("cl"))
-    stopCluster(cl)
+  if (exists("cl")) stopCluster(cl)
 
   if (XPS)
     out_xps  <- fread(output_dir(filenames[[3]]))
