@@ -26,7 +26,7 @@ init_prevalence <- function(mc, dt, design, timing = TRUE) {
   if (timing) ptm <- proc.time()
 
   # Generate chd prevalence and duration (BI, NBI) ----
-  sim_init_prvl(mc, "chd", design, dt)
+  simulate_init_prvl(mc, "chd", design, dt)
 
   tbl <-
     read_fst("./lifecourse_models/chd_duration_table.fst",
@@ -44,7 +44,7 @@ init_prevalence <- function(mc, dt, design, timing = TRUE) {
   # dt[, chd_prvl:=NULL]
 
   # Generate stroke prevalence and duration (BI, PIG) ----
-  sim_init_prvl(mc, "stroke", design, dt)
+  simulate_init_prvl(mc, "stroke", design, dt)
 
   tbl <-
     read_fst("./lifecourse_models/stroke_duration_table.fst",
@@ -69,7 +69,7 @@ init_prevalence <- function(mc, dt, design, timing = TRUE) {
   dt[, poststroke_dementia_prb := NULL]
 
   # Generate copd prevalence and duration (BI, GEOM) ----
-  sim_init_prvl(mc, "copd", design, dt)
+  simulate_init_prvl(mc, "copd", design, dt)
 
   tbl <-
     read_fst("./lifecourse_models/copd_duration_table.fst",
@@ -84,7 +84,7 @@ init_prevalence <- function(mc, dt, design, timing = TRUE) {
   dt[, copd_prvl := carry_backward(copd_prvl, pid_mrk)] # Not strictly necessary
 
   # Generate breast_cancer prevalence and duration (BI, PO) ----
-  sim_init_prvl(mc, "breast_ca", design, dt)
+  simulate_init_prvl(mc, "breast_ca", design, dt)
 
   # duration
   tbl <- get_disease_epi_mc(mc, "breast_ca", "d", "m", FALSE)
@@ -99,7 +99,7 @@ init_prevalence <- function(mc, dt, design, timing = TRUE) {
   dt[, breast_ca_prvl := carry_backward(breast_ca_prvl, pid_mrk)] # Not strictly necessary
 
   # Generate colon_cancer prevalence and duration (BI, PO) ----
-  sim_init_prvl(mc, "colon_ca", design, dt)
+  simulate_init_prvl(mc, "colon_ca", design, dt)
 
   # duration
   tbl <- get_disease_epi_mc(mc, "colon_ca", "d", "m", FALSE)
@@ -115,7 +115,7 @@ init_prevalence <- function(mc, dt, design, timing = TRUE) {
 
 
   # Generate lung_cancer prevalence and duration (BI, PO) ----
-  sim_init_prvl(mc, "lung_ca", design, dt)
+  simulate_init_prvl(mc, "lung_ca", design, dt)
 
   # duration
   tbl <- get_disease_epi_mc(mc, "lung_ca", "d", "m", FALSE)

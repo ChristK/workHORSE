@@ -1468,7 +1468,7 @@ export_all_prvl <- function(mc_, dt, write_to_disk = TRUE, filenam = "val_all_pr
 }
 
 #' @export
-sim_init_prvl <- function(mc, disease, design = design, dt = POP) {
+simulate_init_prvl <- function(mc, disease, design = design, dt = POP) {
   tbl <- get_disease_epi_mc(mc, disease, "p", "v", design$stochastic)
   incd <-  get_disease_epi_mc(mc, disease, "i", "v", design$stochastic)
   absorb_dt(tbl, incd)
