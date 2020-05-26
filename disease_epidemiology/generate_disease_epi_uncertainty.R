@@ -19,11 +19,11 @@
 ## to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 ## Boston, MA 02110-1301 USA.
 
-# Generate uncertainty (2e3 mc iterations)
-# asumming 97.5 precentile is up to 20% higher than the median for incid, prev, fatal
-# No uncertainty is assumed for disease duration
-# NOTE Currently we assume that uncertainty covaries for all disease, age, sex, qimd,
-# so when i.e. chd incid is low then lung ca inc is also low
+# Generate uncertainty (2e3 mc iterations) assuming 97.5 percentile is up to 20%
+# higher than the median for incid, prev, fatal No uncertainty is assumed for
+# disease duration NOTE Currently we assume that uncertainty covaries for all
+# disease, age, sex, qimd, so when i.e. chd incid is low then lung ca inc is
+# also low
 mc_max <- 2e3
 uncertainty_space <- 1.2
 
@@ -52,6 +52,19 @@ disease_epi <- fread("./disease_epidemiology/disease_epi.csv", stringsAsFactors 
                      select = c("age", "sex", "qimd", "disease", "out_incidence_rates",
                                 "out_prevalence_rates", "out_case_fatality_rates",
                                 "out_duration_years"))
+
+cm <- disease_epi[, cor(.SD), .SDcols = c("out_incidence_rates",
+                                    "out_prevalence_rates",
+                                    "out_case_fatality_rates")]
+# NOTE cor by disease doesn't make sense. Above is better.
+# cor_list <- list()
+# for (i in unique(disease_epi$disease)) {
+#   cor_list[[i]] <-
+#     disease_epi[disease == i, cor(.SD), .SDcols = c("out_incidence_rates",
+#                                                     "out_prevalence_rates",
+#                                                     "out_case_fatality_rates")]
+# }
+
 disease_epi <- melt(disease_epi, c("age", "sex", "qimd", "disease"), variable.name = "type")
 
 disease_epi[, disease := gsub(" ", "_", disease)]
@@ -99,11 +112,6 @@ SEED <- 8003283L # sample(1e7, 1)
 set.seed(SEED) # Current is to ensure reproducibility.
 dqset.seed(SEED)# Ensure that seed hasn't been used elsewher in the model
 
-
-# assume 0.6 correlation between prev and mort, 0.5 between incid and prev. 0.4 cor between incid and mort
-# 1, 2, 3 is incid, prev, mort respectively
-cm <- matrix(c(1, 0.5, 0.4, 0.5, 1, 0.6, 0.4, 0.6, 1), 3)
-# cm <- matrix(c(1, 0.1, 0.1, 0.1, 1, 0.1, 0.1, 0.1, 1), 3)
 
 colnames(cm) <- c("incd", "prvl", "mrtl")
 rownames(cm) <- c("incd", "prvl", "mrtl")
