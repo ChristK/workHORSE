@@ -633,7 +633,7 @@ for (i in seq_along(nam)) {
   })
 }
 
-# Incidence ---------------------------------------------------------------
+# Incidence ---------------------------------------
 # out_incd <- fread(output_dir(filenames[[1]]))
 
 nam <- grep("^cases_", names(out_incd), value = TRUE)
@@ -690,7 +690,7 @@ for (i in seq_along(nam)) {
   })
 }
 
-# Incidence (ALL) ---------------------------------------------------------------
+# Incidence (ALL) ------------------------------------
 out_incd <- fread(output_dir("val_all_incd_output.csv"))
 
 nam <- grep("^cases_", names(out_incd), value = TRUE)
@@ -742,7 +742,7 @@ for (i in seq_along(nam)) {
   })
 }
 
-# Prevalence (ALL) ------------------------------------------------------------
+# Prevalence (ALL) ------------------------------
 out_prvl <- fread(output_dir("val_all_prvl_output.csv"))
 
 nam <- grep("^cases_", names(out_prvl), value = TRUE)
