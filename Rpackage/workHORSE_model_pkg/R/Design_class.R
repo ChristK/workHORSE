@@ -85,7 +85,9 @@ Design <-
                   "output_dir"            ,
                   "cancer_cure"           ,
                   "validation"            ,
-                  "max_prvl_for_outputs"
+                  "max_prvl_for_outputs"  ,
+                  "n_primers"             ,
+                  "n_synthpop_aggregation"
                 ) %in% names(sim_prm),
 
                 any(sim_prm$clusternumber == 1L, sim_prm$n_cpus == 1L),

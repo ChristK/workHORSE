@@ -1496,12 +1496,15 @@ simulate_fatality <-
                   .SDcols = c("pid", "year", "age", "sex", "qimd", disease_prvl)]
     setnames(dt_prvl, disease_prvl, "disease_prvl")
     dt_prvl[, pop := as.numeric(.N), by = .(age, sex, qimd, year)]
-    dt_prvl <- dt_prvl[disease_prvl > 0L]
+    dt_prvl <- dt_prvl[disease_prvl > 0L, ]
+    # dt_prvl <- dt_prvl[between(disease_prvl, 1L,
+    #                            fifelse(grepl("_ca$", disease_),
+    #                                    design$cancer_cure, 100L))]
     dt_prvl[, disease_prvl := 1L] # form now on all prvl is 1L
 
-    mrtl <- get_lifetable_all(mc_, disease_, design, "mx") # mx is not a typo
+    mrtl <- get_lifetable_all(mc_, disease_, design, "qx") # mx is not a typo
 
-    all_mrtl <- get_lifetable_all(mc_, "allcause", design, "mx")
+    all_mrtl <- get_lifetable_all(mc_, "allcause", design, "qx")
     mrtl[all_mrtl, on = .(year, age, sex, qimd),
          qx_mc_bgr := clamp(i.qx_mc - qx_mc)]
     absorb_dt(dt_prvl, mrtl)
@@ -1577,49 +1580,3 @@ simulate_fatality <-
     out
   }
 
-# Calibrate mortality
-# The first run only uses nonmodelled mortality and all other mortalities are set to 0
-# Then calculate expected disease mortality based on population size by age sex qimd
-#' @export
-#'
-calibrate_to_mrtl <- function(mc_, dt, disease_, design) {
-  nam <- grep("_prvl$|_mrtl$", names(dt), value = TRUE)
-  dt <- dt[between(age, design$ageL, design$ageH) &
-             year >= design$init_year, .SD, .SDcols = c("pid", "year", "age", "sex", "qimd", nam)]
-  setkey(dt, pid, year)
-  dt[, pid_mrk := mk_new_simulant_markers(pid)] # Necessary because of pruning above
-
-  dt[, dead := identify_longdeads(all_cause_mrtl, pid_mrk)]
-  dt <- dt[(!dead), .SD, .SDcols = !c("dead", "pid_mrk")]
-
-  out <- CJ(
-    age = design$ageL:design$ageH,
-    sex = dt$sex,
-    qimd = dt$qimd,
-    year = dt$year,
-    all_cause_mrtl = dt$all_cause_mrtl,
-    unique = TRUE
-  )
-
-  absorb_dt(out,  dt[, .(pop = .N), keyby = .(year, age, sex, qimd)])
-  absorb_dt(out,  dt[, .(deads = .N), keyby = .(year, age, sex, qimd, all_cause_mrtl)])
-
-  setnafill(out, "c", 0L, cols = c("pop", "deads"))
-
-  disease_list = c("nonmodelled", # NOTE order is important!
-                   "chd",
-                   "stroke",
-                   "copd",
-                   "lung_ca",
-                   "colon_ca",
-                   "breast_ca")
-
-  for (disease_nam in disease_list) {
-    mrtl <- get_lifetable_all(mc_, disease_nam, design, "mx") # mx is not a typo
-    mrtl[, all_cause_mrtl := which(disease_list == disease_nam)]
-    # setnames(mrtl, "qx_mc", paste0("qx_mc_"))
-    absorb_dt(out, mrtl, on = c("year", "age", "sex", "qimd"))
-
-  }
-
-}
