@@ -27,74 +27,6 @@ delete_previous_results <- TRUE # any change to workHORSEmisc deletes output
 # necessary for Rscript
 .libPaths("~/R/x86_64-pc-linux-gnu-library/4.0")
 
-update_diseases <- function(sp) {
-  # Recalculates the diseases epidemiology.
-  # Useful to update diseases wnen the disease models change, without regenerate
-  # the full population
-
-  setkey(sp$pop, pid, year)
-  lags_mc <-
-    get_lag_mc(sp$mc, sp$get_design()$sim_prm)
-  max_lag_mc <- max(unlist(lags_mc))
-
-  sp$pop[, ncc := clamp(
-    ncc + (chd_prvl > 0) + (stroke_prvl > 0) +
-      (poststroke_dementia_prvl > 0) +
-      (htn_prvl > 0) + (t2dm_prvl > 0) + (af_prvl > 0) +
-      (copd_prvl > 0) + (lung_ca_prvl > 0) +
-      (colon_ca_prvl > 0) +
-      (breast_ca_prvl > 0),
-    0L,
-    10L
-  )]
-
-  sp[, c("prb_poststroke_dementia_incd_nostroke",
-         "breast_ca_prvl", "colon_ca_prvl", "lung_ca_prvl") := NULL]
-  finalise_synthpop(sp$mc, sp$pop, sp$get_design()$sim_prm, lags_mc)
-
-  output <- list()
-  output <-
-    gen_output("", sp$get_design()$sim_prm, lags_mc, sp$pop, output, TRUE)
-  invisible(lapply(output, setDT))
-  output <-
-    rbindlist(output)[between(age, sp$get_design()$sim_prm$ageL, sp$get_design()$sim_prm$ageH) &
-                        year >= sp$get_design()$sim_prm$init_year]
-
-  for (disease_nam in c("chd", "stroke", "copd", "lung_ca", "colon_ca", "breast_ca")) {
-    tt <- simulate_fatality(sp$mc, output, disease_nam, sp$get_design()$sim_prm)
-    absorb_dt(sp$pop, tt, on = c("year", "age", "sex", "qimd"))
-  }
-
-  # second run with fatalities
-  output <- list()
-  output <-
-    gen_output("", sp$get_design()$sim_prm, lags_mc, sp$pop, output)
-  invisible(lapply(output, setDT))
-  output <- rbindlist(output, idcol = "scenario")
-
-  absorb_dt(sp$pop, output, on = c("year", "pid"))
-  rm(output, tt)
-
-  sp$pop[, ncc := clamp(
-    ncc - (chd_prvl > 0) - (stroke_prvl > 0) -
-      (poststroke_dementia_prvl > 0) -
-      (htn_prvl > 0) - (t2dm_prvl > 0) - (af_prvl > 0) -
-      (copd_prvl > 0) - (lung_ca_prvl > 0) -
-      (colon_ca_prvl > 0) -
-      (breast_ca_prvl > 0),
-    0L,
-    10L
-  )]
-  # to be added back in the qaly fn. Otherwise when I prevent disease the
-  # ncc does not decrease.
-
-  sp$pop[, pid_mrk := mk_new_simulant_markers(pid)] # Necessary because of pruning above
-
-  sp$pop[, dead := identify_longdeads(all_cause_mrtl, pid_mrk)] # do not delete them yet
-  sp$pop[, `:=` (scenario = NULL)]
-
-}
-
 output_dir <-
   function(x = character(0))
     paste0("./validation/plot_trends/", x)
@@ -154,7 +86,7 @@ dependencies(
     "gamlss.dist",
     # For distr in prevalence.R
     "dqrng",
-    "qs",
+    # "qs",
     "fst",
     "wrswoR",
     "ggplot2",
@@ -352,11 +284,10 @@ if (all(file.exists(output_dir(filenames)))) {
   out_mrtl <- fread(output_dir(filenames[[2]]))
 
 } else {
-  # create (new) synthpops
-  # POP <-
-  #   SynthPop$
-  #   new(0, design, "./test")$
-  # delete_synthpop(to_delete)$
+  # delete old
+    SynthPop$
+    new(0, design, "./test")$
+  delete_synthpop(to_delete) #$
   # write_synthpop(1:design$sim_prm$iteration_n)$
   # count_synthpop()
 
@@ -383,7 +314,6 @@ if (all(file.exists(output_dir(filenames)))) {
     {
       POP <- SynthPop$new(mc_iter, design, synthpop_dir())
 
-      update_diseases(POP)
       nam <- grep("^rn_", names(POP$pop), value = TRUE)
       POP$pop[, (nam) := NULL]
       POP$pop <- POP[!(dead), ]

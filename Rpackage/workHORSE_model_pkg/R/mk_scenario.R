@@ -252,13 +252,6 @@ mk_scenario_mortality_calib <- function(scenario_name, design, lags_mc) {
         "incidence" = mk_incidence_type3_specific_column("breast_ca", scenario_suffix_for_pop,
                                                          "t2dm", lags_mc$cancer_lag, "breast_ca_incd_t2dm_mltp", design$kismet),
         "diagnosis" = mk_diagnosis_type1("breast_ca", scenario_suffix_for_pop, design$kismet)
-      ),
-      "nonmodelled" = list(
-        # Mortality from non-modelled causes.
-        # Everybody suffers from being alive until they're dead.
-        # This approach means we can use the normal disease model for "everything else" rather than custom code.
-        "incidence" = list("type" = "Universal"),
-        "mortality" = mk_mortality_type3_specific_column("nonmodelled", scenario_suffix_for_pop, 1L, "t2dm", lags_mc$nonmodelled_lag, "nonmodelled_mrtl_t2dm_mltp", design$kismet)
       )
     )
   )
