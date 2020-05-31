@@ -33,7 +33,7 @@ output_dir <-
 
 synthpop_dir <-
   function(x = character(0))
-    paste0("./test/", x)
+    paste0("/mnt/storage_slow/synthpop/validation", x)
 
 if (delete_previous_results)
   file.remove(list.files(output_dir(), full.names = TRUE, recursive = TRUE))
@@ -286,7 +286,7 @@ if (all(file.exists(output_dir(filenames)))) {
 } else {
   # delete old
     SynthPop$
-    new(0, design, "./test")$
+    new(0, design, synthpop_dir())$
   delete_synthpop(to_delete) #$
   # write_synthpop(1:design$sim_prm$iteration_n)$
   # count_synthpop()
@@ -298,7 +298,6 @@ if (all(file.exists(output_dir(filenames)))) {
       makeCluster(design$sim_prm$clusternumber) # used for clustering. Windows compatible
     registerDoParallel(cl)
   } else {
-    # cl <- makeCluster(design$sim_prm$clusternumber/2L, type = "FORK")
     registerDoParallel(design$sim_prm$clusternumber)  # used for forking. Only Linux/OSX compatible
   }
 
@@ -334,6 +333,15 @@ if (all(file.exists(output_dir(filenames)))) {
     out_xps  <- fread(output_dir(filenames[[3]]))
   out_incd <- fread(output_dir(filenames[[1]]))
   out_mrtl <- fread(output_dir(filenames[[2]]))
+
+  if (design$sim_prm$n_synthpop_aggregation > 1L) {
+  out_incd[, mc := ceiling(mc/design$sim_prm$n_synthpop_aggregation)]
+  out_incd <- out_incd[, lapply(.SD, sum), keyby = .(year, sex, agegrp20, qimd, mc)]
+  fwrite(out_incd, output_dir(filenames[[1]]))
+  out_mrtl[, mc := ceiling(mc/design$sim_prm$n_synthpop_aggregation)]
+  out_mrtl <- out_mrtl[, lapply(.SD, sum), keyby = .(year, sex, agegrp20, qimd, mc)]
+  fwrite(out_mrtl, output_dir(filenames[[2]]))
+  }
 }
 
 

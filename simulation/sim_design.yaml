@@ -1,6 +1,8 @@
 iteration_n: 20
 clusternumber: 20 # explicit parallelisation
 n_cpus: 1 # implicit parallelisation
+n_primers: 10
+n_synthpop_aggregation: 4 # number of synthpops to aggregate together
 logs: no
 process_output: yes
 scenarios: ''
@@ -38,7 +40,7 @@ exposures:
 - bmi
 - sbp
 - tchol
-'n': 200000
+'n': 100000
 init_year_long: 2013
 sim_horizon_max: 28
 ageL: 30

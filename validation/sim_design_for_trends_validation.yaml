@@ -1,6 +1,8 @@
-iteration_n: 20
+iteration_n: 50
 clusternumber: 10
 n_cpus: 1
+n_primers: 10
+n_synthpop_aggregation: 5 # number of synthpops to aggregate together
 logs: no
 process_output: yes
 scenarios: ''
@@ -38,7 +40,7 @@ exposures:
 - bmi
 - sbp
 - tchol
-'n': 300000
+'n': 20000
 init_year_long: 2013
 sim_horizon_max: 18
 ageL: 30

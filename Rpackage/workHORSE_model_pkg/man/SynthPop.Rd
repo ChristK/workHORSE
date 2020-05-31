@@ -158,7 +158,9 @@ The invisible `SynthPop` object.
 \subsection{Method \code{get_filename()}}{
 Get the synthpop file paths.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{SynthPop$get_filename(x = c("all", "synthpop", "metafile", "indxfile"))}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{SynthPop$get_filename(
+  x = c("all", "synthpop", "metafile", "indxfile", "primer")
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
