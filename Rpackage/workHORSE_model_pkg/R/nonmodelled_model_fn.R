@@ -77,7 +77,7 @@ nonmodelled_model <- function(
 
   tt <- get_rr_mc(mc, "nonmodelled", "t2dm", design$stochastic)
   set(dt, NULL, "t2dm_rr", 1)
-  dt[t2dm_prvl_lagged > 0L & year == design$init_year, t2dm_rr := tt]
+  dt[t2dm_prvl_lagged > 0L, t2dm_rr := tt]
   dt[, nonmodelled_mrtl_t2dm_mltp := tt]
   # dt[, summary(t2dm_rr)]
 
@@ -97,7 +97,7 @@ nonmodelled_model <- function(
 
   tt <- get_rr_mc(mc, "nonmodelled", "sbp", design$stochastic)
   set(dt, NULL, "sbp_rr", 1)
-  dt[sbp_lagged > 140L, sbp_rr := tt]
+  dt[sbp_lagged > 140, sbp_rr := tt]
   # dt[, summary(sbp_rr)]
 
   dt[, (exps_nam) := NULL]
@@ -106,7 +106,7 @@ nonmodelled_model <- function(
   #cat("Estimating nonmodelled PAF...\n")
   if (!"p0_nonmodelled" %in% names(dt)) {
     nonmodelledparf <-
-      dt[between(age, design$ageL, design$ageH) & year == design$init_year,
+      dt[between(age, design$ageL, design$ageH),
         .(parf = 1 - 1 / (
           sum(
             tobacco_rr * sbp_rr * pa_rr * alcohol_rr * t2dm_rr
@@ -115,15 +115,16 @@ nonmodelled_model <- function(
         # I should include year  to avoid doublecounting of exposure trends that
         # have been implicitly included in mortality forecasts. However I don't
         # have t2dm prvalence post 2013 so this is currently impossible
-        keyby = .(age, sex, qimd)]
-      nonmodelledparf[, parf := clamp(predict(loess(parf ~ age, span = 0.5))), by = .(sex, qimd)]
+        keyby = .(year, age, sex, qimd)]
+      nonmodelledparf[, parf := clamp(predict(loess(parf ~ age, span = 0.5))),
+                      by = .(year, sex, qimd)]
     # nonmodelledparf[, {
     #   plot(age, parf, main = paste0(.BY[[1]],"-", .BY[[2]]), ylim = c(0, 1))
     #   lines(age, parf2)
     # }
     # , keyby = .(sex, qimd)]
 
-    tt <- get_lifetable_all(mc, "nonmodelled", design, "qx")[year == design$init_year][, year := NULL]
+    tt <- get_lifetable_all(mc, "nonmodelled", design, "qx")
     absorb_dt(nonmodelledparf, tt)
     nonmodelledparf[, p0_nonmodelled := qx_mc * (1 - parf)]
     # nonmodelledparf[, summary(p0_nonmodelled)]

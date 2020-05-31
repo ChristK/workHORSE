@@ -21,7 +21,7 @@
 
 # Generate uncertainty (2e3 mc iterations) assuming 97.5 percentile is up to 20%
 # higher than the median for incid, prev, fatal No uncertainty is assumed for
-# disease duration NOTE Currently we assume that uncertainty covaries for all
+# disease duration. NOTE Currently we assume that uncertainty covaries for all
 # disease, age, sex, qimd, so when i.e. chd incid is low then lung ca inc is
 # also low.
 mc_max <- 2e3

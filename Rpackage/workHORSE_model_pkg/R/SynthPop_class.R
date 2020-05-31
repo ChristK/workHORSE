@@ -1625,27 +1625,89 @@ SynthPop <-
           output <- list()
           output <-
             gen_output("", design_$sim_prm, lags_mc, dt, output, TRUE)
-          invisible(lapply(output, setDT))
           output <-
-            rbindlist(output)[between(age, design_$sim_prm$ageL, design_$sim_prm$ageH) &
+            rbindlist(output)[between(age, design_$sim_prm$ageL,
+                                      design_$sim_prm$ageH) &
                                 year >= design_$sim_prm$init_year]
 
-          # estimate fatality rates for all diseases
-          for (disease_nam in c("chd", "stroke", "copd", "lung_ca", "colon_ca", "breast_ca")) {
-            tt <- simulate_fatality(mc_, output, disease_nam, design_$sim_prm)
+          # Estimate fatality rates for all diseases
+          .diseases <- c("chd", "stroke", "copd",
+                         "lung_ca", "colon_ca", "breast_ca")
+          for (disease_nam in .diseases) {
+            tt <- simulate_fatality(mc_, output, disease_nam,
+                                    design_$sim_prm)
             absorb_dt(dt, tt, on = c("year", "age", "sex", "qimd"))
           }
+
           # it doesn't matter that I get breast_ca fatality for men
           # there is no breast_ca incidence for men anyway
 
-          # second run with fatalities
-          output <- list()
-          output <- gen_output("", design_$sim_prm, lags_mc, dt, output)
-          invisible(lapply(output, setDT))
-          output <- rbindlist(output, idcol = "scenario")
 
-          absorb_dt(dt, output, on = c("year", "pid"))
-          rm(output, tt, tbl)
+          # Fatality rate calibration ----
+          ftlt_calib <- FALSE
+          if (ftlt_calib) {
+            # second run with fatalities to calibrate to mortality projections
+            output <- list()
+            output <-
+              gen_output("", design_$sim_prm, lags_mc, dt, output)
+            output <- rbindlist(output, idcol = FALSE)
+
+            absorb_dt(dt, output, on = c("year", "pid"))
+            rm(output)
+
+            dt[, prb_nonmodelled_mrtl :=
+                 fifelse(t2dm_prvl > 0L,
+                         prb_nonmodelled_mrtl_not2dm *
+                           nonmodelled_mrtl_t2dm_mltp,
+                         prb_nonmodelled_mrtl_not2dm)]
+            nam <- grep("^prb_.*_mrtl$", names(dt), value = TRUE)
+            nam <- c(nam, paste0(.diseases, "_prvl"))
+
+            tt <- dt[between(age, design_$sim_prm$ageL,
+                             design_$sim_prm$ageH) &
+                       year >= design_$sim_prm$init_year,
+                     .SD,
+                     .SDcols = c("year", "age", "sex", "qimd", nam)]
+            dt[, prb_nonmodelled_mrtl := NULL]
+
+            # delete longdeads
+            # setkey(tt, pid, year)
+            # tt[, pid_mrk := mk_new_simulant_markers(pid)]
+            # tt[, dead := identify_longdeads(all_cause_mrtl, pid_mrk)]
+            # tt <- tt[!(dead), .SD, .SDcols = c("year", "age", "sex", "qimd", nam)]
+
+
+            set(tt, NULL, "pops", 1)
+            # prb now represent uncalibrated deaths after sum
+            for (disease_nam in .diseases) {
+              ftlt <- paste0("prb_", disease_nam, "_mrtl")
+              prvl <- paste0(disease_nam, "_prvl")
+              set(tt, which(tt[[prvl]] == 0), ftlt, 0)
+              set(tt, NULL, prvl, NULL)
+            }
+            tt <- tt[, lapply(.SD, sum), keyby = .(year, age, sex, qimd)]
+
+            for (disease_nam in c("nonmodelled", .diseases)) {
+              expected_deaths <- get_lifetable_all(mc_, disease_nam,
+                                                   design_$sim_prm, "mx")
+              colnam <- paste0("prb_", disease_nam, "_mrtl")
+              setnames(tt, colnam, "col__")
+              expected_deaths[tt,
+                              calib_mltp := qx_mc * i.pops / i.col__,
+                              on = .(year, age, sex, qimd)]
+              expected_deaths[!is.finite(calib_mltp), calib_mltp := 1]
+              if (disease_nam == "nonmodelled") {
+                colnam <- paste0(colnam, "_not2dm")
+              }
+              setnames(dt, colnam, "col__")
+
+              dt[expected_deaths,
+                 (colnam) := clamp(i.calib_mltp * col__),
+                 on = .(year, age, sex, qimd)]
+              dt[, col__ := NULL]
+              tt[, `:=` (col__ = NULL)]
+            }
+          }
 
           dt[, ncc := clamp(
             ncc - (chd_prvl > 0) - (stroke_prvl > 0) -
@@ -1657,23 +1719,24 @@ SynthPop <-
             0L,
             10L
           )]
-          # to be added back in the qaly fn. Otherwise when I prevent disease the
-          # ncc does not decrease.
+          # to be added back in the qaly fn. Otherwise when I prevent disease
+          # the ncc does not decrease.
 
-          dt[, pid_mrk := mk_new_simulant_markers(pid)] # Necessary because of pruning above
-
-          dt[, dead := identify_longdeads(all_cause_mrtl, pid_mrk)] # do not delete them yet
-          dt[, `:=` (scenario = NULL)]
-
+          # Prune & write to disk ----
           # del rn as they are reproducible
-          nam <- grep("^rn_", names(dt), value = TRUE)
+          nam <- grep("_mrtl$|^rn_", names(dt), value = TRUE)
+          nam <- grep("^prb_", nam, value = TRUE, invert = TRUE)
+          nam <- c(nam, c("LSOA11CD",
+                          "LAD11CD",
+                          "LAD11NM",
+                          "tds_quintile",
+                          "imd",
+                          "sha",
+                          "CCG17CDH",
+                          "pid_mrk"))
           dt[, (nam) := NULL]
 
-
-
-
-          # Write to disk ----
-          message("Write to disk")
+          message("Writing to disk")
 
           setkey(dt, pid, year) # Just in case
           write_fst(dt,
@@ -1697,14 +1760,7 @@ SynthPop <-
         function(mc_,
                  filename_,
                  design_,
-                 exclude_cols = c("LSOA11CD",
-                                  "LAD11CD",
-                                  "LAD11NM",
-                                  "tds_quintile",
-                                  "imd",
-                                  "sha",
-                                  "CCG17CDH",
-                                  "pid_mrk"),
+                 exclude_cols = c(),
                  chunk_number = 1L,
                  max_chunk = 1L) {
           stopifnot(chunk_number <=  max_chunk)
@@ -1756,7 +1812,8 @@ SynthPop <-
               )
             )
           } else {
-            # if max_chunk > 1L split the file in chunks based on pid and load only the chunk_number
+            # if max_chunk > 1L split the file in chunks based on pid and load
+            # only the chunk_number
 
             indx <-
               read_fst(filename_$indxfile, as.data.table = TRUE)
@@ -1824,27 +1881,45 @@ SynthPop <-
 
           dt <- dt[between(
             year,
-            design$sim_prm$init_year - design$sim_prm$maxlag,
-            design$sim_prm$init_year + (
-              design$sim_prm$init_year_fromGUI -
-                design$sim_prm$init_year
-            ) + design$sim_prm$sim_horizon_fromGUI
+            design_$sim_prm$init_year - design_$sim_prm$maxlag,
+            design_$sim_prm$init_year + (
+              design_$sim_prm$init_year_fromGUI -
+                design_$sim_prm$init_year
+            ) + design_$sim_prm$sim_horizon_fromGUI
           ) &
             between(age,
-                    design$sim_prm$ageL - design$sim_prm$maxlag,
-                    design$sim_prm$ageH)]
+                    design_$sim_prm$ageL - design_$sim_prm$maxlag,
+                    design_$sim_prm$ageH)]
 
           # dt <- dt[between(year,
           #                  design$init_year_fromGUI,
           #                  sum(fromGUI_timeframe(parameters)) - 2000L) &
           #            between(age, design$ageL - max_lag, design$ageH)]
 
-          dt[, pid_mrk := mk_new_simulant_markers(pid)] # Necessary because of pruning
-          # and potential merging above
+          dt[, pid_mrk := mk_new_simulant_markers(pid)]
+          # Above necessary because of pruning  and potential merging above
+
+
+
+          # simulate disease epidemiology
+          lags_mc <-
+            get_lag_mc(mc_, design_$sim_prm)
+          max_lag_mc <- max(unlist(lags_mc))
+
+          output <- list()
+          output <-
+            gen_output("", design_$sim_prm, lags_mc, dt, output)
+          output <- rbindlist(output, idcol = FALSE)
+
+          absorb_dt(dt, output, on = c("year", "pid"))
+          rm(output)
+          dt[, dead := identify_longdeads(all_cause_mrtl, pid_mrk)]
+
           setcolorder(dt, c("pid", "pid_mrk", "year", "age", "sex", "qimd"))
           setkeyv(dt, c("pid", "year"))
           setindexv(dt, c("year", "age", "sex", "qimd", "ethnicity"))
           invisible(dt)
+
         },
 
       # Calculate weights so that their sum is the population of the area based

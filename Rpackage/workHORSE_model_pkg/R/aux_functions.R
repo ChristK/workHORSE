@@ -480,8 +480,9 @@ get_lifetable_all <-
     # NOTE fatality column is poorly named. It is a probability which is correlated with incidence & prevalence
     colnam <- c("year", "age", "sex", "qimd", "disease",
                 paste0(type, c("_total", "_total_1", "_total_99", "_total_10",
-                               "_total_20", "_total_30", "_total_40", "_total_60",
-                               "_total_70", "_total_80", "_total_90")))
+                               "_total_20", "_total_30", "_total_40",
+                               "_total_60", "_total_70", "_total_80",
+                               "_total_90")))
     disease_ <- disease
     indx <- read_fst( "./lifecourse_models/mortality_projections_indx.fst", as.data.table = TRUE)[disease == disease_]
 

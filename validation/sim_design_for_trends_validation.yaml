@@ -38,7 +38,7 @@ exposures:
 - bmi
 - sbp
 - tchol
-'n': 200000
+'n': 300000
 init_year_long: 2013
 sim_horizon_max: 18
 ageL: 30
