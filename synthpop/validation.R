@@ -22,7 +22,7 @@
 cat("Validating workHORSE model...\n\n")
 setwd("~/My Models/workHORSE/")
 XPS <- FALSE
-delete_previous_results <- TRUE # any change to workHORSEmisc deletes output
+delete_previous_results <- FALSE # any change to workHORSEmisc deletes output
 
 # necessary for Rscript
 .libPaths("~/R/x86_64-pc-linux-gnu-library/4.0")
@@ -285,9 +285,9 @@ if (all(file.exists(output_dir(filenames)))) {
 
 } else {
   # delete old
-    SynthPop$
-    new(0, design, synthpop_dir())$
-  delete_synthpop(to_delete) #$
+  #   SynthPop$
+  #   new(0, design, synthpop_dir())$
+  # delete_synthpop(to_delete) #$
   # write_synthpop(1:design$sim_prm$iteration_n)$
   # count_synthpop()
 
@@ -311,6 +311,11 @@ if (all(file.exists(output_dir(filenames)))) {
     # .noexport = c("time_mark")
   ) %dopar%
     {
+
+      SynthPop$ # delete existing file but not primer
+        new(0, design, synthpop_dir())$
+        delete_synthpop(mc_iter)
+
       POP <- SynthPop$new(mc_iter, design, synthpop_dir())
 
       nam <- grep("^rn_", names(POP$pop), value = TRUE)
@@ -335,12 +340,14 @@ if (all(file.exists(output_dir(filenames)))) {
   out_mrtl <- fread(output_dir(filenames[[2]]))
 
   if (design$sim_prm$n_synthpop_aggregation > 1L) {
-  out_incd[, mc := ceiling(mc/design$sim_prm$n_synthpop_aggregation)]
-  out_incd <- out_incd[, lapply(.SD, sum), keyby = .(year, sex, agegrp20, qimd, mc)]
-  fwrite(out_incd, output_dir(filenames[[1]]))
-  out_mrtl[, mc := ceiling(mc/design$sim_prm$n_synthpop_aggregation)]
-  out_mrtl <- out_mrtl[, lapply(.SD, sum), keyby = .(year, sex, agegrp20, qimd, mc)]
-  fwrite(out_mrtl, output_dir(filenames[[2]]))
+    out_incd[, mc := ceiling(mc / design$sim_prm$n_synthpop_aggregation)]
+    out_incd <-
+      out_incd[, lapply(.SD, sum), keyby = .(year, sex, agegrp20, qimd, mc)]
+    fwrite(out_incd, output_dir(filenames[[1]]))
+    out_mrtl[, mc := ceiling(mc / design$sim_prm$n_synthpop_aggregation)]
+    out_mrtl <-
+      out_mrtl[, lapply(.SD, sum), keyby = .(year, sex, agegrp20, qimd, mc)]
+    fwrite(out_mrtl, output_dir(filenames[[2]]))
   }
 }
 

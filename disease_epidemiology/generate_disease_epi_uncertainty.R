@@ -19,13 +19,13 @@
 ## to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 ## Boston, MA 02110-1301 USA.
 
-# Generate uncertainty (2e3 mc iterations) assuming 97.5 percentile is up to 20%
+# Generate uncertainty (1e3 mc iterations) assuming 97.5 percentile is up to 5%
 # higher than the median for incid, prev, fatal No uncertainty is assumed for
 # disease duration. NOTE Currently we assume that uncertainty covaries for all
 # disease, age, sex, qimd, so when i.e. chd incid is low then lung ca inc is
 # also low.
-mc_max <- 2e3
-uncertainty_space <- 1.2
+mc_max <- 1e3
+uncertainty_space <- 1.05
 
 
 library(data.table)
@@ -73,16 +73,18 @@ disease_epi[, type := gsub("out_", "", type)]
 
 get_beta_par <- function(mu, scale = 1.2, tol = 0.001) { # scale of 1.5 is 50% higher
   stopifnot(scale > 1)
-  suppressMessages(rriskDistributions::get.beta.par(c(0.5, 0.975), c(mu, mu * scale), FALSE, FALSE, tol))
+  suppressMessages(rriskDistributions::get.beta.par(c(0.5, 0.975), c(mu, mu * scale), FALSE, FALSE, tol, control = list(maxit = 1e4)))
 }
 
 # too small values do not converge I need to multiply scaling factor here and
 # divide just before the end
 disease_epi[, mltp_factor := 1]
+disease_epi[value * uncertainty_space < 1e-1, mltp_factor := 1e1]
 disease_epi[value * uncertainty_space < 1e-2, mltp_factor := 1e2]
 disease_epi[value * uncertainty_space < 1e-3, mltp_factor := 1e3]
 disease_epi[value * uncertainty_space < 1e-4, mltp_factor := 1e4]
 disease_epi[value * uncertainty_space < 1e-5, mltp_factor := 1e5]
+disease_epi[value * uncertainty_space < 1e-6, mltp_factor := 1e6]
 
 disease_epi[type == "incidence_rates", c("a", "b") := {
   l <- future_lapply(value * mltp_factor, get_beta_par, uncertainty_space, 0.001)
@@ -92,7 +94,8 @@ disease_epi[type == "prevalence_rates", c("a", "b") := {
   l <- future_lapply(value * mltp_factor, get_beta_par, uncertainty_space, 0.001)
   list(sapply(l, `[[`, 1), sapply(l, `[[`, 2))
 }]
-disease_epi[type == "case_fatality_rates" & value == 0, `:=`(value = 1e-8, mltp_factor = 1e6)] # replaces 0 fatality
+disease_epi[type == "case_fatality_rates" & value == 0,
+            `:=`(value = 1e-8, mltp_factor = 1e7)] # replaces 0 fatality
 disease_epi[type == "case_fatality_rates", c("a", "b") := {
   l <- future_lapply(value * mltp_factor, get_beta_par, uncertainty_space, 0.001)
   list(sapply(l, `[[`, 1), sapply(l, `[[`, 2))

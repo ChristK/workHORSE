@@ -356,7 +356,7 @@ get_disease_epi_mc <-
            what = c("value", "median_value", "p"), # p is the percentile of the uncertainty
            stochastic = TRUE) {
     # stochastic = F returns median_value even if what == "value"
-    stopifnot(between(mc, 1, 2e3)) # TODO make 2e3 derived from disease_epi_indx.fst
+    stopifnot(between(mc, 1, 1e3)) # TODO make 1e3 derived from disease_epi_indx.fst
     epi_par2 <- epi_par <- match.arg(epi_par)
     what <- match.arg(what)
     if (epi_par == "fatality") {epi_par <- paste0("case_", epi_par)}
@@ -410,7 +410,7 @@ get_rr_mc <-
            disease,
            risk_factor,
            stochastic = TRUE) {
-    stopifnot(between(mc, 1, 2e3)) # TODO make 2e3 derived from filenam_indx
+    stopifnot(between(mc, 1, 1e3)) # TODO make 1e3 derived from filenam_indx
     suffix <- paste0(risk_factor, "_", disease)
     filenam <- paste0("./simulation/rr/", suffix, "_rr_l.fst")
     filenam_indx <- paste0("./simulation/rr/", suffix, "_rr_indx.fst")
@@ -1496,22 +1496,22 @@ simulate_fatality <-
                   .SDcols = c("pid", "year", "age", "sex", "qimd", disease_prvl)]
     setnames(dt_prvl, disease_prvl, "disease_prvl")
     dt_prvl[, pop := as.numeric(.N), by = .(age, sex, qimd, year)]
-    dt_prvl <- dt_prvl[disease_prvl > 0L, ]
-    # dt_prvl <- dt_prvl[between(disease_prvl, 1L,
-    #                            fifelse(grepl("_ca$", disease_),
-    #                                    design$cancer_cure, 100L))]
+    # dt_prvl <- dt_prvl[disease_prvl > 0L, ]
+    dt_prvl <- dt_prvl[between(disease_prvl, 1L,
+                               fifelse(grepl("_ca$", disease_),
+                                       design$cancer_cure, 100L))]
     dt_prvl[, disease_prvl := 1L] # form now on all prvl is 1L
 
-    mrtl <- get_lifetable_all(mc_, disease_, design, "qx") # mx is not a typo
+    mrtl <- get_lifetable_all(mc_, disease_, design, "mx") # mx is not a typo
 
-    all_mrtl <- get_lifetable_all(mc_, "allcause", design, "qx")
+    all_mrtl <- get_lifetable_all(mc_, "allcause", design, "mx")
     mrtl[all_mrtl, on = .(year, age, sex, qimd),
          qx_mc_bgr := clamp(i.qx_mc - qx_mc)]
     absorb_dt(dt_prvl, mrtl)
     rm(mrtl, all_mrtl, disease_prvl)
 
     # clone it to minimise rounding error from low prevalence
-    mltp_factor <- 10L
+    mltp_factor <- 10L # further increase makes no difference
     dt_prvl <- clone_dt(dt_prvl, mltp_factor )
     dt_prvl[, `:=`(pop = pop * mltp_factor)]
     # update pid to eradicate duplicates

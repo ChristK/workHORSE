@@ -20,7 +20,6 @@
 ## Boston, MA 02110-1301 USA.
 
 
-
 # From
 # https://stackoverflow.com/questions/33424233/how-do-i-tell-an-r6-class-what-to-do-with-square-brackets
 # Allows data.table syntax to the R6class object directly. Assumes it has a
@@ -165,7 +164,7 @@ SynthPop <-
       #' Delete (all) synthpop files in the synthpop directory.
       #' @param mc_ If `mc_ = NULL`, delete all files in the synthpop directory.
       #'   If `mc_` is an integer vector delete the specific synthpop files
-      #'   including the metadata and index files.
+      #'   including the metadata and index files but spares primers.
       #' @return The invisible `SynthPop` object.
       delete_synthpop = function(mc_) {
         if (is.null(mc_)) {
@@ -180,7 +179,7 @@ SynthPop <-
             private$gen_synthpop_filename(mc_,
                                           private$synthpop_dir,
                                           private$checksum,
-                                          private$design)
+                                          private$design)[1:3]
           ))
 
         } else if (length(mc_) > 1L &&
@@ -191,7 +190,9 @@ SynthPop <-
                    private$synthpop_dir,
                    private$checksum,
                    private$design)
-          file.remove(unlist(filnam))
+          filnam <- unlist(filnam)
+          filnam <- grep("_primer.fst$", filnam, invert = TRUE, value = TRUE)
+          file.remove(filnam)
 
         } else
           message("mc_ need to be NULL or numeric. Nothing was deleted.")
@@ -601,7 +602,8 @@ SynthPop <-
                  filename_,
                  design_,
                  lsoas_) {
-          # increase design_$sim_prm$jumpiness for more erratic jumps in trajectories
+          # increase design_$sim_prm$jumpiness for more erratic jumps in
+          # trajectories
 
           # In Shiny app this function runs as a future. It is not
           # straightforward to check whether the future has been resolved or
@@ -647,7 +649,8 @@ SynthPop <-
           # then are recycled to generate the complete synthpop that depends on
           # the sampling from the RR distributions and disease epidemiology.
 
-          if (mc_ <= design_$sim_prm$n_primers) {
+          if (mc_ <= design_$sim_prm$n_primers &&
+              !file.exists(filename_$primer)) {
             dt <- private$gen_synthpop_demog(design_, lsoas_)
 
             # Calculate local qimd (lqimd) ----
@@ -666,7 +669,7 @@ SynthPop <-
               # names(sort(table(as.character(dt$CCG17CDH)))[1]) # if more than one ccgs
             }
 
-            # Generate the cohorts of 30 year old to enter the simulation every year ----
+            # Generate the cohorts of 30 year old to enter every year ----
             message("Generate the cohorts of 30 year old")
 
             # new
@@ -1713,7 +1716,6 @@ SynthPop <-
 
           # it doesn't matter that I get breast_ca fatality for men
           # there is no breast_ca incidence for men anyway
-
 
           # Fatality rate calibration (doesn't work!)----
           ftlt_calib <- FALSE

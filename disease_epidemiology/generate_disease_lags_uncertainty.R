@@ -29,7 +29,7 @@ dependencies(c("data.table", "fst"))
 
 set.seed(2506120L)
 
-mc_max  <- 2e3
+mc_max  <- 1e3
 mc_max2 <- 10L # To allow 2 or more diseases have the same lag in years but be independent
 
 dt <- CJ(mc = 1:mc_max, disease_enum = 1:mc_max2)

@@ -21,7 +21,7 @@
 
 # TODO adjust RR for incidence (not mortality)
 
-mc_max <- 2e3
+mc_max <- 1e3
 ageL <- 30L
 ageH <- 89L
 
