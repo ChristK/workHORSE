@@ -1926,6 +1926,19 @@ SynthPop <-
           rm(output)
           dt[, dead := identify_longdeads(all_cause_mrtl, pid_mrk)]
 
+          dt[, ncc := clamp(
+            ncc - (chd_prvl > 0) - (stroke_prvl > 0) -
+              (poststroke_dementia_prvl > 0) -
+              (htn_prvl > 0) - (t2dm_prvl > 0) - (af_prvl > 0) -
+              (copd_prvl > 0) - (lung_ca_prvl > 0) -
+              (colon_ca_prvl > 0) -
+              (breast_ca_prvl > 0),
+            0L,
+            10L
+          )]
+          # to be added back in the qaly fn. Otherwise when I prevent disease
+          # the ncc does not decrease.
+
           setcolorder(dt, c("pid", "pid_mrk", "year", "age", "sex", "qimd"))
           setkeyv(dt, c("pid", "year"))
           setindexv(dt, c("year", "age", "sex", "qimd", "ethnicity"))
