@@ -116,7 +116,7 @@ Delete (all) synthpop files in the synthpop directory.
 \describe{
 \item{\code{mc_}}{If `mc_ = NULL`, delete all files in the synthpop directory.
 If `mc_` is an integer vector delete the specific synthpop files
-including the metadata and index files.}
+including the metadata and index files but spares primers.}
 }
 \if{html}{\out{</div>}}
 }
