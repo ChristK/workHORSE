@@ -149,7 +149,7 @@ lung_ca_model <-
             lung_ca_prvl == 0 & year == design$init_year,
           .(parf = 1 - 1 / (sum(lung_ca_forparf_rr * ets_rr * fruit_rr) / .N)),
           keyby = .(age, sex, qimd)]
-      lung_caparf[, parf := clamp(predict(loess(parf ~ age, span = 0.5))), by = .(sex, qimd)]
+      # lung_caparf[, parf := clamp(predict(loess(parf ~ age, span = 0.5))), by = .(sex, qimd)]
       # lung_caparf[, {
       #   plot(age, parf, main = paste0(.BY[[1]],"-", .BY[[2]]), ylim = c(0, 1))
       #   lines(age, parf2)
@@ -187,8 +187,9 @@ lung_ca_model <-
     dt[lung_ca_prvl > 0, lung_ca_dgn := clamp(lung_ca_prvl - 5L, 0, 100)]
 
     # Estimate case fatality ----
-
-    set(dt, NULL, "prb_lung_ca_mrtl", 0)
+    absorb_dt(dt,
+              get_disease_epi_mc(mc, "lung_ca", "f", "v", design$stochastic))
+    setnames(dt, "fatality", "prb_lung_ca_mrtl")
 
 
     } else {

@@ -215,7 +215,7 @@ stroke_model <-
             ) / .N
           )),
           keyby = .(age, sex, qimd)]
-      strokeparf[, parf := clamp(predict(loess(parf ~ age, span = 0.5))), by = .(sex, qimd)]
+      # strokeparf[, parf := clamp(predict(loess(parf ~ age, span = 0.5))), by = .(sex, qimd)]
       # strokeparf[, {
       #   plot(age, parf, main = paste0(.BY[[1]],"-", .BY[[2]]), ylim = c(0, 1))
       #   lines(age, parf2)
@@ -248,8 +248,8 @@ stroke_model <-
     dt[stroke_prvl > 0, stroke_dgn := clamp(stroke_prvl - 5L, 0, 100)]
 
     # Estimate case fatality ----
-    set(dt, NULL, "prb_stroke_mrtl", 0)
-
+    absorb_dt(dt, get_disease_epi_mc(mc, "stroke", "f", "v", design$stochastic))
+    setnames(dt, "fatality", "prb_stroke_mrtl")
 
     } else {
 

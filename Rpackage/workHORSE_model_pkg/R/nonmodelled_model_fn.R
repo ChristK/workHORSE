@@ -106,25 +106,24 @@ nonmodelled_model <- function(
   #cat("Estimating nonmodelled PAF...\n")
   if (!"p0_nonmodelled" %in% names(dt)) {
     nonmodelledparf <-
-      dt[between(age, design$ageL, design$ageH),
-        .(parf = 1 - 1 / (
-          sum(
-            tobacco_rr * sbp_rr * pa_rr * alcohol_rr * t2dm_rr
-          ) / .N
-        )),
-        # I should include year  to avoid doublecounting of exposure trends that
-        # have been implicitly included in mortality forecasts. However I don't
-        # have t2dm prvalence post 2013 so this is currently impossible
-        keyby = .(year, age, sex, qimd)]
-      nonmodelledparf[, parf := clamp(predict(loess(parf ~ age, span = 0.5))),
-                      by = .(year, sex, qimd)]
+      dt[between(age, design$ageL, design$ageH) & year == design$init_year,
+         .(parf = 1 - 1 / (
+           sum(
+             tobacco_rr * sbp_rr * pa_rr * alcohol_rr * t2dm_rr
+           ) / .N
+         )),
+         # I should include year  to avoid doublecounting of exposure trends that
+         # have been implicitly included in mortality forecasts. However I don't
+         # have t2dm prvalence post 2013 so this is currently impossible
+         keyby = .(age, sex, qimd)]
+    # nonmodelledparf[, parf := clamp(predict(loess(parf ~ age, span = 0.5))), by = .(sex, qimd)]
     # nonmodelledparf[, {
     #   plot(age, parf, main = paste0(.BY[[1]],"-", .BY[[2]]), ylim = c(0, 1))
     #   lines(age, parf2)
     # }
     # , keyby = .(sex, qimd)]
 
-    tt <- get_lifetable_all(mc, "nonmodelled", design, "qx")
+    tt <- get_lifetable_all(mc, "nonmodelled", design, "qx")[year == design$init_year][, year := NULL]
     absorb_dt(nonmodelledparf, tt)
     nonmodelledparf[, p0_nonmodelled := qx_mc * (1 - parf)]
     # nonmodelledparf[, summary(p0_nonmodelled)]
@@ -139,7 +138,7 @@ nonmodelled_model <- function(
     #cat("Estimating nonmodelled incidence without diabetes...\n\n")
     set(dt, NULL, "prb_nonmodelled_mrtl_not2dm", 0)
     dt[, prb_nonmodelled_mrtl_not2dm :=
-        p0_nonmodelled * tobacco_rr * sbp_rr * pa_rr * alcohol_rr] # Remember no t2dm as this will be a multiplier
+         p0_nonmodelled * tobacco_rr * sbp_rr * pa_rr * alcohol_rr] # Remember no t2dm as this will be a multiplier
 
     # Calibration
     # dt[, prb_nonmodelled_mrtl_not2dm := prb_nonmodelled_mrtl_not2dm * 1.15]
@@ -154,7 +153,7 @@ nonmodelled_model <- function(
     colnam <- "prb_nonmodelled_mrtl_not2dm_sc"
     set(dt, NULL, colnam, 0)
     dt[, (colnam) :=
-        p0_nonmodelled * tobacco_rr * sbp_rr * pa_rr * alcohol_rr] # Remember no t2dm as this will be a multiplier
+         p0_nonmodelled * tobacco_rr * sbp_rr * pa_rr * alcohol_rr] # Remember no t2dm as this will be a multiplier
   }
 
   dt[, (grep("_rr$", names(dt), value = TRUE)) := NULL]

@@ -33,7 +33,7 @@ mk_scenario_init <- function(scenario_name, design, lags_mc) {
     "pids"               = list("column_name" = "pid"),
     "years"              = list("column_name" = "year"),
     "rn_all_cause_mrtl"  = list("column_name" = paste0("rn_multi_mrtl", scenario_suffix_for_pop)),
-    "strata_for_outputs" = design$cols_for_output,
+    "strata_for_outputs" = c("pid", "year", "age", "sex", "qimd"),
     "diseases" = list(
       # One element per disease to be included in the model.
       # Output columns will be named with the disease name as a prefix, and the kind of result as the suffix

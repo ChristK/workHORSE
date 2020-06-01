@@ -1696,106 +1696,106 @@ SynthPop <-
             )
           )
 
-          # Run to estimate prevalence ignoring mortality
-          output <- list()
-          output <-
-            gen_output("", design_$sim_prm, lags_mc, dt,
-                       output, calibration_run = TRUE)
-          output <-
-            rbindlist(output)[between(age, design_$sim_prm$ageL,
-                                      design_$sim_prm$ageH) &
-                                year >= design_$sim_prm$init_year]
+          # Fatality rate calibration ----
+          message("calibrating fatality rates")
+            # run year by year and calibrate fatality
+            .diseases <- c("chd", "stroke", "copd", "lung_ca",
+                           "colon_ca", "breast_ca", "nonmodelled")
 
-          # Estimate fatality rates for all diseases
-          .diseases <- c("chd", "stroke", "copd",
-                         "lung_ca", "colon_ca", "breast_ca")
-          for (disease_nam in .diseases) {
-            tt <- simulate_fatality(mc_aggr, output, disease_nam,
-                                    design_$sim_prm)
-            absorb_dt(dt, tt, on = c("year", "age", "sex", "qimd"))
-          }
+            for (yr in design_$sim_prm$init_year:(
+              design_$sim_prm$sim_horizon_max + design_$sim_prm$init_year)
+              ) {
+              output <- list()
+              output <-
+                gen_output("", design_$sim_prm, lags_mc, dt[year <= yr], output)
+              output <- rbindlist(output, idcol = FALSE)
 
-          # it doesn't matter that I get breast_ca fatality for men
-          # there is no breast_ca incidence for men anyway
-
-          # Fatality rate calibration (doesn't work!)----
-          ftlt_calib <- FALSE
-          if (ftlt_calib) {
-            # second run with fatalities to calibrate to mortality projections
-            output <- list()
-            output <-
-              gen_output("", design_$sim_prm, lags_mc, dt, output)
-            output <- rbindlist(output, idcol = FALSE)
-
-            absorb_dt(dt, output, on = c("year", "pid"))
-            rm(output)
-
-            dt[, prb_nonmodelled_mrtl :=
-                 fifelse(t2dm_prvl > 0L,
-                         prb_nonmodelled_mrtl_not2dm *
-                           nonmodelled_mrtl_t2dm_mltp,
-                         prb_nonmodelled_mrtl_not2dm)]
-            nam <- grep("^prb_.*_mrtl$", names(dt), value = TRUE)
-            nam <- c(nam, paste0(.diseases, "_prvl"))
-
-            tt <- dt[between(age, design_$sim_prm$ageL,
-                             design_$sim_prm$ageH) &
-                       year >= design_$sim_prm$init_year,
-                     .SD,
-                     .SDcols = c("year", "age", "sex", "qimd", nam)]
-            dt[, prb_nonmodelled_mrtl := NULL]
-
-            # delete longdeads
-            # setkey(tt, pid, year)
-            # tt[, pid_mrk := mk_new_simulant_markers(pid)]
-            # tt[, dead := identify_longdeads(all_cause_mrtl, pid_mrk)]
-            # tt <- tt[!(dead), .SD, .SDcols = c("year", "age", "sex", "qimd", nam)]
-
-
-            set(tt, NULL, "pops", 1)
-            # prb now represent uncalibrated deaths after sum
-            for (disease_nam in .diseases) {
-              ftlt <- paste0("prb_", disease_nam, "_mrtl")
-              prvl <- paste0(disease_nam, "_prvl")
-              set(tt, which(tt[[prvl]] == 0), ftlt, 0)
-              set(tt, NULL, prvl, NULL)
-            }
-            tt <- tt[, lapply(.SD, sum), keyby = .(year, age, sex, qimd)]
-
-            for (disease_nam in c("nonmodelled", .diseases)) {
-              expected_deaths <- get_lifetable_all(mc_, disease_nam,
-                                                   design_$sim_prm, "mx")
-              colnam <- paste0("prb_", disease_nam, "_mrtl")
-              setnames(tt, colnam, "col__")
-              expected_deaths[tt,
-                              calib_mltp := qx_mc * i.pops / i.col__,
-                              on = .(year, age, sex, qimd)]
-              expected_deaths[!is.finite(calib_mltp), calib_mltp := 1]
-              if (disease_nam == "nonmodelled") {
-                colnam <- paste0(colnam, "_not2dm")
+              if (yr > design_$sim_prm$init_year) {
+                setkey(output, pid, year)
+                output[, pid_mrk := mk_new_simulant_markers(pid)]
+                output[, dead := identify_longdeads(all_cause_mrtl, pid_mrk)]
+                output <- output[year == yr & !(dead), .SD,
+                                 .SDcols = !patterns("_dgn$")]
+              } else { # for init year
+                output <- output[year == yr, .SD, .SDcols = !patterns("_dgn$")]
               }
-              setnames(dt, colnam, "col__")
 
-              dt[expected_deaths,
-                 (colnam) := clamp(i.calib_mltp * col__),
-                 on = .(year, age, sex, qimd)]
-              dt[, col__ := NULL]
-              tt[, `:=` (col__ = NULL)]
+              tt <- output[, .(pid, year, t2dm_prvl)]
+              dt[tt, on = .(pid, year), t2dm_prvl2 := i.t2dm_prvl]
+              dt[year == yr, prb_nonmodelled_mrtl :=
+                   fifelse(t2dm_prvl2 > 0L,
+                           prb_nonmodelled_mrtl_not2dm *
+                             nonmodelled_mrtl_t2dm_mltp,
+                           prb_nonmodelled_mrtl_not2dm)]
+              set(dt, NULL, "t2dm_prvl2", NULL)
+
+              nam <- grep("^prb_.*_mrtl$", names(dt), value = TRUE)
+              absorb_dt(output, dt[year == yr, .SD, .SDcols = c("pid", nam)])
+
+              for (disease_nam in .diseases) {
+                expected_deaths <- get_lifetable_all(mc_, disease_nam,
+                                                     design_$sim_prm, "mx")
+                colnam <- paste0(disease_nam, "_mrtl")
+                setnames(expected_deaths, "qx_mc", colnam)
+                set(output, NULL, colnam, NULL)
+                absorb_dt(output, expected_deaths)
+
+                if (disease_nam != "nonmodelled") {
+                  colnam_prvl <- paste0(disease_nam, "_prvl")
+                  setnames(output, colnam_prvl, "col__prvl")
+                  set(output, which(output[["col__prvl"]] == 0L),
+                      paste0("prb_", colnam), 0)
+                  set(output, NULL, "col__prvl", NULL)
+                }
+              }
+              output[, (c("all_cause_mrtl",
+                          grep("_prvl$|^pid", names(output), value = TRUE))) := NULL]
+              output <-
+                output[, lapply(.SD, sum),
+                       keyby = .(year, age, sex, qimd)]
+
+              for (disease_nam in .diseases) {
+                colnam_expc <- paste0(disease_nam, "_mrtl")
+                colnam_obs <- paste0("prb_", disease_nam, "_mrtl")
+                setnames(output, c(colnam_expc, colnam_obs), c("expc__", "obs__"))
+                output[, corr_factor := expc__/obs__]
+                output[!is.finite(corr_factor), corr_factor := 1]
+                set(output, NULL, "expc__", NULL)
+                set(output, NULL, "obs__", NULL)
+                if (disease_nam == "nonmodelled") {
+                  colnam_obs <- paste0(colnam_obs, "_not2dm")
+                }
+                dt[output,
+                   (colnam_obs) := get(colnam_obs) * i.corr_factor,
+                   on = .(year, age, sex, qimd)]
+              }
+
+              set(dt, NULL, "prb_nonmodelled_mrtl", NULL)
             }
-          }
 
-          dt[, ncc := clamp(
-            ncc - (chd_prvl > 0) - (stroke_prvl > 0) -
-              (poststroke_dementia_prvl > 0) -
-              (htn_prvl > 0) - (t2dm_prvl > 0) - (af_prvl > 0) -
-              (copd_prvl > 0) - (lung_ca_prvl > 0) -
-              (colon_ca_prvl > 0) -
-              (breast_ca_prvl > 0),
-            0L,
-            10L
-          )]
+            # one final run with the calibrated fatalities. This time we merge
+            # with dt
+            # output <- list()
+            # output <-
+            #   gen_output("", design_$sim_prm, lags_mc, dt, output)
+            # output <- rbindlist(output, idcol = FALSE)
+            #
+            # absorb_dt(dt, output, on = c("year", "pid"))
+            # rm(output)
+
+          # dt[, ncc := clamp(
+          #   ncc - (chd_prvl > 0) - (stroke_prvl > 0) -
+          #     (poststroke_dementia_prvl > 0) -
+          #     (htn_prvl > 0) - (t2dm_prvl > 0) - (af_prvl > 0) -
+          #     (copd_prvl > 0) - (lung_ca_prvl > 0) -
+          #     (colon_ca_prvl > 0) -
+          #     (breast_ca_prvl > 0),
+          #   0L,
+          #   10L
+          # )]
           # to be added back in the qaly fn. Otherwise when I prevent disease
           # the ncc does not decrease.
+
 
           # Prune & write to disk ----
           # del rn as they are reproducible

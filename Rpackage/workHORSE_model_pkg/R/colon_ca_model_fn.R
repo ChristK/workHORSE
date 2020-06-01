@@ -130,7 +130,7 @@ colon_ca_model <-
           .(parf = 1 - 1 / (sum(packyears_rr * alcohol_rr * pa_rr * bmi_rr *
               t2dm_rr) / .N)),
           keyby = .(age, sex, qimd)]
-      colon_caparf[, parf := clamp(predict(loess(parf ~ age, span = 0.5))), by = .(sex, qimd)]
+      # colon_caparf[, parf := clamp(predict(loess(parf ~ age, span = 0.5))), by = .(sex, qimd)]
       # colon_caparf[, {
       #   plot(age, parf, main = paste0(.BY[[1]],"-", .BY[[2]]), ylim = c(0, 1))
       #   lines(age, parf2)
@@ -171,9 +171,10 @@ colon_ca_model <-
       dt[colon_ca_prvl > 0, colon_ca_dgn := clamp(colon_ca_prvl - 5L, 0, 100)]
 
       # Estimate case fatality ----
-      tt <-
-        # Calibrated to match mortality projections
-        set(dt, NULL, "prb_colon_ca_mrtl", 0)
+      absorb_dt(dt,
+                get_disease_epi_mc(mc, "colon_ca", "f", "v", design$stochastic))
+      setnames(dt, "fatality", "prb_colon_ca_mrtl")
+
 
       dt[, smok_packyrs_curr_xps := NULL]
     } else {
