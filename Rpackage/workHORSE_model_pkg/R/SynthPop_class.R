@@ -1773,30 +1773,6 @@ SynthPop <-
               set(dt, NULL, "prb_nonmodelled_mrtl", NULL)
             }
 
-            # one final run with the calibrated fatalities. This time we merge
-            # with dt
-            # output <- list()
-            # output <-
-            #   gen_output("", design_$sim_prm, lags_mc, dt, output)
-            # output <- rbindlist(output, idcol = FALSE)
-            #
-            # absorb_dt(dt, output, on = c("year", "pid"))
-            # rm(output)
-
-          # dt[, ncc := clamp(
-          #   ncc - (chd_prvl > 0) - (stroke_prvl > 0) -
-          #     (poststroke_dementia_prvl > 0) -
-          #     (htn_prvl > 0) - (t2dm_prvl > 0) - (af_prvl > 0) -
-          #     (copd_prvl > 0) - (lung_ca_prvl > 0) -
-          #     (colon_ca_prvl > 0) -
-          #     (breast_ca_prvl > 0),
-          #   0L,
-          #   10L
-          # )]
-          # to be added back in the qaly fn. Otherwise when I prevent disease
-          # the ncc does not decrease.
-
-
           # Prune & write to disk ----
           # del rn as they are reproducible
           nam <- grep("_mrtl$|^rn_", names(dt), value = TRUE)
