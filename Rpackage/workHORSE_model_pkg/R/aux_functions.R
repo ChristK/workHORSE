@@ -1500,6 +1500,7 @@ simulate_fatality <-
     dt_prvl <- dt_prvl[between(disease_prvl, 1L,
                                fifelse(grepl("_ca$", disease_),
                                        design$cancer_cure, 100L))]
+    dt_prvl[, disease_incd := fifelse(disease_prvl == 1L, 1L, 0L)]
     dt_prvl[, disease_prvl := 1L] # form now on all prvl is 1L
 
     mrtl <- get_lifetable_all(mc_, disease_, design, "mx") # mx is not a typo
@@ -1534,9 +1535,19 @@ simulate_fatality <-
                                                      prv_pop)))
         ][pid > 0, pid]
 
+      # as the population dies, fewer incident cases are generated to reflect
+      # the population reduction. This is additional to the prevalent cases that
+      # die above.
+      pid_to_kill2 <-
+        dt_prvl[year == yr & disease_incd == 1L,
+                .(pid = pid * rbinom(.N, 1L, clamp(qx_mc_bgr)))
+        ][pid > 0, pid]
+
+      pid_to_kill <- union(pid_to_kill, pid_to_kill2)
       # remove them from the prevalence of following years, so they can't be
       # selected
-      dt_prvl[year > yr & pid %in% pid_to_kill, disease_prvl := 0L]
+      dt_prvl[year > yr & pid %in% pid_to_kill,
+              `:=`(disease_prvl = 0L, disease_incd = 0L)]
 
       # remove deads from the total population (and interpolate NA)
       tt <- dt_prvl[year == yr, .(deads = first(pop * (qx_mc + qx_mc_bgr))), keyby = .(sex, qimd, age)]

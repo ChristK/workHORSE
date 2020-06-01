@@ -20,6 +20,7 @@
 ## Boston, MA 02110-1301 USA.
 
 
+
 # From
 # https://stackoverflow.com/questions/33424233/how-do-i-tell-an-r6-class-what-to-do-with-square-brackets
 # Allows data.table syntax to the R6class object directly. Assumes it has a
