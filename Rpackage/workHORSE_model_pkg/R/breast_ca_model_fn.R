@@ -136,7 +136,7 @@ breast_ca_model <-
           .(parf = 1 - 1 / (sum(tobacco_rr * ets_rr * alcohol_rr * pa_rr * bmi_rr *
               t2dm_rr) / .N)),
           keyby = .(age, sex, qimd)]
-      breast_caparf[, parf := clamp(predict(loess(parf ~ age, span = 0.5))), by = .(sex, qimd)]
+      # breast_caparf[, parf := clamp(predict(loess(parf ~ age, span = 0.5))), by = .(sex, qimd)]
       # breast_caparf[, {
       #   plot(age, parf, main = paste0(.BY[[1]],"-", .BY[[2]]), ylim = c(0, 1))
       #   lines(age, parf)
@@ -176,7 +176,9 @@ breast_ca_model <-
     dt[breast_ca_prvl > 0, breast_ca_dgn := clamp(breast_ca_prvl - 5L, 0, 100)]
 
     # Estimate case fatality ----
-    set(dt, NULL, "prb_breast_ca_mrtl", 0)
+    absorb_dt(dt,
+              get_disease_epi_mc(mc, "breast_ca", "f", "v", design$stochastic))
+    setnames(dt, "fatality", "prb_breast_ca_mrtl")
 
     } else {
 

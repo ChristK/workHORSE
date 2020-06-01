@@ -219,7 +219,7 @@ chd_model <-
             ) / .N
           )),
           keyby = .(age, sex, qimd)]
-      chdparf[, parf := clamp(predict(loess(parf ~ age, span = 0.5))), by = .(sex, qimd)]
+      # chdparf[, parf := clamp(predict(loess(parf ~ age, span = 0.5))), by = .(sex, qimd)]
       # chdparf[, {
       #   plot(age, parf, main = paste0(.BY[[1]],"-", .BY[[2]]), ylim = c(0, 1))
       #   lines(age, parf2)
@@ -253,8 +253,8 @@ chd_model <-
     dt[chd_prvl > 0, chd_dgn := clamp(chd_prvl - 5L, 0, 100)]
 
     # Estimate case fatality ----
-    set(dt, NULL, "prb_chd_mrtl", 0)
-
+    absorb_dt(dt, get_disease_epi_mc(mc, "chd", "f", "v", design$stochastic))
+    setnames(dt, "fatality", "prb_chd_mrtl")
 
      } else {
 

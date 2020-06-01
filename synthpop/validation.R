@@ -21,7 +21,7 @@
 
 cat("Validating workHORSE model...\n\n")
 setwd("~/My Models/workHORSE/")
-XPS <- FALSE
+XPS <- TRUE
 delete_previous_results <- FALSE # any change to workHORSEmisc deletes output
 
 # necessary for Rscript
@@ -312,9 +312,11 @@ if (all(file.exists(output_dir(filenames)))) {
   ) %dopar%
     {
 
-      SynthPop$ # delete existing file but not primer
+      if (is.null(to_delete)) {
+        SynthPop$ # delete existing file but not primer
         new(0, design, synthpop_dir())$
         delete_synthpop(mc_iter)
+      }
 
       POP <- SynthPop$new(mc_iter, design, synthpop_dir())
 

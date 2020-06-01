@@ -107,7 +107,7 @@ copd_model <-
             copd_prvl == 0 & year == design$init_year,
           .(parf = 1 - 1 / (sum(packyears_rr * ets_rr) / .N)),
           keyby = .(age, sex, qimd)]
-      copdparf[, parf := clamp(predict(loess(parf ~ age, span = 0.5))), by = .(sex, qimd)]
+      # copdparf[, parf := clamp(predict(loess(parf ~ age, span = 0.5))), by = .(sex, qimd)]
       # copdparf[, {
       #   plot(age, parf, main = paste0(.BY[[1]],"-", .BY[[2]]), ylim = c(0, 1))
       #   lines(age, parf2)
@@ -142,7 +142,8 @@ copd_model <-
     dt[copd_prvl > 0, copd_dgn := clamp(copd_prvl - 5L, 0, 100)]
 
     # Estimate case fatality ----
-    set(dt, NULL, "prb_copd_mrtl", 0)
+    absorb_dt(dt, get_disease_epi_mc(mc, "copd", "f", "v", design$stochastic))
+    setnames(dt, "fatality", "prb_copd_mrtl")
 
     dt[, smok_packyrs_curr_xps := NULL]
     } else {

@@ -1,4 +1,4 @@
-iteration_n: 30
+iteration_n: 100
 clusternumber: 10
 n_cpus: 1
 n_primers: 5
