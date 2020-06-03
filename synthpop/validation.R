@@ -102,13 +102,13 @@ dependencies(
   FALSE
 )
 theme_set(theme_cowplot())
-options(future.fork.enable = TRUE) # enable fork in Rstudio TODO remove for production
-
 options(datatable.verbose = FALSE)
 options(datatable.showProgress = FALSE)
 
 design <-
   Design$new("./validation/sim_design_for_trends_validation.yaml")
+
+options(future.fork.enable = TRUE) # enable fork in Rstudio TODO remove for production
 plan(multiprocess, workers = design$sim_prm$clusternumber)
 
 
@@ -367,11 +367,11 @@ if (XPS) {
   out_xps[, variable := gsub("_curr_xps$", "", variable)]
   out_xps[, type := "workHORSE"]
 
-  if (file.exists("./preparatory_work/HSE_ts.fst")) {
+  if (file.exists("../workHORSE_WS4/prepreparatory_work/HSE_ts.fst")) {
     HSE_ts <-
-      read_fst("./preparatory_work/HSE_ts.fst", as.data.table = TRUE)
+      read_fst("../workHORSE_WS4/preparatory_work/HSE_ts.fst", as.data.table = TRUE)
   } else {
-    source("./preparatory_work/preprocess_HSE.R", local = TRUE)
+    source("../workHORSE_WS4/preparatory_work/preprocess_HSE.R", local = TRUE)
   }
   HSE <-
     HSE_ts[!is.na(age) &
