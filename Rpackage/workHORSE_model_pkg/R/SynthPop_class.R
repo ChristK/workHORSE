@@ -1237,9 +1237,9 @@ SynthPop <-
             # Generate ETS (BI) ----
             message("Generate ETS")
 
-            # Note at the moment this is independent of smoking prevalence
-            # TODO calculate how many each smoker pollutes by year, SHA (not qimd) to be used in
-            # scenarios. Ideally correct for mortality
+            # Note at the moment this is independent of smoking prevalence TODO
+            # calculate how many each smoker pollutes by year, SHA (not qimd) to
+            # be used in scenarios. Ideally correct for mortality
             tbl <-
               read_fst("./lifecourse_models/ets_table.fst", as.data.table = TRUE)
             col_nam <-
