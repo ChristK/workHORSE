@@ -174,7 +174,7 @@ mean_predictAll <- function(gamlss_model, orig_data, newdata) {
   setcolorder(tt, "n")
   distr_nam <- attr(tt, "family")[[1]]
   out <- apply(tt, 1, function(x) {
-    mean(do.call(paste0("r", distr_nam), as.list(tt)))
+    mean(do.call(paste0("r", distr_nam), as.list(x)))
   })
   return(out)
 }
