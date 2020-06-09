@@ -287,7 +287,7 @@ run_simulation <- function(parameters, iteration_n) {
         }
 
         if (design$logs) print("transform prvl/dgn/mrtl to be summed" )
-        invisible(output_chunk[, lapply(.SD, clamp_int, 0L, 1L, TRUE),
+        invisible(output_chunk[, lapply(.SD, fclamp_int, 0L, 1L, TRUE),
                                .SDcols = patterns("_prvl$|_dgn$|_mrtl$")])
         if ("lqimd" %in% names(output_chunk)) output_chunk[, ("lqimd") := NULL] else output_chunk[, c("nqimd") := NULL]
 
