@@ -59,6 +59,14 @@ SynthPop <-
 
 
       #' @description Create a new SynthPop object.
+      #' If a synthpop file in \code{\link[fst]{fst-package}} format already
+      #' exists, then the synthpop is loaded from there. Otherwise it is
+      #' generated from scratch and then saved as `filename` in
+      #' \code{\link[fst]{fst-package}} format. Two additional files are saved
+      #' for each 'synthpop'. A metadata file, and an index file. A number of
+      #' primer populations are created only with socio-demographic information
+      #' and exposures. These are then used to generate the synthpops which
+      #' include additional disease epidemiology.
       #' @param mc_ The Monte Carlo iteration of the synthetic population. Each
       #'   integer generates a unique synthetic population. If `mc = 0` an
       #'   object with an empty synthpop is initiated.
@@ -72,26 +80,23 @@ SynthPop <-
       #' @return A new `SynthPop` object.
       #' @examples
       #' design <- Design$new("./validation/design_for_trends_validation.yaml")
-      #' POP$write_synthpop(1:6, design, "./test")
-      #' POP <- SynthPop$new(4L, design, "./test")
+      #' POP$write_synthpop(1:6, design)
+      #' POP <- SynthPop$new(4L, design)
       #' POP$print()
       #' POP$count_synthpop()
       #'
       #' POP$delete_synthpop(1L)
       #' POP$delete_synthpop(5:6)
       #' POP$get_filename()
-      initialize = function(mc_, design_, synthpop_dir_) {
+      initialize = function(mc_, design_) {
         stopifnot(length(mc_) == 1L, is.numeric(mc_), ceiling(mc_) >= 0L)
         stopifnot("Design" %in% class(design_))
-        stopifnot(is.character(synthpop_dir_))
 
         mc_ <- ceiling(mc_)
-        # Create synthpop_dir_ if it doesn't exists
-        synthpop_dir_ <-
-          base::normalizePath(synthpop_dir_, mustWork = FALSE)
-        if (!dir.exists(synthpop_dir_)) {
-          dir.create(synthpop_dir_, recursive = TRUE)
-          message(paste0("Directory ", synthpop_dir_, " was created"))
+        # Create synthpop_dir if it doesn't exists
+        if (!dir.exists(design_$sim_prm$synthpop_dir)) {
+          dir.create(design_$sim_prm$synthpop_dir, recursive = TRUE)
+          message(paste0("Directory ", design_$sim_prm$synthpop_dir, " was created"))
         }
 
         # get unique lsoas
@@ -101,11 +106,10 @@ SynthPop <-
 
         self$mc <- mc_
         private$design <- design_
-        private$synthpop_dir <- synthpop_dir_
+        private$synthpop_dir <- design_$sim_prm$synthpop_dir
 
         if (mc_ > 0) {
           private$filename <- private$gen_synthpop_filename(mc_,
-                                                            synthpop_dir_,
                                                             private$checksum,
                                                             design_)
 
@@ -283,7 +287,7 @@ SynthPop <-
       #' @description
       #' Generate synthpop files in parallel and writes them to disk. It skips
       #' files that are already on disk.
-      #' @param mc_ An integer vector for the Monte-Carlo iteration of the
+      #' @param mc_ An integer vector for the Monte Carlo iteration of the
       #'   synthetic population. Each integer generates a unique synthetic
       #'   population.
       #' @return The invisible `SynthPop` object.
@@ -465,7 +469,6 @@ SynthPop <-
       # gen synthpop filename for the given set of inputs
       gen_synthpop_filename =
         function(mc_,
-                 synthpop_dir_,
                  checksum_,
                  design_) {
           mc_primer <- mc_ %% design_$sim_prm$n_primers
@@ -473,7 +476,7 @@ SynthPop <-
           return(
             list(
               "synthpop" = normalizePath(
-                paste0(synthpop_dir_,
+                paste0(design_$sim_prm$synthpop_dir,
                        "/synthpop_",
                        checksum_,
                        "_",
@@ -483,7 +486,7 @@ SynthPop <-
               ),
               "metafile" = normalizePath(
                 paste0(
-                  synthpop_dir_,
+                  design_$sim_prm$synthpop_dir,
                   "/synthpop_",
                   checksum_,
                   "_",
@@ -493,7 +496,7 @@ SynthPop <-
                 mustWork = FALSE
               ),
               "indxfile" = normalizePath(
-                paste0(synthpop_dir_,
+                paste0(design_$sim_prm$synthpop_dir,
                        "/synthpop_",
                        checksum_,
                        "_",
@@ -502,7 +505,7 @@ SynthPop <-
                 mustWork = FALSE
               ),
               "primer" = normalizePath(
-                paste0(synthpop_dir_,
+                paste0(design_$sim_prm$synthpop_dir,
                        "/synthpop_",
                        checksum_,
                        "_",
@@ -631,7 +634,8 @@ SynthPop <-
                  !file.exists(filename_$indxfile) ||
                  !file.exists(filename_$primer)
                  )) {
-              suppressWarnings(sapply(filename_, file.remove))
+              suppressWarnings(sapply(filename_[names(filename_) != "primer"],
+                                      file.remove))
               # file.remove(filename_$metafile)
             }
           }
@@ -1655,29 +1659,27 @@ SynthPop <-
           # Include diseases ----
           message("Include diseases")
           setkey(dt, pid, year)
-          # for n_synthpop_aggregation > 1we need RR and disease epi to change
-          # every n_synthpop_aggregation, not in every mc_
-          mc_aggr <- ceiling(mc_/design_$sim_prm$n_synthpop_aggregation)
-
+          design_$get_lags(mc_)
           primer_colnames <- copy(names(dt))
-
+          mc_aggr <- ceiling(mc_ / design_$sim_prm$n_synthpop_aggregation)
           # I need to delete rows here so the RN with the file are
           # reproducible and don't need to save them
-          # TODO lag of 10 crashes shift_byID
-          lags_mc <-
-            get_lag_mc(mc_aggr, design_$sim_prm)
-          max_lag_mc <- max(unlist(lags_mc))
           dt <-
-            dt[year >= (design_$sim_prm$init_year - max_lag_mc) &
+            dt[year >= (design_$sim_prm$init_year - design_$max_lag_mc) &
                  between(dt$age, design_$sim_prm$ageL, design_$sim_prm$ageH)]
 
           setkey(dt, pid, year)
           dt[, pid_mrk := mk_new_simulant_markers(pid)]
 
-          finalise_synthpop(mc_, dt, design_$sim_prm, lags_mc)
+          finalise_synthpop(
+            mc_aggr,
+            dt,
+            design_$sim_prm,
+            design_$lags_mc
+          )
 
           generate_rns(
-            mc_,
+            mc_, # NOT mc_aggr
             dt,
             c(
               "rn_af_dgn"                  ,  "rn_breast_ca_dgn"          ,
@@ -1707,7 +1709,7 @@ SynthPop <-
               ) {
               output <- list()
               output <-
-                gen_output("", design_$sim_prm, lags_mc, dt[year <= yr], output)
+                gen_output("", design_$sim_prm, design_$lags_mc, dt[year <= yr], output)
               output <- rbindlist(output, idcol = FALSE)
 
               if (yr > design_$sim_prm$init_year) {
@@ -1733,8 +1735,11 @@ SynthPop <-
               absorb_dt(output, dt[year == yr, .SD, .SDcols = c("pid", nam)])
 
               for (disease_nam in .diseases) {
-                expected_deaths <- get_lifetable_all(mc_, disease_nam,
-                                                     design_$sim_prm, "mx")
+                expected_deaths <-
+                  get_lifetable_all(mc_aggr,
+                                    disease_nam,
+                                    design_$sim_prm,
+                                    "mx")
                 colnam <- paste0(disease_nam, "_mrtl")
                 setnames(expected_deaths, "qx_mc", colnam)
                 set(output, NULL, colnam, NULL)
@@ -1809,7 +1814,6 @@ SynthPop <-
                  filename_,
                  design_,
                  exclude_cols = c()) {
-          mc_aggr <- ceiling(mc_/design_$sim_prm$n_synthpop_aggregation)
 
           mm_primer <- metadata_fst(filename_$primer)
           mm_primer <- setdiff(mm_primer$columnNames,
@@ -1889,13 +1893,11 @@ SynthPop <-
           # Above necessary because of pruning  and potential merging above
 
           # simulate disease epidemiology
-          lags_mc <-
-            get_lag_mc(mc_aggr, design_$sim_prm)
-          max_lag_mc <- max(unlist(lags_mc))
+          design_$get_lags(mc_)
 
           output <- list()
           output <-
-            gen_output("", design_$sim_prm, lags_mc, dt, output)
+            gen_output("", design_$sim_prm, design_$lags_mc, dt, output)
           output <- rbindlist(output, idcol = FALSE)
 
           absorb_dt(dt, output, on = c("year", "pid"))

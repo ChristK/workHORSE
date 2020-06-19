@@ -1,8 +1,8 @@
 iteration_n: 20
 clusternumber: 20 # explicit parallelisation
 n_cpus: 1 # implicit parallelisation
-n_primers: 10
-n_synthpop_aggregation: 4 # number of synthpops to aggregate together
+n_primers: 10 # better be some multiple of n_synthpop_aggregation
+n_synthpop_aggregation: 5 # number of synthpops to aggregate together
 logs: no
 process_output: yes
 scenarios: ''
@@ -57,6 +57,7 @@ jumpiness: 1.0 # increase for more erratic jumps in trajectories
 export_xps: no
 simsmok_calibration: yes
 output_dir: ./output/
+synthpop_dir: /mnt/storage_fast/synthpop
 cancer_cure: 10 # need to be >2 & <= 10
 validation: no # or yes. Note, no true/false
 max_prvl_for_outputs: 2 # duration 1 is incidence and 2 is prevalence

@@ -30,132 +30,226 @@
 #'
 #' @export
 Design <-
-  R6::R6Class(classname = "Design",
-          public = list(
+  R6::R6Class(
+    classname = "Design",
 
-            #' @field sim_prm The simulation parameters.
-            sim_prm = NA,
+    # public ------------------------------------------------------------------
+    public = list(
+      #' @field sim_prm The simulation parameters.
+      sim_prm = NA,
+      #' @field lags_mc The disease lag times.
+      lags_mc = NA,
+      #' @field max_lag_mc The longest disease lag time.
+      max_lag_mc = NA,
 
-            #' @description Create a new design object.
-            #' @param sim_prm Either a path to a yaml file or a list with appropriate
-            #'   format.
-            #' @return A new `Design` object.
-            #' @examples
-            #' design <- Design$new("./validation/design_for_trends_validation.yaml")
-            initialize = function(sim_prm) {
+      #' @description Create a new design object.
+      #' @param sim_prm Either a path to a yaml file or a list with
+      #'   appropriate format.
+      #' @return A new `Design` object.
+      #' @examples
+      #' design <- Design$new("./validation/design_for_trends_validation.yaml")
+      initialize = function(sim_prm) {
+        data_type <- typeof(sim_prm)
+        if (data_type == "character") {
+          sim_prm <- read_yaml(base::normalizePath(sim_prm, mustWork = TRUE))
 
-              data_type <- typeof(sim_prm)
-              if (data_type == "character") {
-                sim_prm <- read_yaml(base::normalizePath(sim_prm, mustWork = TRUE))
+        } else if (data_type != "list") {
+          stop(
+            "You can initialise the object only with an R object of
+                     type `list` or a path to a YAML configuration file"
+          )
+        }
 
-              } else if (data_type != "list") {
+        # Validation
+        stopifnot(
+          c(
+            "iteration_n"           ,
+            "clusternumber"         ,
+            "n_cpus"                ,
+            "logs"                  ,
+            "process_output"        ,
+            "scenarios"             ,
+            "cols_for_output"       ,
+            "strata_for_output"     ,
+            "exposures"             ,
+            "n"                     ,
+            "init_year_long"        ,
+            "sim_horizon_max"       ,
+            "ageL"                  ,
+            "ageH"                  ,
+            "cvd_lag"               ,
+            "copd_lag"              ,
+            "cancer_lag"            ,
+            "nonmodelled_lag"       ,
+            "maxlag"                ,
+            "smoking_relapse_limit" ,
+            "stochastic"            ,
+            "kismet"                ,
+            "jumpiness"             ,
+            "export_xps"            ,
+            "simsmok_calibration"   ,
+            "output_dir"            ,
+            "synthpop_dir"          ,
+            "cancer_cure"           ,
+            "validation"            ,
+            "max_prvl_for_outputs"  ,
+            "n_primers"             ,
+            "n_synthpop_aggregation"
+          ) %in% names(sim_prm),
 
-                stop("You can initialise the object only with an R object of
-                     type `list` or a path to a YAML configuration file")
-              }
+          any(sim_prm$clusternumber == 1L, sim_prm$n_cpus == 1L),
+          sapply(sim_prm, function(x)
+            if (is.numeric(x))
+              x >= 1
+            else
+              TRUE)
+        )
 
-              # Validation
-              stopifnot(
-                c(
-                  "iteration_n"           ,
-                  "clusternumber"         ,
-                  "n_cpus"                ,
-                  "logs"                  ,
-                  "process_output"        ,
-                  "scenarios"             ,
-                  "cols_for_output"       ,
-                  "strata_for_output"     ,
-                  "exposures"             ,
-                  "n"                     ,
-                  "init_year_long"        ,
-                  "sim_horizon_max"       ,
-                  "ageL"                  ,
-                  "ageH"                  ,
-                  "cvd_lag"               ,
-                  "copd_lag"              ,
-                  "cancer_lag"            ,
-                  "nonmodelled_lag"       ,
-                  "maxlag"                ,
-                  "smoking_relapse_limit" ,
-                  "stochastic"            ,
-                  "kismet"                ,
-                  "jumpiness"             ,
-                  "export_xps"            ,
-                  "simsmok_calibration"   ,
-                  "output_dir"            ,
-                  "cancer_cure"           ,
-                  "validation"            ,
-                  "max_prvl_for_outputs"  ,
-                  "n_primers"             ,
-                  "n_synthpop_aggregation"
-                ) %in% names(sim_prm),
+        tt <- sim_prm[grepl("_lag$", names(sim_prm))]
+        l <- lapply(names(tt), function(x) {
+          disease_enum <-
+            (cumsum(unlist(tt) == tt[[x]]) * duplicated(tt))[[x]]
+          if (disease_enum == 0L)
+            disease_enum <- 1L
+          names(disease_enum) <- NULL
+          return(disease_enum)
+        })
+        names(l) <- paste0(names(tt), "_enum")
+        sim_prm <- c(sim_prm, l)
 
-                any(sim_prm$clusternumber == 1L, sim_prm$n_cpus == 1L),
-                sapply(sim_prm, function(x) if (is.numeric(x)) x >= 1 else TRUE)
-              )
+        sim_prm$init_year <- sim_prm$init_year_long - 2000L
 
-              tt <- sim_prm[grepl("_lag$", names(sim_prm))]
-              l <- lapply(names(tt), function(x) {
-                disease_enum <- (cumsum(unlist(tt) == tt[[x]]) * duplicated(tt))[[x]]
-                if (disease_enum == 0L) disease_enum <- 1L
-                names(disease_enum) <- NULL
-                return(disease_enum)
-              })
-              names(l) <- paste0(names(tt), "_enum")
-              sim_prm <- c(sim_prm, l)
+        # place holders to be updated from self$update_fromGUI(parameters)
 
-              sim_prm$init_year <- sim_prm$init_year_long - 2000L
+        sim_prm$national_qimd       <- TRUE
+        sim_prm$init_year_fromGUI   <- sim_prm$init_year
+        sim_prm$sim_horizon_fromGUI <- sim_prm$sim_horizon_max
+        sim_prm$locality            <- "England"
 
-              # place holders to be updated from self$update_fromGUI(parameters)
-
-              sim_prm$national_qimd       <- TRUE
-              sim_prm$init_year_fromGUI   <- sim_prm$init_year
-              sim_prm$sim_horizon_fromGUI <- sim_prm$sim_horizon_max
-              sim_prm$locality            <- "England"
-
-              # Create synthpop_dir_ if it doesn't exists
-              sim_prm$output_dir <-
-                base::normalizePath(sim_prm$output_dir, mustWork = FALSE)
-              if (!dir.exists(sim_prm$output_dir)) {
-                dir.create(sim_prm$output_dir, recursive = TRUE)
-                message(paste0("Directory ", sim_prm$output_dir, " was created"))
-              }
+        # Create synthpop_dir_ if it doesn't exists
+        sim_prm$output_dir <-
+          base::normalizePath(sim_prm$output_dir, mustWork = FALSE)
+        if (!dir.exists(sim_prm$output_dir)) {
+          dir.create(sim_prm$output_dir, recursive = TRUE)
+          message(paste0("Directory ", sim_prm$output_dir, " was created"))
+        }
 
 
-              self$sim_prm = sim_prm
+        self$sim_prm = sim_prm
 
-              invisible(self)
-            },
+        invisible(self)
+      },
 
-            #' @description Create a new design object.
-            #' @param path Path including filename and extension to save a yaml
-            #'   file with the simulation parameters.
-            #' @return The `Design` object.
-            save_to_disk = function(path) {
-              write_yaml(self$sim_prm, base::normalizePath(path, mustWork = FALSE))
+      #' @description Create a new design object.
+      #' @param path Path including file name and extension to save a yaml
+      #'   file with the simulation parameters.
+      #' @return The `Design` object.
+      save_to_disk = function(path) {
+        write_yaml(self$sim_prm, base::normalizePath(path, mustWork = FALSE))
 
-              invisible(self)
-            },
+        invisible(self)
+      },
 
-            #' @description Updates the design object from GUI.
-            #' @param GUI_prm A GUI parameter object.
-            #' @return The `Design` object.
-            update_fromGUI = function(GUI_prm = parameters) {
-              self$sim_prm$national_qimd       <- GUI_prm$national_qimd_checkbox
-              # T = use national qimd, F = use local qimd
-              self$sim_prm$init_year_fromGUI   <- fromGUI_timeframe(GUI_prm)["init year"] - 2000L
-              self$sim_prm$sim_horizon_fromGUI <- fromGUI_timeframe(GUI_prm)["horizon"]
-              self$sim_prm$locality            <- fromGUI_location(GUI_prm)
-              invisible(self)
-            },
+      #' @description Updates the design object from GUI.
+      #' @param GUI_prm A GUI parameter object.
+      #' @return The `Design` object.
+      update_fromGUI = function(GUI_prm = parameters) {
+        self$sim_prm$national_qimd       <- GUI_prm$national_qimd_checkbox
+        # T = use national qimd, F = use local qimd
+        self$sim_prm$init_year_fromGUI   <-
+          fromGUI_timeframe(GUI_prm)["init year"] - 2000L
+        self$sim_prm$sim_horizon_fromGUI <-
+          fromGUI_timeframe(GUI_prm)["horizon"]
+        self$sim_prm$locality            <-
+          fromGUI_location(GUI_prm)
+        if (!GUI_prm$national_qimd_checkbox) {
+          self$sim_prm$cols_for_output <-
+            c(setdiff(self$sim_prm$cols_for_output, "lqimd"), "nqimd")
+        }
+        invisible(self)
+      },
 
-            #' @description
-            #' Print the simulation parameters.
-            #' @return The `Design` object.
-            print = function() {
-              print(self$sim_prm)
+      #' @description Generates the lag per disease for a given Monte
+      #'   Carlo iteration (`mc`).
+      #' @param mc_ An integer for the Monte Carlo iteration. It takes into
+      #'   account the `n_synthpop_aggregation`.
+      #' @return The `Design` object invisibly. Updates the fields
+      #'   `lags_mc` and `max_lag_mc`
+      get_lags = function(mc_) {
+        if ((!is.na(private$mc) && mc_ != private$mc) ||
+            is.na(self$lags_mc) || is.na(self$max_lag_mc)) {
+          # for n_synthpop_aggregation > 1 we need RR and disease epi to change
+          # every n_synthpop_aggregation, not in every mc_
+          mc <-
+            ceiling(mc_ / self$sim_prm$n_synthpop_aggregation)
 
-              invisible(self)
-            }
-          ))
+          # argument checks in the private function get_lag_mc_hlp
+          nam <-
+            grep("_lag$", names(self$sim_prm), value = TRUE)
 
+          if (self$sim_prm$stochastic) {
+            out <- vector("list", length(nam))
+            names(out) <- nam
+            self$lags_mc <-
+              invisible(lapply(nam, function(x) {
+                private$get_lag_mc_hlp(mc, self$sim_prm[[paste0(x, "_enum")]], self$sim_prm[[x]])
+              }))
+          } else {
+            self$lags_mc <- self$sim_prm[nam]
+          }
+          names(self$lags_mc) <- nam
+          self$lags_mc$plco_lag <-
+            6L # for lung ca plco formula
+          self$max_lag_mc <- max(unlist(self$lags_mc))
+          private$mc <- mc_
+        }
+        invisible(self)
+      },
+
+
+      #' @description
+      #' Print the simulation parameters.
+      #' @return The `Design` object.
+      print = function() {
+        print(self$sim_prm)
+
+        invisible(self)
+      }
+    ),
+
+    # private ------------------------------------------------------------------
+     private = list(
+      mc = NA,
+
+      get_lag_mc_hlp =
+        function(mc,
+                 disease_enum, # 1:10
+                 lag) {
+          # 2:9
+          stopifnot(between(disease_enum, 1, 10),
+                    between(lag, 2, 9),
+                    between(mc, 1, 1e3))
+          colnam <- paste0("lag_", lag)
+          filenam <-
+            "./disease_epidemiology/disease_lags_l.fst"
+          filenam_indx <-
+            "./disease_epidemiology/disease_lags_indx.fst"
+          indx <-
+            read_fst(
+              filenam_indx,
+              from = mc,
+              to = mc,
+              as.data.table = TRUE
+            )
+          out  <-
+            read_fst(
+              filenam,
+              colnam,
+              from = indx$from,
+              to = indx$to,
+              as.data.table = TRUE
+            )[disease_enum, get(colnam)]
+          out
+        }
+    )
+  )

@@ -73,14 +73,6 @@ fromGUI_timeframe <- function(parameters) {
 # fromGUI_timeframe(parameters)["horizon"]
 
 #' @export
-fromGUI_lqimd <- function(parameters, POP, design) {
-  if (!parameters$national_qimd_checkbox) {
-    setnames(POP, c("qimd", "lqimd"), c("nqimd", "qimd"))
-    design$cols_for_output <<- c(setdiff(design$cols_for_output, "lqimd"), "nqimd")
-  }
-}
-
-#' @export
 fromGUI_scenario_count <- function(parameters_dt) {
   if (!is.data.table(parameters_dt)) parameters_dt <- fromGUI_to_dt(parameters_dt)
   # TODO make it work for more than one parallel and one serial ensemble scenarios
