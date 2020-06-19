@@ -21,7 +21,8 @@ Imports: Rcpp (>= 1.0.2),
          mc2d,
          digest,
          R6,
-         yaml
+         yaml,
+         shinythemes
 LinkingTo: Rcpp, 
            dqrng
 RoxygenNote: 7.1.0
