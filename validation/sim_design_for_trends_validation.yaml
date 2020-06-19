@@ -1,4 +1,4 @@
-iteration_n: 100
+iteration_n: 15
 clusternumber: 10
 n_cpus: 1
 n_primers: 5
@@ -40,7 +40,7 @@ exposures:
 - bmi
 - sbp
 - tchol
-'n': 200000
+'n': 100000
 init_year_long: 2013
 sim_horizon_max: 18
 ageL: 30
@@ -57,6 +57,7 @@ jumpiness: 1.0
 export_xps: no
 simsmok_calibration: yes
 output_dir: ./output/
+synthpop_dir: /mnt/storage_slow/synthpop
 cancer_cure: 10
 validation: no
 max_prvl_for_outputs: 2

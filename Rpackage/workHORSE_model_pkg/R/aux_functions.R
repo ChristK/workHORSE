@@ -603,53 +603,25 @@ get_rr_mc <-
   }
 # get_rr_mc(1, "chd", "sbp", TRUE)
 
-get_lag_mc_hlp <-
-  function(mc,
-           disease_enum, # 1:10
-           lag) {
-    # 2:9
-    stopifnot(between(disease_enum, 1, 10),
-              between(lag, 2, 9),
-              between(mc, 1, 2e3))
-    colnam <- paste0("lag_", lag)
-    filenam <- "./disease_epidemiology/disease_lags_l.fst"
-    filenam_indx <- "./disease_epidemiology/disease_lags_indx.fst"
-    indx <-
-      read_fst(
-        filenam_indx,
-        from = mc,
-        to = mc,
-        as.data.table = TRUE
-      )
-    out  <-
-      read_fst(
-        filenam,
-        colnam,
-        from = indx$from,
-        to = indx$to,
-        as.data.table = TRUE
-      )[disease_enum, get(colnam)]
-    out
-  }
 
-#' @export
-get_lag_mc <- function(mc, design) {
-  # arguement checks in the helper function get_lag_mc_hlp
-  nam <- grep("_lag$", names(design), value = TRUE)
 
-  if (design$stochastic) {
-    out <- vector("list", length(nam))
-    names(out) <- nam
-    invisible(lapply(nam, function(x) {
-      out[x] <<-
-        get_lag_mc_hlp(mc, design[[paste0(x, "_enum")]], design[[x]])
-    }))
-  } else {
-    out <- design[nam]
-  }
-  out$plco_lag <- 6L # for lung ca plco formula
-  out
-}
+# get_lag_mc <- function(mc, design) {
+#   # argument checks in the helper function get_lag_mc_hlp
+#   nam <- grep("_lag$", names(design), value = TRUE)
+#
+#   if (design$stochastic) {
+#     out <- vector("list", length(nam))
+#     names(out) <- nam
+#     invisible(lapply(nam, function(x) {
+#       out[x] <<-
+#         get_lag_mc_hlp(mc, design[[paste0(x, "_enum")]], design[[x]])
+#     }))
+#   } else {
+#     out <- design[nam]
+#   }
+#   out$plco_lag <- 6L # for lung ca plco formula
+#   out
+# }
 
 
 #' @export
@@ -956,7 +928,7 @@ generate_eq5d_decr <- function(dt) {
       0.18361)
 
   new_ncc <-
-    clamp_int(
+    fclamp_int(
       dt$ncc + (dt$htn_prvl > 0L) + (dt$af_prvl > 0L) +
         (dt$t2dm_prvl > 0L) +  (dt$chd_prvl > 0L) +
         (dt$stroke_prvl > 0L) + (dt$poststroke_dementia_prvl > 0L) +
@@ -1716,71 +1688,37 @@ run_scenario <-
   function(scenario_nam,
            dt,
            parameters_dt,
-           lags_mc,
-           mc,
            design,
            output,
            timing = c(TRUE, FALSE)) {
     if (timing[[1]])
       ptm <- proc.time()
     # The order is important
-    set_eligible(scenario_nam, dt, parameters_dt)
-    set_invitees(scenario_nam, dt, parameters_dt)
-    set_attendees(scenario_nam, dt, parameters_dt)
-    set_px(scenario_nam, dt, parameters_dt) # Too slow
-    set_lifestyle(scenario_nam, dt, parameters_dt, design)
+    set_eligible( scenario_nam, dt$pop, parameters_dt)
+    set_invitees( scenario_nam, dt$pop, parameters_dt)
+    set_attendees(scenario_nam, dt$pop, parameters_dt)
+    set_px(       scenario_nam, dt$pop, parameters_dt) # Too slow
+    set_lifestyle(scenario_nam, dt$pop, parameters_dt, design$sim_prm)
 
-    # NOTE commented code below is wrong
     # TODO I can calculate the effect of xps change to disease prb for
     # efficiency No need to recalculate disease probability for everyone only
     # apply disease impact on attendees (works only with kismet == TRUE)
-    # if (design$kismet) {
-    #   nam <- grep("^prb_|_prvl$|_dgn$", names(dt), value = TRUE)
-    #   nam <- grep("^rn_|^ckd|^ra_|^cst", nam, value = TRUE, invert = TRUE)
-    #   nam2 <- paste0(nam, "_sc")
-    #   for (colnam in nam) {
-    #     set(dt, NULL, paste0(colnam, "_sc"), dt[[colnam]])
-    #   }
-    #
-    #
-    #   tt <- dt[attendees_sc > 0L, unique(pid)]
-    #   if (length(tt) > 0) {
-    #     dtf <- dt[pid %in% tt]
-    #     setkey(dtf, pid, year) # to be sure
-    #     nam <- grep("_prvl_sc$|_dgn_sc$", names(dtf), value = TRUE)
-    #     for (i in nam) set(dtf, NULL, i, NULL)
-    #   }  else dtf <- dt # inefficient but can't break from *apply
-    # } else dtf <- dt
 
-    af_model(scenario_nam, mc, dt, design, timing = timing[[2]])
-    htn_model(scenario_nam, mc, dt, design, timing = timing[[2]])
-    t2dm_model(scenario_nam, mc, dt, design, lags_mc, timing = timing[[2]])
-    chd_model(scenario_nam, mc, dt, design, lags_mc, timing = timing[[2]])
-    stroke_model(scenario_nam, mc, dt, design, lags_mc, timing = timing[[2]])
-    poststroke_dementia_model(scenario_nam, mc, dt, design, lags_mc,
-                              timing = timing[[2]])
-    copd_model(scenario_nam, mc, dt, design, lags_mc, timing = timing[[2]])
-    lung_ca_model(scenario_nam, mc, dt, design, lags_mc, timing = timing[[2]])
-    colon_ca_model(scenario_nam, mc, dt, design, lags_mc, timing = timing[[2]])
-    breast_ca_model(scenario_nam, mc, dt, design, lags_mc, timing = timing[[2]])
-    nonmodelled_model(scenario_nam, mc, dt, design, lags_mc,
-                      timing = timing[[2]])
+    af_model(                 scenario_nam, dt$mc, dt$pop, design$sim_prm, timing = timing[[2]])
+    htn_model(                scenario_nam, dt$mc, dt$pop, design$sim_prm, timing = timing[[2]])
+    t2dm_model(               scenario_nam, dt$mc, dt$pop, design$sim_prm, design$lags_mc, timing = timing[[2]])
+    chd_model(                scenario_nam, dt$mc, dt$pop, design$sim_prm, design$lags_mc, timing = timing[[2]])
+    stroke_model(             scenario_nam, dt$mc, dt$pop, design$sim_prm, design$lags_mc, timing = timing[[2]])
+    poststroke_dementia_model(scenario_nam, dt$mc, dt$pop, design$sim_prm, design$lags_mc, timing = timing[[2]])
+    copd_model(               scenario_nam, dt$mc, dt$pop, design$sim_prm, design$lags_mc, timing = timing[[2]])
+    lung_ca_model(            scenario_nam, dt$mc, dt$pop, design$sim_prm, design$lags_mc, timing = timing[[2]])
+    colon_ca_model(           scenario_nam, dt$mc, dt$pop, design$sim_prm, design$lags_mc, timing = timing[[2]])
+    breast_ca_model(          scenario_nam, dt$mc, dt$pop, design$sim_prm, design$lags_mc, timing = timing[[2]])
+    nonmodelled_model(        scenario_nam, dt$mc, dt$pop, design$sim_prm, design$lags_mc, timing = timing[[2]])
 
-    # if (design$kismet) absorb_dt(dt, dtf[, .SD, .SDcols =
-    # patterns("_sc$|pid|year")], on = c("pid", "year"))
-    # rm(dtf)
+    output <- gen_output(scenario_nam, design$sim_prm, design$lags_mc, dt$pop, output)
 
-    # TODO export scenario xps for additional validation here
-    # if (design$export_xps) export_xps(mc_iter, POP, TRUE, "xps_output.csv")
-    # if (design$validation) {
-    #   export_all_incd(mc_iter, POP, TRUE)
-    #   export_all_prvl(mc_iter, POP, TRUE)
-    #   export_mrtl(mc_iter, POP, TRUE)
-    # }
-
-    output <- gen_output(scenario_nam, design, lags_mc, dt, output)
-
-    dt[, (grep("_sc$", names(dt), value = TRUE)) := NULL]
+    dt$pop[, (grep("_sc$", names(dt$pop), value = TRUE)) := NULL]
 
     if (timing[[1]])
       print(proc.time() - ptm)
@@ -2107,3 +2045,314 @@ simulate_init_prvl <-
     setnafill(dt, "c", 0L, cols = nam)
     dt[, (col_nam) := NULL]
   }
+
+
+#' @export
+run_simulation <- function(parameters, iteration_n, design) {
+  # NOTE iteration should be a vector, i.e. 1:20
+  output_dir <- function(x = "") {
+    file.path(design$sim_prm$output_dir, x)
+  }
+
+  # parameters <- qread("./DELETEme_parameters.qs") # TODO remove before release
+  # iteration_n = 1:20L
+  parameters_dt <- workHORSEmisc::fromGUI_to_dt(parameters)
+  design$update_fromGUI(parameters)
+
+  if (design$sim_prm$logs)
+    time_mark("start parallelisation")
+
+  # Parallelisation ----
+  if (Sys.info()[1] == "Windows") {
+    cl <- makeCluster(design$sim_prm$clusternumber / 2L)
+    registerDoParallel(cl)
+  } else {
+    registerDoParallel(design$sim_prm$clusternumber / 2L)
+  }
+  foreach(
+    mc_iter = iteration_n,
+    .inorder = FALSE,
+    .verbose = TRUE,
+    .packages = c(
+      "data.table",
+      "workHORSEmisc",
+      "gamlss.dist",
+      # For distr in prevalence.R
+      "dqrng",
+      "qs",
+      "fst",
+      "wrswoR",
+      "CKutils"
+    )
+  ) %dopar% {
+    if (design$sim_prm$logs) {
+      if (!dir.exists(output_dir("logs/"))) {
+        dir.create(normalizePath(output_dir("logs/")), FALSE, TRUE)
+      }
+      sink(
+        file = normalizePath(output_dir(
+          paste0("logs/log", mc_iter, ".txt")
+        ), mustWork = FALSE),
+        append = TRUE,
+        type = "output",
+        split = FALSE
+      )
+    }
+    # mc_iter = 1L
+    design$get_lags(mc_iter)
+    POP <- SynthPop$new(mc_iter, design)
+    if (!parameters$national_qimd_checkbox) {
+      setnames(POP$pop, c("qimd", "lqimd"), c("nqimd", "qimd"))
+    }
+
+    # Run scenarios
+    if (design$sim_prm$logs)
+      print("scenario outputs")
+    output_chunk <- list()
+    output_chunk <- sapply(
+      fromGUI_scenario_names(parameters_dt)$true_scenario,
+      run_scenario,
+      POP,
+      parameters_dt,
+      design,
+      output_chunk,
+      USE.NAMES = FALSE
+    )
+
+
+    rm(POP)
+    # invisible(gc(verbose = FALSE, full = TRUE))
+
+    invisible(lapply(output_chunk, setDT))
+    invisible(lapply(output_chunk, function(x) {
+      oldnam <- grep("_sc.*$", names(x), value = TRUE)
+      newnam <- gsub("_sc.*$", "", oldnam)
+      setnames(x, oldnam, newnam)
+    }))
+    output_chunk <- rbindlist(output_chunk, idcol = "scenario")
+
+    # POP[year == 30, sum(t2dm_prvl>0)]
+    # output_chunk[year == 30 & scenario == "sc1", sum(t2dm_prvl>0)]
+
+    setkey(output_chunk, scenario, pid, year) # for identify_longdeads
+    output_chunk <-
+      output_chunk[output_chunk$year >= design$sim_prm$init_year_fromGUI &
+                     between(output_chunk$age,
+                             design$sim_prm$ageL,
+                             design$sim_prm$ageH) &
+                     !identify_longdeads(all_cause_mrtl, pid_mrk), ]
+    output_chunk[, pid_mrk  := mk_new_simulant_markers(pid)]
+    output_chunk[, scenario := factor(scenario)]
+    generate_health_econ(output_chunk)
+    output_chunk[, c("ncc", "pid", "income", "education") := NULL]
+
+    # gen incd
+    for (nam in grep("_prvl$", names(output_chunk), value = TRUE)) {
+      newnam <- gsub("_prvl$", "_incd", nam)
+      set(output_chunk,
+          NULL,
+          newnam,
+          fifelse(output_chunk[[nam]] == 1L, 1L, 0L))
+    }
+
+    if (design$sim_prm$logs)
+      print("transform prvl/dgn/mrtl to be summed")
+    invisible(output_chunk[, lapply(.SD, fclamp_int, 0L, 1L, TRUE),
+                           .SDcols = patterns("_prvl$|_dgn$|_mrtl$")])
+    if ("lqimd" %in% names(output_chunk)) {
+      output_chunk[, ("lqimd") := NULL]
+    } else {
+      output_chunk[, ("nqimd") := NULL]
+    }
+
+    output_chunk[, year := year + 2000L]
+    to_agegrp(output_chunk, 20L, 89L, "age", "agegrp", TRUE, 30L)
+
+    # Scale-up to ONS population projections
+    for (nam in grep("_prvl$|_dgn$|_incd|_mrtl$|_cost$|^eq5d",
+                     names(output_chunk),
+                     value = TRUE)) {
+      set(output_chunk, NULL, nam, output_chunk[[nam]] * output_chunk$wt)
+    }
+
+    # summarise by strata
+    output_chunk[, c("age", "pid_mrk") := NULL]
+    output_chunk <-
+      output_chunk[, lapply(.SD, sum),
+                   keyby = eval(design$sim_prm$strata_for_output)]
+    setnames(output_chunk, "wt", "pops")
+    output_chunk[, mc := ceiling(mc_iter /
+                                   design$sim_prm$n_synthpop_aggregation)]
+    tt <- fromGUI_scenario_names(parameters_dt)
+    setnames(tt, "true_scenario", "scenario")
+    absorb_dt(output_chunk, tt)
+
+
+    write_fst(output_chunk, output_dir(
+      paste0(
+        "chunk_",
+        ceiling(mc_iter / design$sim_prm$n_synthpop_aggregation),
+        "_",
+        mc_iter %% design$sim_prm$n_synthpop_aggregation,
+        ".fst"
+      )
+    ), 100)
+
+    rm(output_chunk)
+    # invisible(gc(verbose = FALSE, full = TRUE))
+    if (design$sim_prm$logs)
+      sink()
+    NULL
+  }
+
+  if (exists("cl"))
+    stopCluster(cl)
+
+  if (design$sim_prm$logs)
+    time_mark("End of parallelisation")
+
+  while (sink.number() > 0L)
+    sink()
+
+  filenam <-
+    output_dir(
+      paste0(
+        "chunk_",
+        ceiling(iteration_n / design$sim_prm$n_synthpop_aggregation),
+        "_",
+        iteration_n %% design$sim_prm$n_synthpop_aggregation,
+        ".fst"
+      )
+    )
+  filenam <- filenam[file.exists(filenam)]
+  output <-
+    rbindlist(lapply(filenam, read_fst, as.data.table = TRUE))
+  file.remove(filenam)
+  strata <- c("mc", design$sim_prm$strata_for_output, "friendly_name")
+
+  output <- output[, lapply(.SD, sum), keyby = eval(strata)]
+
+  # spread overhead policy costs to individuals
+  for (sc_nam in levels(output$scenario)) {
+    l <- fromGUI_scenario_parms(sc_nam, parameters_dt)
+    for (nam in grep("_ovrhd$", names(l), value = TRUE)) {
+      newnam <- gsub("^sc_ls_|_cost_ovrhd$", "", nam)
+      newnam <- paste0(newnam, "_ovrhd_cost")
+      output[, (newnam) := pops * l[[nam]] / sum(pops), by = year]
+    }
+  }
+
+  # calculate useful cost indices
+  output[, policy_cost := invitation_cost + attendees_cost +
+           active_days_cost + bmi_cost + alcohol_cost + smoking_cost +
+           alcoholreduc_ovrhd_cost + smkcess_ovrhd_cost +
+           wghtloss_ovrhd_cost + pa_ovrhd_cost]
+
+  setkey(output, year, friendly_name)
+
+  # fwrite_safe(output, output_dir("output.csvy"))
+
+  # calculate net cost/effect
+  baseline <-
+    output[scenario == fromGUI_baseline_scenario(parameters_dt)]
+
+  strata <- setdiff(strata, c("scenario", "friendly_name"))
+
+
+  output[baseline, on = strata, `:=` (
+    net_utility = eq5d - i.eq5d,
+    net_policy_cost = policy_cost - i.policy_cost,
+    net_healthcare_cost = healthcare_cost - i.healthcare_cost,
+    net_socialcare_cost = socialcare_cost - i.socialcare_cost,
+    net_informal_care_cost = informal_care_cost - i.informal_care_cost,
+    net_productivity_cost = productivity_cost - i.productivity_cost,
+    # (higher is better)
+    cpp_cvd = i.cvd_incd - cvd_incd,
+    cpp_chd = i.chd_incd - chd_incd,
+    cpp_stroke = i.stroke_incd - stroke_incd,
+    cpp_poststroke_dementia = i.poststroke_dementia_incd - poststroke_dementia_incd,
+    cpp_copd = i.copd_incd - copd_incd,
+    cpp_lung_ca = i.lung_ca_incd - lung_ca_incd,
+    cpp_colon_ca = i.colon_ca_incd - colon_ca_incd,
+    cpp_breast_ca = i.breast_ca_incd - breast_ca_incd,
+    cpp_htn = i.htn_incd - htn_incd,
+    cpp_af = i.af_incd - af_incd,
+    cpp_t2dm = i.t2dm_incd - t2dm_incd,
+
+    cypp_cvd = i.cvd_prvl - cvd_prvl,
+    cypp_chd = i.chd_prvl - chd_prvl,
+    cypp_stroke = i.stroke_prvl - stroke_prvl,
+    cypp_poststroke_dementia = i.poststroke_dementia_prvl - poststroke_dementia_prvl,
+    cypp_copd = i.copd_prvl - copd_prvl,
+    cypp_lung_ca = i.lung_ca_prvl - lung_ca_prvl,
+    cypp_colon_ca = i.colon_ca_prvl - colon_ca_prvl,
+    cypp_breast_ca = i.breast_ca_prvl - breast_ca_prvl,
+    cypp_htn = i.htn_prvl - htn_prvl,
+    cypp_af = i.af_prvl - af_prvl,
+    cypp_t2dm = i.t2dm_prvl - t2dm_prvl,
+
+    dpp_nonmodelled = i.nonmodelled_mrtl - nonmodelled_mrtl,
+    dpp_chd = i.chd_mrtl - chd_mrtl,
+    dpp_stroke = i.stroke_mrtl - stroke_mrtl,
+    dpp_copd = i.copd_mrtl - copd_mrtl,
+    dpp_lung_ca = i.lung_ca_mrtl - lung_ca_mrtl,
+    dpp_colon_ca = i.colon_ca_mrtl - colon_ca_mrtl,
+    dpp_breast_ca = i.breast_ca_mrtl - breast_ca_mrtl,
+    dpp_all_cause = i.all_cause_mrtl - all_cause_mrtl
+  )]
+
+  output[, `:=` (
+    total_hcp_cost = net_policy_cost + net_healthcare_cost,
+    # healthcare perspective
+    total_hscp_cost = net_policy_cost + net_healthcare_cost +  net_socialcare_cost,
+    societal_cost = net_policy_cost + net_healthcare_cost +  net_socialcare_cost +
+      net_informal_care_cost - net_productivity_cost
+  )]
+
+  output[, mc := factor(mc)] # helpful later when I calculate cumsums
+  write_fst(output, output_dir("results.fst"), 100)
+  return(output)
+}
+
+#' @export
+mythemeSelector <- function() {
+  # from https://stackoverflow.com/questions/47827337/prodution-ready-themeselector-for-shiny
+  div(
+    div(
+      # tags$style(type='text/css', ".shiny-input-container { height: 20px; line-height: 0.86; font-size: 12px; margin: 0px; padding: 0px; border: 0px;}"),
+      #
+      # tags$style(type='text/css', ".form-control { height: 20px; line-height: 1.1; font-size: 12px; margin-left: 20px; padding: 0px; border: 0px;}"),
+      selectInput("shinytheme_selector", "Please select another theme",
+                  c("default", shinythemes:::allThemes()),
+                  selectize = FALSE, width = "100%"
+      )
+    ),
+    tags$script(
+      "$('#shinytheme_selector')
+        .on('change', function(el) {
+        var allThemes = $(this).find('option').map(function() {
+        if ($(this).val() === 'default')
+        return 'bootstrap';
+        else
+        return $(this).val();
+        });
+        // Find the current theme
+        var curTheme = el.target.value;
+        if (curTheme === 'default') {
+        curTheme = 'bootstrap';
+        curThemePath = 'shared/bootstrap/css/bootstrap.min.css';
+        } else {
+        curThemePath = 'shinythemes/css/' + curTheme + '.min.css';
+        }
+        // Find the <link> element with that has the bootstrap.css
+        var $link = $('link').filter(function() {
+        var theme = $(this).attr('href');
+        theme = theme.replace(/^.*\\//, '').replace(/(\\.min)?\\.css$/, '');
+        return $.inArray(theme, allThemes) !== -1;
+        });
+        // Set it to the correct path
+        $link.attr('href', curThemePath);
+        });"
+    )
+  )
+}

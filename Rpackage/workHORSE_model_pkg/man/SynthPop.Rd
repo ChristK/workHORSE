@@ -17,8 +17,8 @@ To be completed...
 ## ------------------------------------------------
 
 design <- Design$new("./validation/design_for_trends_validation.yaml")
-POP$write_synthpop(1:6, design, "./test")
-POP <- SynthPop$new(4L, design, "./test")
+POP$write_synthpop(1:6, design)
+POP <- SynthPop$new(4L, design)
 POP$print()
 POP$count_synthpop()
 
@@ -60,8 +60,16 @@ first generated, then saved to disk, and then loaded from disk.}
 \if{latex}{\out{\hypertarget{method-new}{}}}
 \subsection{Method \code{new()}}{
 Create a new SynthPop object.
+If a synthpop file in \code{\link[fst]{fst-package}} format already
+exists, then the synthpop is loaded from there. Otherwise it is
+generated from scratch and then saved as `filename` in
+\code{\link[fst]{fst-package}} format. Two additional files are saved
+for each 'synthpop'. A metadata file, and an index file. A number of
+primer populations are created only with socio-demographic information
+and exposures. These are then used to generate the synthpops which
+include additional disease epidemiology.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{SynthPop$new(mc_, design_, synthpop_dir_)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{SynthPop$new(mc_, design_)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -88,8 +96,8 @@ A new `SynthPop` object.
 \subsection{Examples}{
 \if{html}{\out{<div class="r example copy">}}
 \preformatted{design <- Design$new("./validation/design_for_trends_validation.yaml")
-POP$write_synthpop(1:6, design, "./test")
-POP <- SynthPop$new(4L, design, "./test")
+POP$write_synthpop(1:6, design)
+POP <- SynthPop$new(4L, design)
 POP$print()
 POP$count_synthpop()
 
@@ -214,7 +222,7 @@ files that are already on disk.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{mc_}}{An integer vector for the Monte-Carlo iteration of the
+\item{\code{mc_}}{An integer vector for the Monte Carlo iteration of the
 synthetic population. Each integer generates a unique synthetic
 population.}
 }

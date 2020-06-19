@@ -19,66 +19,43 @@
 ## to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 ## Boston, MA 02110-1301 USA.
 
+# file.remove(list.files("./output/", full.names = TRUE, recursive = TRUE))
 
-design <- list()
-design$iteration_n    <- 20L # Overrides design saved in file. If changed in design.R all outputs will be deleted
-design$clusternumber  <- parallel::detectCores()/2L # Change to your number of CPU cores (explicit parallelisation)
-design$n_cpus         <- 1L  # Change to your number of CPU cores (implicit parallelisation/Open MP)
-design$logs           <- TRUE
-design$process_output <- TRUE
-design$scenarios      <- ""
-source(file = "./simulation/design.R", local = TRUE)
-
-
-source(file = "./simulation/initialisation.R", local = TRUE)
-strata_for_gui <- c("mc", "friendly_name", design$strata_for_output)
-# plan(multiprocess)
-# options(future.globals.maxSize = 6 * 1024^3)
-
-
-
-mythemeSelector <- function() {
-  # from https://stackoverflow.com/questions/47827337/prodution-ready-themeselector-for-shiny
-  div(
-    div(
-      # tags$style(type='text/css', ".shiny-input-container { height: 20px; line-height: 0.86; font-size: 12px; margin: 0px; padding: 0px; border: 0px;}"),
-      #
-      # tags$style(type='text/css', ".form-control { height: 20px; line-height: 1.1; font-size: 12px; margin-left: 20px; padding: 0px; border: 0px;}"),
-      selectInput("shinytheme_selector", "Please select another theme",
-                  c("default", shinythemes:::allThemes()),
-                  selectize = FALSE, width = "100%"
-      )
-    ),
-    tags$script(
-      "$('#shinytheme_selector')
-        .on('change', function(el) {
-        var allThemes = $(this).find('option').map(function() {
-        if ($(this).val() === 'default')
-        return 'bootstrap';
-        else
-        return $(this).val();
-        });
-        // Find the current theme
-        var curTheme = el.target.value;
-        if (curTheme === 'default') {
-        curTheme = 'bootstrap';
-        curThemePath = 'shared/bootstrap/css/bootstrap.min.css';
-        } else {
-        curThemePath = 'shinythemes/css/' + curTheme + '.min.css';
-        }
-        // Find the <link> element with that has the bootstrap.css
-        var $link = $('link').filter(function() {
-        var theme = $(this).attr('href');
-        theme = theme.replace(/^.*\\//, '').replace(/(\\.min)?\\.css$/, '');
-        return $.inArray(theme, allThemes) !== -1;
-        });
-        // Set it to the correct path
-        $link.attr('href', curThemePath);
-        });"
-    )
-  )
+cat("Initialising workHORSE model...\n\n")
+if (!require(CKutils)) {
+  if (!require(remotes))
+    install.packages("remotes")
+  remotes::install_github("ChristK/CKutils")
+  library(CKutils)
+}
+if (!require(workHORSEmisc)) {
+  if (!require(remotes))
+    install.packages("remotes")
+  roxygen2::roxygenise("./Rpackage/workHORSE_model_pkg/", clean = TRUE)
+  # TODO remove before deployment
+  remotes::install_local("./Rpackage/workHORSE_model_pkg/", force = TRUE)
+  library(workHORSEmisc)
 }
 
+options(rgl.useNULL = TRUE)  # suppress error by demography in rstudio server
+dependencies(yaml::read_yaml("./dependencies.yaml"))
+
+design <- Design$new("./simulation/sim_design.yaml")
+
+options(future.fork.enable = TRUE) # enable fork in Rstudio
+# TODO remove for production
+# plan(multiprocess, workers = design$clusternumber)
+plan(list(
+  tweak(multiprocess, workers = 2L),
+  tweak(multiprocess, workers = design$sim_prm$clusternumber / 2L)
+))
+# for future apply to work within future
+
+
+options(datatable.verbose = FALSE)
+options(datatable.showProgress = FALSE)
+
+strata_for_gui <- c("mc", "friendly_name", design$sim_prm$strata_for_output)
 
 
 
@@ -86,11 +63,6 @@ def_col <- viridis(16, option = "D")
 def_col_small <- def_col[c(1, 9, 5, 3, 7, 2, 8, 4, 6)]
 
 def_sym <- c("circle-dot", "square", "diamond", "cross", "triangle-up", "pentagon", " star", "hexagon-open-dot", "triangle-down")
-
-
-
-#, ceiling(length(def_col)/9)]
-
 
 # Produce scenario tabs 2-9 using scenario 1 as a template if not exist ------
 for (i in 2:9) {
@@ -127,7 +99,7 @@ most_cost_effective <- function(dt) {
  names(dt[year == max(year), .(nmb_cml, mc, friendly_name)
      ][, sum_dt(.SD, c("mc", "friendly_name"), character(0))
       ][, friendly_name[which.max(nmb_cml)], by = mc
-       ][, head(sort(counts(V1), decreasing = TRUE), 1)])
+       ][, first(sort(counts(V1), decreasing = TRUE))])
 }
 
 rank_cost_effective <- function(dt) {
@@ -143,7 +115,8 @@ most_effective <- function(dt) {
               cpp_cml = sum(net_utility_cml)
 
             ), by = .(mc, friendly_name)
-            ][, friendly_name[which.max(cpp_cml)], by = mc][, head(sort(counts(V1), decreasing = TRUE), 1)])
+            ][, friendly_name[which.max(cpp_cml)], by = mc
+              ][, first(sort(counts(V1), decreasing = TRUE))])
 }
 
 most_equitable <- function(dt) {

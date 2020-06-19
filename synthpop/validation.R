@@ -21,7 +21,7 @@
 
 cat("Validating workHORSE model...\n\n")
 setwd("~/My Models/workHORSE/")
-XPS <- TRUE
+XPS <- FALSE
 delete_previous_results <- FALSE # any change to workHORSEmisc deletes output
 
 # necessary for Rscript
@@ -30,10 +30,6 @@ delete_previous_results <- FALSE # any change to workHORSEmisc deletes output
 output_dir <-
   function(x = character(0))
     paste0("./validation/plot_trends/", x)
-
-synthpop_dir <-
-  function(x = character(0))
-    paste0("/mnt/storage_slow/synthpop/validation", x)
 
 if (delete_previous_results)
   file.remove(list.files(output_dir(), full.names = TRUE, recursive = TRUE))
@@ -95,11 +91,7 @@ dependencies(
     "dichromat",
     "future",
     "data.table"
-  ),
-  TRUE,
-  FALSE,
-  FALSE,
-  FALSE
+  )
 )
 theme_set(theme_cowplot())
 options(datatable.verbose = FALSE)
@@ -286,7 +278,7 @@ if (all(file.exists(output_dir(filenames)))) {
 } else {
   # delete old
   #   SynthPop$
-  #   new(0, design, synthpop_dir())$
+  #   new(0, design)$
   # delete_synthpop(to_delete) #$
   # write_synthpop(1:design$sim_prm$iteration_n)$
   # count_synthpop()
@@ -314,11 +306,11 @@ if (all(file.exists(output_dir(filenames)))) {
 
       if (is.null(to_delete)) {
         SynthPop$ # delete existing file but not primer
-        new(0, design, synthpop_dir())$
+        new(0, design)$
         delete_synthpop(mc_iter)
       }
 
-      POP <- SynthPop$new(mc_iter, design, synthpop_dir())
+      POP <- SynthPop$new(mc_iter, design)
 
       nam <- grep("^rn_", names(POP$pop), value = TRUE)
       POP$pop[, (nam) := NULL]
@@ -393,11 +385,11 @@ if (XPS) {
   HSE[, smok_dur := 0]
   HSE[smok_status == "2", smok_dur := smok_dur_ex]
   HSE[smok_status == "3", smok_dur := smok_dur_ex]
-  HSE[smok_status == "4", smok_dur := clamp_int(age - smok_init_age, 0L, 100L)]
+  HSE[smok_status == "4", smok_dur := clamp(age - smok_init_age, 0L, 100L)]
   HSE[, smok_cig := 0]
   HSE[smok_status == "2", smok_cig := 1L]
-  HSE[smok_status == "3", smok_cig := clamp_int(smok_cig_ex, 1L, 100L)]
-  HSE[smok_status == "4", smok_cig := clamp_int(smok_cig_curr, 1L, 100L)]
+  HSE[smok_status == "3", smok_cig := clamp(smok_cig_ex, 1L, 100L)]
+  HSE[smok_status == "4", smok_cig := clamp(smok_cig_curr, 1L, 100L)]
   setnafill(HSE, "c", 0L, cols = "smok_quit_yrs")
 
   HSE[, ets := as.numeric(as.character(ets))]
