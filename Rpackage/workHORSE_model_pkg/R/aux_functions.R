@@ -2314,6 +2314,14 @@ run_simulation <- function(parameters, iteration_n, design) {
   return(output)
 }
 
+# Function is borrowed from the shinythemes:::allThemes(), because it is not
+# exported there
+allthemes <- function() {
+  themes <- dir(system.file("shinythemes/css", package = "shinythemes"),
+                "*.min.css")
+  sub(".min.css", "", themes)
+}
+
 #' @export
 mythemeSelector <- function() {
   # from https://stackoverflow.com/questions/47827337/prodution-ready-themeselector-for-shiny
@@ -2323,7 +2331,7 @@ mythemeSelector <- function() {
       #
       # tags$style(type='text/css', ".form-control { height: 20px; line-height: 1.1; font-size: 12px; margin-left: 20px; padding: 0px; border: 0px;}"),
       selectInput("shinytheme_selector", "Please select another theme",
-                  c("default", shinythemes:::allThemes()),
+                  c("default", allthemes()),
                   selectize = FALSE, width = "100%"
       )
     ),
