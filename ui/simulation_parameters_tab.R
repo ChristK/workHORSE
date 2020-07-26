@@ -33,8 +33,12 @@ tabPanel(
       %>%
         shinyInput_label_embed(
           shiny_iconlink("info") %>%
-            bs_embed_popover(
-              title = "Please select the area you are interested in. The model will use a synthetic population that closely resembles that of the selected area. If you select multiple areas, the overlapping ones will only be included once. In example, if you select both 'England' and 'London' the latter will be ignored because it is already included in England. The first time you select an area combination, workHORSE will generate and save the synthetic population for that area combination which may take up to 30 min. Subsequent selections of the same area combination will be much faster as the model will reuse the already existing synthetic population.")
+            bs_embed_popover(title = "Please select the locality for your simulation",
+                             content = "The model will use a synthetic population that closely resembles that of the selected area. If you select multiple areas, the overlapping ones will only be included once. For example, if you select both 'England' and 'London', London will be ignored because it is already included in England. The first time you select an area combination, workHORSE will generate and save the synthetic population for that area combination which may take up to 30 min. Subsequent selections of the same area combination will be much faster as the model will reuse the already existing synthetic population.
+
+      The 'Confirm area selection' confirms that you have finished your area selection above. When pressed, workHORSE prepares the synthetic population in the background, while you design the scenarios, to save time. WorkHORSE will proceed as normal even if you do not press this button, although it will take longer to produce results.
+                             ",
+                             placement = "bottom")
         ),
 
       actionButton(
@@ -44,9 +48,7 @@ tabPanel(
         style = "color: #fff; background-color: #337ab7; border-color: #2e6da4",
         #class = "btn-info",
         width = "auto"
-      )  %>%
-          bs_embed_popover(
-              title = "Confirms that you have finished your area selection above. When pressed workHORSE prepares the synthetic population in the background while you design the scenarios, to save time. workHORSE will work even if you do not press this button, although it may take a bit longer to produce results.")
+      )
       ),
     column(
       6,

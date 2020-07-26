@@ -42,22 +42,15 @@ dependencies(yaml::read_yaml("./dependencies.yaml"))
 
 design <- Design$new("./simulation/sim_design.yaml")
 
-options(future.fork.enable = TRUE) # enable fork in Rstudio
-# TODO remove for production
-# plan(multiprocess, workers = design$clusternumber)
-plan(list(
-  tweak(multiprocess, workers = 2L),
-  tweak(multiprocess, workers = design$sim_prm$clusternumber / 2L)
-))
-# for future apply to work within future
+options(future.fork.enable = TRUE) # TODO remove for production
+registerDoFuture()
+
 
 
 options(datatable.verbose = FALSE)
 options(datatable.showProgress = FALSE)
 
 strata_for_gui <- c("mc", "friendly_name", design$sim_prm$strata_for_output)
-
-
 
 def_col <- viridis(16, option = "D")
 def_col_small <- def_col[c(1, 9, 5, 3, 7, 2, 8, 4, 6)]
@@ -357,8 +350,6 @@ calc_rei <- function(dt, by = c("mc", "year", "friendly_name")) {
   dt[, proport_utility_cml := net_utility_cml/eq5d_cml]
   dt[, rei := lm(proport_utility_cml~qimd2)$coefficients["qimd2"], by = by]
 }
-
-# source(file.path("metamodel", "metamodel_predict.R"), local = TRUE)
 
 # sum(gtools::rdirichlet(1, rep(1, 180))) # to simulate a 180 length vector that sums to 1
 # extract_uptake_table(setDT(readRDS("./output/input_parameters.rds")), 2)[]

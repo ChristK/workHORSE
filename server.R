@@ -74,7 +74,7 @@ server = function(input, output, session) {
              )$value
     }
 
-    # Alter ,min/max scenario init year -----------------------------------------
+    # Modify ,min/max scenario init year ==------------------------------------
     for (i in seq_len(input$scenarios_number_slider)) {
       source(exprs = str2expression(gsub("_sc1",  paste0("_sc", i),
                                       readLines(file.path("server", "dynamic_scenario_minmax_year.R")))), local = TRUE
@@ -108,53 +108,58 @@ server = function(input, output, session) {
 
   # Check if synthpop exists and generate if not ----------------------------
    observeEvent(input$locality_select_validator, {
-     # See https://stackoverflow.com/questions/50165443/async-process-blocking-r-shiny-app
-     # and https://github.com/rstudio/promises/issues/23
+  # See https://stackoverflow.com/questions/50165443/async-process-blocking-r-shiny-app
+  # and https://github.com/rstudio/promises/issues/23
+     plan(list(
+       # 1 worker for GUI and one for parallel population write.
+       tweak(multiprocess, workers = 2L), # outer loop
+       tweak(multiprocess, workers = design$sim_prm$clusternumber) # inner loop
+       # Because from the outer loop 1 worker never parallelises the inner loop, the
+       # inner loop need not be cpu/2
+     ))
     init_parameters <- reactiveValuesToList(input)
+    design$update_fromGUI(init_parameters)
     future({
-       future_lapply(1:20, generate_synthpop,
-        locality = init_parameters$locality_select,
-        n = design$n, # number of simulants
-        synthpop_dir,
-        sim_horizon = design$sim_horizon_max,
-        init_year = design$init_year_long, # unused but could be a vector
-        max_lag = design$maxlag,
-        smoking_relapse_limit = design$smoking_relapse_limit,
-        ageL = design$ageL,
-        ageH = design$ageH,
-        jumpiness = design$jumpiness,
-        simsmok_calibration = design$simsmok_calibration,
-        include_diseases = TRUE,
-        design = design,
-        n_cpu =  design$n_cpus)
+        SynthPop$
+        new(0, design)$
+        write_synthpop(1:(design$sim_prm$iteration_n * design$sim_prm$n_synthpop_aggregation))
     })
     NULL # This is necessary!! after future when there is no promise to return
   })
 
 
 # Run simulation ----
-  out <- eventReactive(input[[paste0("run_simulation_sc",
-                                     input$scenarios_number_slider)]], {
+  out <-
+    eventReactive(
+      input[[paste0("run_simulation_sc", input$scenarios_number_slider)]],
+    {
+    plan(multiprocess, workers = design$sim_prm$clusternumber)
 
     parameters <- reactiveValuesToList(input)
-    # qsave(reactiveValuesToList(input), "./parameters.qs") # TODO delete for production
+    design$update_fromGUI(parameters)
 
-    # progress$inc(1/n, detail = paste("Doing part", i))
+    # qsave(parameters, "./DELETEme_parameters.qs") # TODO delete for production
+    # parameters <- qread("./DELETEme_parameters.qs") # TODO delete for production
+
     withProgress(message = 'Running workHORSE model.',
                  detail = 'This may take a couple of minutes...', value = 0, {
 
-                   # TODO remove before release
-                   # if (file.exists("./output/test_results.fst")) {
-                   #
-                   #   out <- read_fst("./output/test_results.fst", as.data.table = TRUE)
-                   #   out
-                   #
-                   # } else {
+    # TODO remove before release
+    if (file.exists("./output/results.fst")) {
 
-                     run_simulation(parameters, 1:design$iteration_n)
+      out <- read_fst("./output/results.fst", as.data.table = TRUE)
+      out
 
-                   # }
-                 })
+    } else {
+    run_simulation(
+       parameters,
+       1:(
+         design$sim_prm$iteration_n * design$sim_prm$n_synthpop_aggregation
+         ),
+         design
+       )
+    }
+     })
   })
 
 

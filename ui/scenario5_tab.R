@@ -126,7 +126,7 @@ bsCollapsePanel(
         "load_sc5",
         "",
         multiple = FALSE,
-        accept = ".rds",
+        accept = ".yaml",
         placeholder = "",
         buttonLabel = "Load scenario"
       ), style='vertical-align:bottom;') # ,

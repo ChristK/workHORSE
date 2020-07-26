@@ -22,7 +22,8 @@ Imports: Rcpp (>= 1.0.2),
          digest,
          R6,
          yaml,
-         shinythemes
+         shinythemes,
+         foreach
 LinkingTo: Rcpp, 
            dqrng
-RoxygenNote: 7.1.0
+RoxygenNote: 7.1.1
