@@ -1,8 +1,8 @@
-iteration_n: 20
+iteration_n: 10
 clusternumber: 20 # explicit parallelisation
 n_cpus: 1 # implicit parallelisation
 n_primers: 10 # better be some multiple of n_synthpop_aggregation
-n_synthpop_aggregation: 5 # number of synthpops to aggregate together
+n_synthpop_aggregation: 2 # number of synthpops to aggregate together
 logs: no
 process_output: yes
 scenarios: ''

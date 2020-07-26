@@ -213,8 +213,10 @@ The invisible `SynthPop` object.
 \if{html}{\out{<a id="method-write_synthpop"></a>}}
 \if{latex}{\out{\hypertarget{method-write_synthpop}{}}}
 \subsection{Method \code{write_synthpop()}}{
-Generate synthpop files in parallel and writes them to disk. It skips
-files that are already on disk.
+Generate synthpop files in parallel, using foreach, and writes them to
+disk. It skips files that are already on disk.
+Note: the backend for foreach needs to be initialised before calling
+the function.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{SynthPop$write_synthpop(mc_)}\if{html}{\out{</div>}}
 }

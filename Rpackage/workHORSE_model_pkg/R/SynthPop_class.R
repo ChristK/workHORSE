@@ -96,7 +96,8 @@ SynthPop <-
         # Create synthpop_dir if it doesn't exists
         if (!dir.exists(design_$sim_prm$synthpop_dir)) {
           dir.create(design_$sim_prm$synthpop_dir, recursive = TRUE)
-          message(paste0("Directory ", design_$sim_prm$synthpop_dir, " was created"))
+          message(paste0("Directory ", design_$sim_prm$synthpop_dir,
+                         " was created"))
         }
 
         # get unique lsoas
@@ -182,7 +183,6 @@ SynthPop <-
                    is.numeric(mc_) && ceiling(mc_) > 0L) {
           file.remove(unlist(
             private$gen_synthpop_filename(mc_,
-                                          private$synthpop_dir,
                                           private$checksum,
                                           private$design)[1:3]
           ))
@@ -212,8 +212,9 @@ SynthPop <-
       delete_incomplete_synthpop =
         function() {
           files <- list.files(private$synthpop_dir, "^synthpop_.*\\.fst$")
+          # remove indx and primer files
           files <-
-            grep("_indx.fst$", files, invert = TRUE, value = TRUE) # remove indx files
+            grep("_indx.fst$|_primer.fst", files, invert = TRUE, value = TRUE)
           files <- sub("\\.fst$", "", files)
           metafiles <-
             list.files(private$synthpop_dir, "^synthpop_.*_meta\\.yaml$")
@@ -285,39 +286,29 @@ SynthPop <-
       },
 
       #' @description
-      #' Generate synthpop files in parallel and writes them to disk. It skips
-      #' files that are already on disk.
+      #' Generate synthpop files in parallel, using foreach, and writes them to
+      #' disk. It skips files that are already on disk.
+      #' Note: the backend for foreach needs to be initialised before calling
+      #' the function.
       #' @param mc_ An integer vector for the Monte Carlo iteration of the
       #'   synthetic population. Each integer generates a unique synthetic
       #'   population.
       #' @return The invisible `SynthPop` object.
       write_synthpop = function(mc_) {
         stopifnot(all(is.numeric(mc_)), all(ceiling(mc_) > 0L))
-
+        on.exit(self$delete_incomplete_synthpop(), add = TRUE)
         mc_ <- ceiling(mc_)
 
         # get unique lsoas
         lsoas <- private$get_unique_LSOAs(private$design)
 
-        checksum <- private$gen_checksum(private$design, lsoas)
-
-        if (Sys.info()["sysname"] == "Windows") {
-          cl <- makeCluster(private$design$sim_prm$clusternumber)
-          registerDoParallel(cl)
-        } else {
-          registerDoParallel(private$design$sim_prm$clusternumber)
-        }
-
-        on.exit((if (exists("cl")) stopCluster(cl)), add = TRUE)
-        on.exit(self$delete_incomplete_synthpop(), add = TRUE)
-
         foreach(
           mc_iter = mc_,
           .inorder = FALSE,
-          .verbose = TRUE,
+          .verbose = FALSE,
           .packages = c(
-            "gamlss.dist",
-            # For distr in prevalence.R
+            "R6",
+            "gamlss.dist", # For distr in prevalence.R
             "dqrng",
             "qs",
             "fst",
@@ -331,14 +322,15 @@ SynthPop <-
           data.table::setDTthreads(private$design$sim_prm$n_cpus)
           fst::threads_fst(private$design$sim_prm$n_cpus)
           filename <-
-            private$gen_synthpop_filename(mc_iter, private$synthpop_dir,
-                                          checksum,
+            private$gen_synthpop_filename(mc_iter,
+                                          private$checksum,
                                           private$design)
 
           # logic for the synthpop load
-          files_exist <- sapply(filename, file.exists)
+          files_exist <- sapply(filename[-4L], file.exists)
           if (all(!files_exist)) {
-            # No files exist. Create the synthpop and store the file on disk
+            # No files exist (ignores primer). Create the synthpop and store
+            # the file on disk
             private$gen_synthpop(mc_iter,
                                  filename,
                                  private$design,
@@ -346,10 +338,11 @@ SynthPop <-
 
           } else if (file.exists(filename$metafile) &&
                      !all(files_exist)) {
-            # Metafile exists but not all three files. It means that most likely
-            # a generate_synthpop() is still running. So the function waits
-            # until the file is created before it proceeds to load it. Note that
-            # if this is not the case then the loop is infinite!!!
+            # Metafile exists but not all three files (ignores primer). It means
+            # that most likely a generate_synthpop() is still running. So the
+            # function waits until the file is created before it proceeds to
+            # load it. Note that if this is not the case then the loop is
+            # infinite!!!
             while (!all(sapply(filename, file.exists)))
               Sys.sleep(5)
 
@@ -365,8 +358,8 @@ SynthPop <-
 
           } else if (!file.exists(filename$metafile) &&
                      !all(files_exist)) {
-            # Metafile doesn't exist but some other files exist. In this case
-            # delete everything and start from cratch
+            # Metafile doesn't exist but some other files exist (ignores
+            # primer). In this case delete everything and start from scratch
             self$delete_incomplete_synthpop()
             private$gen_synthpop(mc_iter,
                                  filename,
@@ -377,6 +370,7 @@ SynthPop <-
 
           return(NULL)
         }
+
         invisible(self)
       },
 
@@ -385,7 +379,9 @@ SynthPop <-
       #' @return The invisible `SynthPop` object.
       print = function() {
         print(c(
-          "path" = private$filename$synthpop,
+          "path" = ifelse(is.na(private$filename),
+                          "Not relevant because mc = 0L",
+                          private$filename$synthpop),
           "mc" = self$mc,
           self$metadata
         ))
@@ -441,6 +437,8 @@ SynthPop <-
       get_unique_characteristics = function(design_) {
         design_$sim_prm[c(
           "n",
+          "n_synthpop_aggregation",
+          "n_primers",
           "sim_horizon_max",
           "init_year_long",
           "maxlag",
@@ -599,7 +597,17 @@ SynthPop <-
           return(invisible(dt))
         },
 
-
+      del_incomplete = function(filename_) {
+        if (file.exists(filename_$metafile) &&
+            (!file.exists(filename_$synthpop) ||
+             !file.exists(filename_$indxfile) ||
+             !file.exists(filename_$primer)
+            )) {
+          suppressWarnings(sapply(filename_[names(filename_) != "primer"],
+                                  file.remove))
+          # file.remove(filename_$metafile)
+        }
+      },
 
       gen_synthpop = # returns NULL. Writes synthpop on disk
         function(mc_,
@@ -628,19 +636,7 @@ SynthPop <-
           # metafile was created while the file was not. On.exit ensures that
           # either both files exist or none.
 
-          del_incomplete <- function(filename_) {
-            if (file.exists(filename_$metafile) &&
-                (!file.exists(filename_$synthpop) ||
-                 !file.exists(filename_$indxfile) ||
-                 !file.exists(filename_$primer)
-                 )) {
-              suppressWarnings(sapply(filename_[names(filename_) != "primer"],
-                                      file.remove))
-              # file.remove(filename_$metafile)
-            }
-          }
-
-          on.exit(del_incomplete(filename_), add = TRUE)
+          on.exit(private$del_incomplete(filename_), add = TRUE)
 
           dqRNGkind("pcg64")
           SEED <-
@@ -1637,7 +1633,7 @@ SynthPop <-
             write_fst(dt,
                       filename_$primer,
                       90) # 100 is too slow
-          } else {
+          } else { # if mc_ > primers
             while (!file.exists(filename_$primer)) {
               message("Waiting for primer from disk")
               Sys.sleep(5)

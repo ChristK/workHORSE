@@ -23,6 +23,7 @@
 - htmltools
 - promises # needed for %...>%
 - future
+- doFuture
 - future.apply
 - data.table
 # - gamlss, # only necessary when fitting the models

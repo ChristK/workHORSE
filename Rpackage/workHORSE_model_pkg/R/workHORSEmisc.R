@@ -41,7 +41,7 @@
 #' @importFrom utils tail
 #' @importFrom digest digest2int
 #' @importFrom yaml read_yaml write_yaml
-#' @importFrom shinythemes allThemes
+#' @importFrom foreach foreach
 #' @useDynLib workHORSEmisc
 #' @name workHORSEmisc
 NULL

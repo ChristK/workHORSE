@@ -24,7 +24,7 @@ output$save_sc1 <- downloadHandler(
 
 
   filename = function()
-    paste0(input$friendly_name_sc1, ".rds"),
+    paste0(input$friendly_name_sc1, ".yaml"),
 
   content = function(file) {
     updateCollapse(session, "collapse_panel_sc1",
@@ -35,7 +35,7 @@ output$save_sc1 <- downloadHandler(
              "Impact on Lifestyle",
              "Advanced",
              "Notes"))
-    Sys.sleep(2)
+    Sys.sleep(1)
    tt_sc1 <- lapply(reactiveValuesToList(input), unclass)
 
     # tt_sc1 <- reactiveValuesToList(input)
@@ -47,7 +47,7 @@ output$save_sc1 <- downloadHandler(
       tt_sc1$run_simulation_sc1 <- NULL
 
     tt_sc1 <- setNames(tt_sc1, gsub("_sc1$", "", names(tt_sc1)))
-    saveRDS(tt_sc1, file = file)
+    write_yaml(tt_sc1, file = file)
   }
 )
 
@@ -65,7 +65,7 @@ output$save_sc1 <- downloadHandler(
     inFile <- input$load_sc1
 
     if (is.null(inFile)) return(NULL)
-    savedInputs   <- readRDS(inFile$datapath)
+    savedInputs   <- read_yaml(inFile$datapath)
     names(savedInputs)      <- paste0(names(savedInputs), "_sc1")
 
     if (savedInputs[["uptake_detailed_checkbox_sc1"]]) showElement(id = "uptake_table_sc1")
@@ -75,7 +75,7 @@ output$save_sc1 <- downloadHandler(
  }
 
 # delay necessary so all elements are expanded on screen before load
-    delay(2000, lapply(names(savedInputs),
+    delay(1000, lapply(names(savedInputs),
            function(x) session$sendInputMessage(x, list(value = savedInputs[[x]]))
     ))
   })

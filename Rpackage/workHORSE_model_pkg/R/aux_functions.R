@@ -1697,7 +1697,7 @@ run_scenario <-
     set_eligible( scenario_nam, dt$pop, parameters_dt)
     set_invitees( scenario_nam, dt$pop, parameters_dt)
     set_attendees(scenario_nam, dt$pop, parameters_dt)
-    set_px(       scenario_nam, dt$pop, parameters_dt) # Too slow
+    set_px(       scenario_nam, dt$pop, parameters_dt) # slow
     set_lifestyle(scenario_nam, dt$pop, parameters_dt, design$sim_prm)
 
     # TODO I can calculate the effect of xps change to disease prb for
@@ -2054,26 +2054,21 @@ run_simulation <- function(parameters, iteration_n, design) {
     file.path(design$sim_prm$output_dir, x)
   }
 
+  on.exit(file.remove(output_dir("intermediate_out.csv")))
   # parameters <- qread("./DELETEme_parameters.qs") # TODO remove before release
   # iteration_n = 1:20L
-  parameters_dt <- workHORSEmisc::fromGUI_to_dt(parameters)
-  design$update_fromGUI(parameters)
+  parameters_dt <- fromGUI_to_dt(parameters)
 
   if (design$sim_prm$logs)
     time_mark("start parallelisation")
 
   # Parallelisation ----
-  if (Sys.info()[1] == "Windows") {
-    cl <- makeCluster(design$sim_prm$clusternumber / 2L)
-    registerDoParallel(cl)
-  } else {
-    registerDoParallel(design$sim_prm$clusternumber / 2L)
-  }
   foreach(
     mc_iter = iteration_n,
     .inorder = FALSE,
     .verbose = TRUE,
     .packages = c(
+      "R6",
       "data.table",
       "workHORSEmisc",
       "gamlss.dist",
@@ -2085,6 +2080,9 @@ run_simulation <- function(parameters, iteration_n, design) {
       "CKutils"
     )
   ) %dopar% {
+    data.table::setDTthreads(design$sim_prm$n_cpus)
+    fst::threads_fst(design$sim_prm$n_cpus)
+
     if (design$sim_prm$logs) {
       if (!dir.exists(output_dir("logs/"))) {
         dir.create(normalizePath(output_dir("logs/")), FALSE, TRUE)
@@ -2183,20 +2181,16 @@ run_simulation <- function(parameters, iteration_n, design) {
     setnames(output_chunk, "wt", "pops")
     output_chunk[, mc := ceiling(mc_iter /
                                    design$sim_prm$n_synthpop_aggregation)]
-    tt <- fromGUI_scenario_names(parameters_dt)
-    setnames(tt, "true_scenario", "scenario")
-    absorb_dt(output_chunk, tt)
 
 
-    write_fst(output_chunk, output_dir(
-      paste0(
-        "chunk_",
-        ceiling(mc_iter / design$sim_prm$n_synthpop_aggregation),
-        "_",
-        mc_iter %% design$sim_prm$n_synthpop_aggregation,
-        ".fst"
-      )
-    ), 100)
+    fwrite_safe(output_chunk, output_dir("intermediate_out.csv"))
+
+    # write_fst(output_chunk, output_dir(
+    #   paste0("intermediate_out_",
+    #     mc_iter,
+    #     ".fst"
+    #   )
+    # ), 100)
 
     rm(output_chunk)
     # invisible(gc(verbose = FALSE, full = TRUE))
@@ -2205,8 +2199,7 @@ run_simulation <- function(parameters, iteration_n, design) {
     NULL
   }
 
-  if (exists("cl"))
-    stopCluster(cl)
+  # End of parallelisation ----
 
   if (design$sim_prm$logs)
     time_mark("End of parallelisation")
@@ -2214,26 +2207,18 @@ run_simulation <- function(parameters, iteration_n, design) {
   while (sink.number() > 0L)
     sink()
 
-  filenam <-
-    output_dir(
-      paste0(
-        "chunk_",
-        ceiling(iteration_n / design$sim_prm$n_synthpop_aggregation),
-        "_",
-        iteration_n %% design$sim_prm$n_synthpop_aggregation,
-        ".fst"
-      )
-    )
-  filenam <- filenam[file.exists(filenam)]
-  output <-
-    rbindlist(lapply(filenam, read_fst, as.data.table = TRUE))
-  file.remove(filenam)
-  strata <- c("mc", design$sim_prm$strata_for_output, "friendly_name")
+  output <- fread(output_dir("intermediate_out.csv"), stringsAsFactors = TRUE)
 
+  tt <- fromGUI_scenario_names(parameters_dt)
+  tt <- tt[, lapply(.SD, factor), .SDcols = is.character]
+  setnames(tt, "true_scenario", "scenario")
+  absorb_dt(output, tt)
+
+  strata <- c("mc", design$sim_prm$strata_for_output, "friendly_name")
   output <- output[, lapply(.SD, sum), keyby = eval(strata)]
 
   # spread overhead policy costs to individuals
-  for (sc_nam in levels(output$scenario)) {
+  for (sc_nam in levels(output$scenario)) { # TODO check whether should be true_scenario
     l <- fromGUI_scenario_parms(sc_nam, parameters_dt)
     for (nam in grep("_ovrhd$", names(l), value = TRUE)) {
       newnam <- gsub("^sc_ls_|_cost_ovrhd$", "", nam)
@@ -2322,9 +2307,9 @@ allthemes <- function() {
   sub(".min.css", "", themes)
 }
 
+# from https://stackoverflow.com/questions/47827337/prodution-ready-themeselector-for-shiny
 #' @export
 mythemeSelector <- function() {
-  # from https://stackoverflow.com/questions/47827337/prodution-ready-themeselector-for-shiny
   div(
     div(
       # tags$style(type='text/css', ".shiny-input-container { height: 20px; line-height: 0.86; font-size: 12px; margin: 0px; padding: 0px; border: 0px;}"),
