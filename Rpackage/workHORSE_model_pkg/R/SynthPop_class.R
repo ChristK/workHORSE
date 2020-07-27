@@ -854,7 +854,7 @@ SynthPop <-
             # to_agegrp(dt,  5L, 85L, "age", "agegrp5" , to_factor = TRUE)
 
             # generate population weights
-            private$calc_pop_weights(dt, design_$sim_prm$locality)
+            private$calc_pop_weights(dt, design_)
 
             # Simulate exposures -----
 
@@ -1920,11 +1920,12 @@ SynthPop <-
         },
 
       # Calculate weights so that their sum is the population of the area based
-      # on ONS
-      calc_pop_weights = function(dt, locality) {
+      # on ONS. It takes into account synthpop aggregation. So you need to sum
+      # all the synthpops belong to the same aggregation to reach the total pop.
+      calc_pop_weights = function(dt, design) {
         tt <-
           read_fst("./ONS_data/pop_size/pop_proj.fst", as.data.table = TRUE)
-        lads <- get_unique_LADs(locality)
+        lads <- get_unique_LADs(design$sim_prm$locality)
         tt <- tt[LAD17CD %in% lads &
                    between(age, min(dt$age), max(dt$age)) &
                    between(year - 2000L, min(dt$year), max(dt$year)),
@@ -1932,7 +1933,7 @@ SynthPop <-
         tt[, year := year - 2000L]
         dt[, wt := .N, by = .(year, age, sex)]
         absorb_dt(dt, tt)
-        dt[, wt := pops / wt]
+        dt[, wt := pops / (wt) * design$sim_prm$n_synthpop_aggregation]
         dt[, pops := NULL]
 
         invisible(dt)
