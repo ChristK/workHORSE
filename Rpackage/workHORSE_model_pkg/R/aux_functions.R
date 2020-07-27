@@ -1361,11 +1361,10 @@ set_invitees <- function(scenario_nam, dt, parameters_dt) {
       )
     setnames(ttcost, c(colnam, "qimd", colnam_cost))
 
-  } else {
-    # if input not by qimd
-    # The method below is robust in changes of mu and/or freq to
-    # define probability of being invited given that eligible
-    # population is reduced the more you invite for a check
+  } else { # if not detailed invites (input not by qimd)
+    # The method below is robust in changes of mu and/or freq to define
+    # probability of being invited given that eligible population is reduced the
+    # more you invite for a check
     tt <- data.table(
       year = (l$sc_init_year:l$sc_last_year) - 2000L,
       mu = l$sc_invit_qimdall,
@@ -1403,7 +1402,7 @@ set_invitees <- function(scenario_nam, dt, parameters_dt) {
 # set_invitees("sc2", POP, parameters_dt)
 
 #' @export
-set_attendees <- function(scenario_nam, dt, parameters_dt) {
+set_attendees <- function(scenario_nam, dt, parameters_dt, design) {
   l <- fromGUI_scenario_parms(scenario_nam, parameters_dt)
   colnam       <- "attendees_sc"
   colnam_cost  <- "attendees_cost_sc"
@@ -1419,7 +1418,7 @@ set_attendees <- function(scenario_nam, dt, parameters_dt) {
                                 l$sc_qrisk_ignore_bmi,
                                 l$sc_qrisk_ignore_sbp,
                                 l$sc_qrisk_ignore_tchol)$Qrisk2_cat]
-    if (l$sc_uptake_structural0s) {
+    if (l$sc_uptake_structural0s) { # if structural 0s
       absorb_dt(dt, l$sc_uptake)
       setnafill(dt, "c", 0, cols = "uptake_wt")
       dt[, c("Qrisk2_cat", "agegrp10") := NULL]
@@ -1430,9 +1429,14 @@ set_attendees <- function(scenario_nam, dt, parameters_dt) {
         dt[invitees_sc == 1L &
              uptake_wt > 0, .(year, pid)][tt, ][, (colnam) := 1L]
       absorb_dt(dt, tt, on = c("pid", "year"))
-    } else {
-      # if no sructural 0s
-      absorb_dt(dt, l$sc_uptake[uptake_wt == 0, uptake_wt := 1e-6])
+    } else { # if no structural 0s
+      # Abuse of the rule of 3
+      absorb_dt(dt, l$sc_uptake[uptake_wt == 0,
+                                uptake_wt := 0.5 * 3 /
+                                  dt[year == l$sc_init_year - 2000L &
+                                       invitees_sc == 1L,
+                                     sum(wt) *
+                                       design$sim_prm$n_synthpop_aggregation]])
       setnafill(dt, "c", 0, cols = "uptake_wt")
       dt[, c("Qrisk2_cat", "agegrp10") := NULL]
 
@@ -1696,7 +1700,7 @@ run_scenario <-
     # The order is important
     set_eligible( scenario_nam, dt$pop, parameters_dt)
     set_invitees( scenario_nam, dt$pop, parameters_dt)
-    set_attendees(scenario_nam, dt$pop, parameters_dt)
+    set_attendees(scenario_nam, dt$pop, parameters_dt, design)
     set_px(       scenario_nam, dt$pop, parameters_dt) # slow
     set_lifestyle(scenario_nam, dt$pop, parameters_dt, design$sim_prm)
 
@@ -2167,6 +2171,7 @@ run_simulation <- function(parameters, iteration_n, design) {
     to_agegrp(output_chunk, 20L, 89L, "age", "agegrp", TRUE, 30L)
 
     # Scale-up to ONS population projections
+
     for (nam in grep("_prvl$|_dgn$|_incd|_mrtl$|_cost$|^eq5d",
                      names(output_chunk),
                      value = TRUE)) {
@@ -2193,7 +2198,6 @@ run_simulation <- function(parameters, iteration_n, design) {
     # ), 100)
 
     rm(output_chunk)
-    # invisible(gc(verbose = FALSE, full = TRUE))
     if (design$sim_prm$logs)
       sink()
     NULL
@@ -2234,8 +2238,6 @@ run_simulation <- function(parameters, iteration_n, design) {
            wghtloss_ovrhd_cost + pa_ovrhd_cost]
 
   setkey(output, year, friendly_name)
-
-  # fwrite_safe(output, output_dir("output.csvy"))
 
   # calculate net cost/effect
   baseline <-
