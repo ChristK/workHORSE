@@ -370,50 +370,109 @@ fromGUI_scenario_parms <- function(scenario_nam, parameters_dt) {
 
     l$sc_ls_smkcess <-
       parameters_dt[true_scenario == scenario_nam &
-                      input_names %flike% "smkcess_slider", as.numeric(value1)/100]
+                      input_names %flike% "smkcess_slider",
+                    as.numeric(value1)/100]
     l$sc_ls_smkcess_cost_ind <-
       parameters_dt[true_scenario == scenario_nam &
-                      input_names %like% "smkcess_cost$", as.numeric(value1)]
+                      input_names %like% "smkcess_cost$",
+                    as.numeric(value1)]
     l$sc_ls_smkcess_cost_ovrhd <-
       parameters_dt[true_scenario == scenario_nam &
-                      input_names %flike% "smkcess_cost_ovrhd", as.numeric(value1)]
+                      input_names %flike% "smkcess_cost_ovrhd",
+                    as.numeric(value1)]
     l$sc_ls_wghtpct <-
       parameters_dt[true_scenario == scenario_nam &
-                      input_names %flike% "wghtpct_slider", as.numeric(value1)/100]
+                      input_names %flike% "wghtpct_slider",
+                    as.numeric(value1)/100]
     l$sc_ls_wghtreduc <-
       parameters_dt[true_scenario == scenario_nam &
-                      input_names %flike% "wghtreduc_slider", as.numeric(value1)/100]
+                      input_names %flike% "wghtreduc_slider",
+                    as.numeric(value1)/100]
     l$sc_ls_wghtloss_cost_ind <-
       parameters_dt[true_scenario == scenario_nam &
-                      input_names %like% "wghtloss_cost$", as.numeric(value1)]
+                      input_names %like% "wghtloss_cost$",
+                    as.numeric(value1)]
     l$sc_ls_wghtloss_cost_ovrhd <-
       parameters_dt[true_scenario == scenario_nam &
-                      input_names %flike% "wghtloss_cost_ovrhd", as.numeric(value1)]
+                      input_names %flike% "wghtloss_cost_ovrhd",
+                    as.numeric(value1)]
     l$sc_ls_papct <-
       parameters_dt[true_scenario == scenario_nam &
-                      input_names %flike% "papct_slider", as.numeric(value1)/100]
+                      input_names %flike% "papct_slider",
+                    as.numeric(value1)/100]
     l$sc_ls_papincr <-
       parameters_dt[true_scenario == scenario_nam &
-                      input_names %flike% "papincr_slider", as.integer(value1)]
+                      input_names %flike% "papincr_slider",
+                    as.integer(value1)]
     l$sc_ls_pa_cost_ind <-
       parameters_dt[true_scenario == scenario_nam &
-                      input_names %like% "pa_cost$", as.numeric(value1)]
+                      input_names %like% "pa_cost$",
+                    as.numeric(value1)]
     l$sc_ls_pa_cost_ovrhd <-
       parameters_dt[true_scenario == scenario_nam &
-                      input_names %flike% "pa_cost_ovrhd", as.numeric(value1)]
+                      input_names %flike% "pa_cost_ovrhd",
+                    as.numeric(value1)]
     l$sc_ls_alcoholpct <-
       parameters_dt[true_scenario == scenario_nam &
-                      input_names %flike% "alcoholpct_slider", as.numeric(value1)/100]
+                      input_names %flike% "alcoholpct_slider",
+                    as.numeric(value1)/100]
     l$sc_ls_alcoholreduc <-
       parameters_dt[true_scenario == scenario_nam &
-                      input_names %flike% "alcoholreduc_slider", as.integer(value1)/100]
+                      input_names %flike% "alcoholreduc_slider",
+                    as.integer(value1)/100]
     l$sc_ls_alcoholreduc_cost_ind <-
       parameters_dt[true_scenario == scenario_nam &
-                      input_names %like% "alcoholreduc_cost$", as.numeric(value1)]
+                      input_names %like% "alcoholreduc_cost$",
+                    as.numeric(value1)]
     l$sc_ls_alcoholreduc_cost_ovrhd <-
       parameters_dt[true_scenario == scenario_nam &
-                      input_names %flike% "alcoholreduc_cost_ovrhd", as.numeric(value1)]
+                      input_names %flike% "alcoholreduc_cost_ovrhd",
+                    as.numeric(value1)]
+    l$sc_ls_attrition <-
+      parameters_dt[true_scenario == scenario_nam &
+                      input_names %flike% "lifestyle_attrition_slider",
+                    as.numeric(value1)/100]
 
+
+    l$sc_str_smk_change <-
+      parameters_dt[true_scenario == scenario_nam &
+                      input_names %flike% "structural_smk_slider",
+                    as.numeric(value1)/100]
+
+    # l$sc_str_nevsmk_change <-
+    #   parameters_dt[true_scenario == scenario_nam &
+    #                   input_names %flike% "structural_neversmk_slider",
+    #                 as.numeric(value1)/100]
+
+    l$sc_str_fv_change <-
+      parameters_dt[true_scenario == scenario_nam &
+                      input_names %flike% "structural_fv_slider",
+                    as.numeric(value1)/100]
+
+    l$sc_str_alcohol_change <-
+      parameters_dt[true_scenario == scenario_nam &
+                      input_names %flike% "structural_alcohol_slider",
+                    as.numeric(value1)/100]
+
+    l$sc_str_pa_change <-
+      parameters_dt[true_scenario == scenario_nam &
+                      input_names %flike% "structural_pa_slider",
+                    as.integer(value1)]
+
+    l$sc_str_bmi_change <-
+      parameters_dt[true_scenario == scenario_nam &
+                      input_names %flike% "structural_bmi_slider",
+                    as.numeric(value1)/100]
+
+    l$sc_str_sbp_change <-
+      parameters_dt[true_scenario == scenario_nam &
+                      input_names %flike% "structural_sbp_slider",
+                    as.numeric(value1)/100]
+
+    l$sc_str_tchol_change <-
+      parameters_dt[true_scenario == scenario_nam &
+                      input_names %flike% "structural_chol_slider",
+                    as.numeric(value1)/100]
 
   }
   return(l)

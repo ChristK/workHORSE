@@ -42,7 +42,7 @@ exposures:
 - tchol
 'n': 100000
 init_year_long: 2013
-sim_horizon_max: 28
+sim_horizon_max: 28 # population projections do not support longer horizon
 ageL: 30
 ageH: 89
 cvd_lag: 4

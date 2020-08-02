@@ -1205,18 +1205,17 @@ generate_health_econ <- function(dt) {
 }
 
 #' @export
-set_eligible <- function(scenario_nam, dt, parameters_dt) {
-  l <- fromGUI_scenario_parms(scenario_nam, parameters_dt)
+set_eligible <- function(scenario_parms, dt) {
   colnam <- "eligible_sc"
   set(dt, NULL, colnam, 0L)
-  if (!l$sc_eligib_noone) {
-    dt[between(year + 2000L, l$sc_init_year, l$sc_last_year) &
-         between(age, l$sc_eligib_age[[1]], l$sc_eligib_age[[2]]) &
+  if (!scenario_parms$sc_eligib_noone) {
+    dt[between(year + 2000L, scenario_parms$sc_init_year, scenario_parms$sc_last_year) &
+         between(age, scenario_parms$sc_eligib_age[[1]], scenario_parms$sc_eligib_age[[2]]) &
          dead == FALSE &
          # statin_px_curr_xps == 0L &
          # af_dgn == 0L &
-         htn_dgn < fifelse(l$sc_eligib_htn, Inf, 1) &
-         t2dm_dgn < fifelse(l$sc_eligib_diab, Inf, 1L) &
+         htn_dgn < fifelse(scenario_parms$sc_eligib_htn, Inf, 1) &
+         t2dm_dgn < fifelse(scenario_parms$sc_eligib_diab, Inf, 1L) &
          # ckd_prvl_curr_xps <= 3L &
          # ra_prvl == 0L &
          chd_dgn == 0L &
@@ -1225,8 +1224,8 @@ set_eligible <- function(scenario_nam, dt, parameters_dt) {
   }
   invisible(dt)
   # dt[year == 20 &
-  #      between(age, l$sc_eligib_age[[1]],
-  # l$sc_eligib_age[[2]]), prop_if(eligible_sc1 == 1)]
+  #      between(age, scenario_parms$sc_eligib_age[[1]],
+  # scenario_parms$sc_eligib_age[[2]]), prop_if(eligible_sc1 == 1)]
 }
 # set_eligible("sc2", POP, parameters_dt) POP[between(year, 18, 35) &
 # between(age, 40, 74) & dead == FALSE, prop_if(eligible_sc1 == 1)] Around 70%
@@ -1236,8 +1235,7 @@ set_eligible <- function(scenario_nam, dt, parameters_dt) {
 # prop_if(eligible_sc1 == 1), keyby = age]
 
 #' @export
-set_invitees <- function(scenario_nam, dt, parameters_dt) {
-  l <- fromGUI_scenario_parms(scenario_nam, parameters_dt)
+set_invitees <- function(scenario_parms, dt) {
   colnam <- "invitees_sc"
   colnam_cost <- "invitation_cost_sc"
   elig_colnam <- "eligible_sc"
@@ -1245,12 +1243,12 @@ set_invitees <- function(scenario_nam, dt, parameters_dt) {
 
   # TODO find better approach
 
-  if (l$sc_invit_detailed) {
+  if (scenario_parms$sc_invit_detailed) {
     tt1 <- data.table(
-      year = (l$sc_init_year:l$sc_last_year) - 2000L,
+      year = (scenario_parms$sc_init_year:scenario_parms$sc_last_year) - 2000L,
       qimd = "1 most deprived",
-      mu = l$sc_invit_qimd1,
-      freq = l$sc_eligib_freq
+      mu = scenario_parms$sc_invit_qimd1,
+      freq = scenario_parms$sc_eligib_freq
     )
     elig <- vector("numeric", nrow(tt1))
     for (i in seq_len(nrow(tt1))) {
@@ -1267,10 +1265,10 @@ set_invitees <- function(scenario_nam, dt, parameters_dt) {
 
     tt2 <-
       data.table(
-        year = (l$sc_init_year:l$sc_last_year) - 2000L,
+        year = (scenario_parms$sc_init_year:scenario_parms$sc_last_year) - 2000L,
         qimd = "2",
-        mu = l$sc_invit_qimd2,
-        freq = l$sc_eligib_freq
+        mu = scenario_parms$sc_invit_qimd2,
+        freq = scenario_parms$sc_eligib_freq
       )
     elig <- vector("numeric", nrow(tt2))
     for (i in seq_len(nrow(tt2))) {
@@ -1287,10 +1285,10 @@ set_invitees <- function(scenario_nam, dt, parameters_dt) {
 
     tt3 <-
       data.table(
-        year = (l$sc_init_year:l$sc_last_year) - 2000L,
+        year = (scenario_parms$sc_init_year:scenario_parms$sc_last_year) - 2000L,
         qimd = "3",
-        mu = l$sc_invit_qimd3,
-        freq = l$sc_eligib_freq
+        mu = scenario_parms$sc_invit_qimd3,
+        freq = scenario_parms$sc_eligib_freq
       )
     elig <- vector("numeric", nrow(tt3))
     for (i in seq_len(nrow(tt3))) {
@@ -1307,10 +1305,10 @@ set_invitees <- function(scenario_nam, dt, parameters_dt) {
 
     tt4 <-
       data.table(
-        year = (l$sc_init_year:l$sc_last_year) - 2000L,
+        year = (scenario_parms$sc_init_year:scenario_parms$sc_last_year) - 2000L,
         qimd = "4",
-        mu = l$sc_invit_qimd4,
-        freq = l$sc_eligib_freq
+        mu = scenario_parms$sc_invit_qimd4,
+        freq = scenario_parms$sc_eligib_freq
       )
     elig <- vector("numeric", nrow(tt4))
     for (i in seq_len(nrow(tt4))) {
@@ -1327,10 +1325,10 @@ set_invitees <- function(scenario_nam, dt, parameters_dt) {
 
     tt5 <-
       data.table(
-        year = (l$sc_init_year:l$sc_last_year) - 2000L,
+        year = (scenario_parms$sc_init_year:scenario_parms$sc_last_year) - 2000L,
         qimd = "5 least deprived",
-        mu = l$sc_invit_qimd5,
-        freq = l$sc_eligib_freq
+        mu = scenario_parms$sc_invit_qimd5,
+        freq = scenario_parms$sc_eligib_freq
       )
     elig <- vector("numeric", nrow(tt5))
     for (i in seq_len(nrow(tt5))) {
@@ -1352,11 +1350,11 @@ set_invitees <- function(scenario_nam, dt, parameters_dt) {
         V1 = 1L,
         V2 = c("1 most deprived", "2", "3", "4", "5 least deprived"),
         V3 = c(
-          l$sc_invit_qimd1_cost,
-          l$sc_invit_qimd2_cost,
-          l$sc_invit_qimd3_cost,
-          l$sc_invit_qimd4_cost,
-          l$sc_invit_qimd5_cost
+          scenario_parms$sc_invit_qimd1_cost,
+          scenario_parms$sc_invit_qimd2_cost,
+          scenario_parms$sc_invit_qimd3_cost,
+          scenario_parms$sc_invit_qimd4_cost,
+          scenario_parms$sc_invit_qimd5_cost
         )
       )
     setnames(ttcost, c(colnam, "qimd", colnam_cost))
@@ -1366,9 +1364,9 @@ set_invitees <- function(scenario_nam, dt, parameters_dt) {
     # probability of being invited given that eligible population is reduced the
     # more you invite for a check
     tt <- data.table(
-      year = (l$sc_init_year:l$sc_last_year) - 2000L,
-      mu = l$sc_invit_qimdall,
-      freq = l$sc_eligib_freq
+      year = (scenario_parms$sc_init_year:scenario_parms$sc_last_year) - 2000L,
+      mu = scenario_parms$sc_invit_qimdall,
+      freq = scenario_parms$sc_eligib_freq
     )
     elig <- vector("numeric", nrow(tt))
     for (i in seq_len(nrow(tt))) {
@@ -1383,7 +1381,7 @@ set_invitees <- function(scenario_nam, dt, parameters_dt) {
     tt[, mu := clamp(mu / elig)]
     tt[is.na(mu), mu := 0] # i.e. for freq 5 and prb 0.25
 
-    ttcost <- data.table(1L, l$sc_invit_qimdall_cost)
+    ttcost <- data.table(1L, scenario_parms$sc_invit_qimdall_cost)
     setnames(ttcost, c(colnam, colnam_cost))
   }
 
@@ -1395,35 +1393,34 @@ set_invitees <- function(scenario_nam, dt, parameters_dt) {
   setnafill(dt, "c", 0, cols = colnam_cost)
   invisible(dt)
   # dt[ eligible_sc1 == 1L &
-  #      between(age, l$sc_eligib_age[[1]], l$sc_eligib_age[[2]]),
+  #      between(age, scenario_parms$sc_eligib_age[[1]], scenario_parms$sc_eligib_age[[2]]),
   #      prop_if(invitees_sc1== 1), keyby = year]
 
 }
 # set_invitees("sc2", POP, parameters_dt)
 
 #' @export
-set_attendees <- function(scenario_nam, dt, parameters_dt, design) {
-  l <- fromGUI_scenario_parms(scenario_nam, parameters_dt)
+set_attendees <- function(scenario_parms, dt, scenario_nam, parameters_dt, design) {
   colnam       <- "attendees_sc"
   colnam_cost  <- "attendees_cost_sc"
   invit_colnam <- "invitees_sc"
   set(dt, NULL, colnam_cost, 0L)
 
 
-  if (l$sc_uptake_detailed) {
+  if (scenario_parms$sc_uptake_detailed) {
     agegrp <- fromGUI_uptake_table_agegrps(scenario_nam = scenario_nam,
                                            parameters_dt = parameters_dt)
     absorb_dt(dt, agegrp)
     dt[, "Qrisk2_cat" := Qrisk2(.SD,
-                                l$sc_qrisk_ignore_bmi,
-                                l$sc_qrisk_ignore_sbp,
-                                l$sc_qrisk_ignore_tchol)$Qrisk2_cat]
-    if (l$sc_uptake_structural0s) { # if structural 0s
-      absorb_dt(dt, l$sc_uptake)
+                                scenario_parms$sc_qrisk_ignore_bmi,
+                                scenario_parms$sc_qrisk_ignore_sbp,
+                                scenario_parms$sc_qrisk_ignore_tchol)$Qrisk2_cat]
+    if (scenario_parms$sc_uptake_structural0s) { # if structural 0s
+      absorb_dt(dt, scenario_parms$sc_uptake)
       setnafill(dt, "c", 0, cols = "uptake_wt")
       dt[, c("Qrisk2_cat", "agegrp10") := NULL]
       tt <- sort(dt[invitees_sc == 1L & uptake_wt > 0,
-                    sample_int_expj(.N, as.integer(round(l$sc_uptake_all * .N)),
+                    sample_int_expj(.N, as.integer(round(scenario_parms$sc_uptake_all * .N)),
                                     uptake_wt)])
       tt <-
         dt[invitees_sc == 1L &
@@ -1431,9 +1428,9 @@ set_attendees <- function(scenario_nam, dt, parameters_dt, design) {
       absorb_dt(dt, tt, on = c("pid", "year"))
     } else { # if no structural 0s
       # Abuse of the rule of 3
-      absorb_dt(dt, l$sc_uptake[uptake_wt == 0,
+      absorb_dt(dt, scenario_parms$sc_uptake[uptake_wt == 0,
                                 uptake_wt := 0.5 * 3 /
-                                  dt[year == l$sc_init_year - 2000L &
+                                  dt[year == scenario_parms$sc_init_year - 2000L &
                                        invitees_sc == 1L,
                                      sum(wt) *
                                        design$sim_prm$n_synthpop_aggregation]])
@@ -1441,29 +1438,28 @@ set_attendees <- function(scenario_nam, dt, parameters_dt, design) {
       dt[, c("Qrisk2_cat", "agegrp10") := NULL]
 
       tt <- sort(dt[invitees_sc == 1L,
-                    sample_int_expj(.N, as.integer(round(l$sc_uptake_all * .N)),
+                    sample_int_expj(.N, as.integer(round(scenario_parms$sc_uptake_all * .N)),
                                     uptake_wt)])
       tt <-
         dt[invitees_sc == 1L, .(year, pid)][tt, ][, (colnam) := 1L]
       absorb_dt(dt, tt, on = c("pid", "year"))
     }
   } else {
-    set(dt, NULL, "uptake_wt", l$sc_uptake_all)
+    set(dt, NULL, "uptake_wt", scenario_parms$sc_uptake_all)
     dt[invitees_sc == 1L, (colnam) := rbinom(.N, 1, uptake_wt)]
   }
 
   setnafill(dt, "c", 0, cols = colnam)
-  dt[attendees_sc == 1L, (colnam_cost) := l$sc_uptake_all_cost]
+  dt[attendees_sc == 1L, (colnam_cost) := scenario_parms$sc_uptake_all_cost]
   dt[, uptake_wt := NULL]
   invisible(dt)
 
-  # dt[ invitees_sc1 == 1L & between(age, l$sc_eligib_age[[1]],
-  # l$sc_eligib_age[[2]]), prop_if(attendees_sc1== 1), keyby = year]
+  # dt[ invitees_sc1 == 1L & between(age, scenario_parms$sc_eligib_age[[1]],
+  # scenario_parms$sc_eligib_age[[2]]), prop_if(attendees_sc1== 1), keyby = year]
 }
 
 #' @export
-set_px <- function(scenario_nam, dt, parameters_dt) {
-  l <- fromGUI_scenario_parms(scenario_nam, parameters_dt)
+set_px <- function(scenario_parms, dt) {
   dt[, "Qrisk2_cat" := Qrisk2(.SD, FALSE,  FALSE, FALSE)$Qrisk2_cat]
   atte_colnam <- "attendees_sc"
 
@@ -1471,8 +1467,8 @@ set_px <- function(scenario_nam, dt, parameters_dt) {
   colnam     <- "statin_px_sc"
   colnam_bio <- "tchol_sc"
 
-  if (l$sc_px_detailed) {
-    absorb_dt(dt, l$sc_px_statins_wt)
+  if (scenario_parms$sc_px_detailed) {
+    absorb_dt(dt, scenario_parms$sc_px_statins_wt)
 
     # Below assumes people on statin_px_curr_xps but undertreated will titrate
     # statin treatment.
@@ -1480,7 +1476,7 @@ set_px <- function(scenario_nam, dt, parameters_dt) {
     # Adjusted prb where the denominator changed from all attendees to those
     # eligible for statins
     tt <- dt[attendees_sc == 1L,
-             clamp(l$sc_px_statins / prop_if(tchol_curr_xps >= 5))]
+             clamp(scenario_parms$sc_px_statins / prop_if(tchol_curr_xps >= 5))]
 
 
     tt <- sort(dt[attendees_sc == 1L & tchol_curr_xps >= 5,
@@ -1493,7 +1489,7 @@ set_px <- function(scenario_nam, dt, parameters_dt) {
     absorb_dt(dt, tt, on = c("pid", "year"))
   } else {
     tt <- dt[attendees_sc == 1L,
-             clamp(l$sc_px_statins / prop_if(tchol_curr_xps >= 5 &
+             clamp(scenario_parms$sc_px_statins / prop_if(tchol_curr_xps >= 5 &
                                                Qrisk2_cat != "low"))]
 
     set(dt, NULL, "px_statins_wt", tt)
@@ -1543,13 +1539,13 @@ set_px <- function(scenario_nam, dt, parameters_dt) {
   colnam     <- "bpmed_px_sc"
   colnam_bio <- "sbp_sc"
 
-  if (l$sc_px_detailed) {
-    absorb_dt(dt, l$sc_px_antihtn_wt)
+  if (scenario_parms$sc_px_detailed) {
+    absorb_dt(dt, scenario_parms$sc_px_antihtn_wt)
 
     # Adjusted prb where the denominator changed from all attendees to those
     # eligible for bpmed
     tt <- dt[attendees_sc == 1L,
-             clamp(l$sc_px_antihtn / prop_if(sbp_curr_xps >= 135))]
+             clamp(scenario_parms$sc_px_antihtn / prop_if(sbp_curr_xps >= 135))]
 
     tt <- sort(dt[attendees_sc == 1L & sbp_curr_xps >= 135,
                   sample_int_expj(.N, as.integer(round(tt * .N)),
@@ -1560,7 +1556,7 @@ set_px <- function(scenario_nam, dt, parameters_dt) {
     absorb_dt(dt, tt, on = c("pid", "year"))
   } else {
     tt <- dt[attendees_sc == 1L,
-             clamp(l$sc_px_antihtn / prop_if(sbp_curr_xps >= 135))]
+             clamp(scenario_parms$sc_px_antihtn / prop_if(sbp_curr_xps >= 135))]
 
     set(dt, NULL, "px_antihtn_wt", tt)
     dt[attendees_sc == 1L & sbp_curr_xps >= 135,
@@ -1586,8 +1582,7 @@ set_px <- function(scenario_nam, dt, parameters_dt) {
 
 #' @export
 set_lifestyle <-
-  function(scenario_nam, dt, parameters_dt, design = design) {
-    l <- fromGUI_scenario_parms(scenario_nam, parameters_dt)
+  function(scenario_parms, dt, design) {
     atte_colnam <- "attendees_sc"
 
     # PA
@@ -1596,12 +1591,12 @@ set_lifestyle <-
     colnam_cost <- "active_days_cost_sc"
     dt[, (colnam) := active_days_curr_xps]
     set(dt, NULL, colnam_cost, 0)
-    dt[attendees_sc == 1L, hc_eff := rbinom(.N, 1, l$sc_ls_papct)]
-    dt[hc_eff == 1L, (colnam_cost) := l$sc_ls_pa_cost_ind]
+    dt[attendees_sc == 1L, hc_eff := rbinom(.N, 1, scenario_parms$sc_ls_papct)]
+    dt[hc_eff == 1L, (colnam_cost) := scenario_parms$sc_ls_pa_cost_ind]
     # Cost only the year of referral
-    dt[, hc_eff := hc_effect(hc_eff, 0.8, pid_mrk)]
-    # TODO 0.8 to advanced settings
-    dt[hc_eff == 1L, (colnam) := clamp(active_days_sc + l$sc_ls_papincr, 0, 7)]
+    dt[, hc_eff := hc_effect(hc_eff, (1 - scenario_parms$sc_ls_attrition), pid_mrk)]
+    dt[hc_eff == 1L, (colnam) :=
+         as.integer(round(clamp(active_days_sc + scenario_parms$sc_ls_papincr, 0, 7)))]
 
     # Weight management
     set(dt, NULL, "hc_eff", 0L)
@@ -1610,12 +1605,11 @@ set_lifestyle <-
     dt[, (colnam) := bmi_curr_xps]
     set(dt, NULL, colnam_cost, 0)
     dt[attendees_sc == 1L &
-         bmi_curr_xps > 30, hc_eff := rbinom(.N, 1, l$sc_ls_wghtpct)]
-    dt[hc_eff == 1L, (colnam_cost) := l$sc_ls_wghtloss_cost_ind]
+         bmi_curr_xps > 30, hc_eff := rbinom(.N, 1, scenario_parms$sc_ls_wghtpct)]
+    dt[hc_eff == 1L, (colnam_cost) := scenario_parms$sc_ls_wghtloss_cost_ind]
     # Cost only the year of referral
-    dt[, hc_eff := hc_effect(hc_eff, 0.8, pid_mrk)]
-    # TODO 0.8 to advanced settings
-    dt[hc_eff == 1L, (colnam) := bmi_sc * (1 - l$sc_ls_wghtreduc)]
+    dt[, hc_eff := hc_effect(hc_eff, (1 - scenario_parms$sc_ls_attrition), pid_mrk)]
+    dt[hc_eff == 1L, (colnam) := bmi_sc * (1 - scenario_parms$sc_ls_wghtreduc)]
 
     # Alcohol
     set(dt, NULL, "hc_eff", 0L)
@@ -1624,12 +1618,12 @@ set_lifestyle <-
     dt[, (colnam) := alcohol_curr_xps]
     set(dt, NULL, colnam_cost, 0)
     dt[attendees_sc == 1L &
-         alcohol_curr_xps >= 16, hc_eff := rbinom(.N, 1, l$sc_ls_alcoholpct)]
-    dt[hc_eff == 1L, (colnam_cost) := l$sc_ls_alcoholreduc_cost_ind]
+         alcohol_curr_xps >= 16, hc_eff := rbinom(.N, 1, scenario_parms$sc_ls_alcoholpct)]
+    dt[hc_eff == 1L, (colnam_cost) := scenario_parms$sc_ls_alcoholreduc_cost_ind]
     # Cost only the year of referral
-    dt[, hc_eff := hc_effect(hc_eff, 0.8, pid_mrk)]
-    # TODO 0.8 to advanced settings
-    dt[hc_eff == 1L, (colnam) := alcohol_sc * (1 - l$sc_ls_alcoholreduc)]
+    dt[, hc_eff := hc_effect(hc_eff, (1 - scenario_parms$sc_ls_attrition), pid_mrk)]
+    dt[hc_eff == 1L, (colnam) :=
+         as.integer(round(alcohol_sc * (1 - scenario_parms$sc_ls_alcoholreduc)))]
 
 
     # Smoking cessation
@@ -1648,8 +1642,8 @@ set_lifestyle <-
          )]
     set(dt, NULL, colnam_cost, 0)
     dt[attendees_sc == 1L & smok_status_curr_xps == "4",
-       hc_eff := rbinom(.N, 1, l$sc_ls_smkcess)]
-    dt[hc_eff == 1L, (colnam_cost) := l$sc_ls_smkcess_cost_ind]
+       hc_eff := rbinom(.N, 1, scenario_parms$sc_ls_smkcess)]
+    dt[hc_eff == 1L, (colnam_cost) := scenario_parms$sc_ls_smkcess_cost_ind]
     # Cost only the year of referral
 
     # Handle smok_relapse probabilities
@@ -1671,7 +1665,7 @@ set_lifestyle <-
            hc_eff,
            dqrunif(.N),
            tbl,
-           design$smoking_relapse_limit
+           design$sim_prm$smoking_relapse_limit
          )]
 
     dt[, smok_status_sc := factor(smok_status_sc)]
@@ -1686,6 +1680,163 @@ set_lifestyle <-
     invisible(dt)
   }
 
+#' @export
+set_structural <-
+  function(scenario_parms, dt, design) {
+    if (any(scenario_parms[grepl("^sc_str_", names(scenario_parms))] != 0)) {
+      dt[, .row := 1:.N]
+      row_sel <- dt[between(year + 2000L, scenario_parms$sc_init_year,
+                 scenario_parms$sc_last_year) &
+           dead == FALSE, .row] # row number of selected person/year
+      dt[, .row := NULL]
+    }
+
+    # smoking
+    if (scenario_parms$sc_str_smk_change != 0) {
+      if (!"smok_status_sc" %in% names(dt))
+        set(dt, NULL, "smok_status_sc", dt$smok_status_curr_xps)
+      if (!"smok_quit_yrs_sc" %in% names(dt))
+        set(dt, NULL, "smok_quit_yrs_sc", dt$smok_quit_yrs_curr_xps)
+      if (!"smok_dur_sc" %in% names(dt))
+        set(dt, NULL, "smok_dur_sc", dt$smok_dur_curr_xps)
+      if (!"smok_cig_sc" %in% names(dt))
+        set(dt, NULL, "smok_cig_sc", dt$smok_cig_curr_xps)
+
+
+      if (scenario_parms$sc_str_smk_change < 0) {
+
+        dt[between(year + 2000L, scenario_parms$sc_init_year,
+                   scenario_parms$sc_last_year) &
+             dead == FALSE & smok_status_sc == "4",
+           hc_eff := rbinom(.N, 1, -scenario_parms$sc_str_smk_change)]
+
+        dt[, (c("smok_status_sc", "smok_quit_yrs_sc", "smok_dur_sc", "smok_cig_sc")) :=
+             simsmok_policy_impact_decr(
+               smok_status_sc,
+               smok_quit_yrs_sc,
+               smok_dur_sc,
+               smok_cig_sc,
+               pid_mrk,
+               hc_eff
+               )]
+      }
+
+      if (scenario_parms$sc_str_smk_change > 0) {
+        # calculate policy effect with those quit smoking recently be more
+        # likely to relapse
+        tt <- dt[between(year + 2000L, scenario_parms$sc_init_year,
+                   scenario_parms$sc_last_year) &
+             dead == FALSE, .("ex"   = sum(smok_status_sc == "3"),
+                              "curr" = sum(smok_status_sc == "4")), keyby = year]
+        tt[, impacted := round(curr * scenario_parms$sc_str_smk_change)]
+        dt[tt, `:=`(impacted = i.impacted,
+                    ex = i.ex), on = "year"]
+        dt[between(year + 2000L, scenario_parms$sc_init_year,
+                   scenario_parms$sc_last_year) &
+             dead == FALSE & smok_status_sc == "3",
+           rid := 1:.N, by = year]
+        dt[, hc_eff := 0L]
+        tt <- dt[between(year + 2000L,
+                         scenario_parms$sc_init_year,
+                         scenario_parms$sc_last_year) &
+                   dead == FALSE & smok_status_sc == "3",
+                 .(rid = sample_int_expj(first(ex), first(impacted),
+                                         (smok_quit_yrs_sc + 1) ^
+                                           -1)),
+                 keyby = year]
+        dt[tt, hc_eff := 1L, on = .(year, rid)]
+        dt[, c("impacted", "ex", "rid") := NULL]
+
+        dt[, (c("smok_status_sc", "smok_quit_yrs_sc", "smok_dur_sc")) :=
+             simsmok_policy_impact_incr(
+               smok_status_sc,
+               smok_quit_yrs_sc,
+               smok_dur_sc,
+               pid_mrk,
+               hc_eff
+             )]
+      }
+
+      dt[, smok_status_sc := factor(smok_status_sc)]
+      # needed for QRisk and QDrisk
+      dt[, smoke_cat_sc := 0L]
+      dt[smok_status_sc == "3", smoke_cat_sc := 1L]
+      dt[smok_status_sc == "4", smoke_cat_sc := 3L]
+      dt[smok_status_sc == "4" & smok_cig_sc < 10L, smoke_cat_sc := 2L]
+      dt[smok_status_sc == "4" & smok_cig_sc > 19L, smoke_cat_sc := 4L]
+
+      dt[, hc_eff := NULL]
+}
+
+    # fv
+    if (scenario_parms$sc_str_fv_change != 0) {
+      if (!"fruit_sc" %in% names(dt))
+        set(dt, NULL, "fruit_sc", dt$fruit_curr_xps)
+      if (!"veg_sc" %in% names(dt))
+        set(dt, NULL, "veg_sc", dt$veg_curr_xps)
+      dt[row_sel,
+         `:=`(
+           fruit_sc = as.integer(round(fruit_sc * (
+             1 + scenario_parms$sc_str_fv_change
+           ))),
+           veg_sc = as.integer(round(veg_sc * (
+             1 + scenario_parms$sc_str_fv_change
+           ))))]
+    }
+
+    # alcohol
+    if (scenario_parms$sc_str_fv_change != 0) {
+      if (!"alcohol_sc" %in% names(dt))
+        set(dt, NULL, "alcohol_sc", dt$alcohol_curr_xps)
+      dt[row_sel,
+         `:=`(
+           alcohol_sc = as.integer(round(alcohol_sc * (
+             1 + scenario_parms$sc_str_alcohol_change
+           )))
+           )]
+    }
+
+    # active_days
+    if (scenario_parms$sc_str_fv_change != 0) {
+      if (!"active_days_sc" %in% names(dt))
+        set(dt, NULL, "active_days_sc", dt$active_days_curr_xps)
+      dt[row_sel,
+         `:=`(active_days_sc = active_days_sc + scenario_parms$sc_str_pa_change
+         )]
+    }
+
+    # bmi
+    if (scenario_parms$sc_str_fv_change != 0) {
+      if (!"bmi_sc" %in% names(dt))
+        set(dt, NULL, "bmi_sc", dt$bmi_curr_xps)
+      dt[row_sel,
+         `:=`(
+           bmi_sc = bmi_sc * (1 + scenario_parms$sc_str_bmi_change)
+         )]
+    }
+
+    # sbp
+    if (scenario_parms$sc_str_fv_change != 0) {
+      if (!"sbp_sc" %in% names(dt))
+        set(dt, NULL, "sbp_sc", dt$sbp_curr_xps)
+      dt[row_sel,
+         `:=`(
+           sbp_sc = sbp_sc * (1 + scenario_parms$sc_str_sbp_change)
+         )]
+    }
+
+    # tchol
+    if (scenario_parms$sc_str_fv_change != 0) {
+      if (!"tchol_sc" %in% names(dt))
+        set(dt, NULL, "tchol_sc", dt$tchol_curr_xps)
+      dt[row_sel,
+         `:=`(
+           tchol_sc = tchol_sc * (1 + scenario_parms$sc_str_tchol_change)
+         )]
+    }
+
+    invisible(dt)
+  }
 
 #' @export
 run_scenario <-
@@ -1697,13 +1848,16 @@ run_scenario <-
            timing = c(TRUE, FALSE)) {
     if (timing[[1]])
       ptm <- proc.time()
-    # The order is important
-    set_eligible( scenario_nam, dt$pop, parameters_dt)
-    set_invitees( scenario_nam, dt$pop, parameters_dt)
-    set_attendees(scenario_nam, dt$pop, parameters_dt, design)
-    set_px(       scenario_nam, dt$pop, parameters_dt) # slow
-    set_lifestyle(scenario_nam, dt$pop, parameters_dt, design$sim_prm)
 
+    scenario_parms <- fromGUI_scenario_parms(scenario_nam, parameters_dt)
+
+    # The order is important
+    set_eligible(  scenario_parms, dt$pop)
+    set_invitees(  scenario_parms, dt$pop)
+    set_attendees( scenario_parms, dt$pop, scenario_nam,  parameters_dt, design)
+    set_px(        scenario_parms, dt$pop) # slow
+    set_lifestyle( scenario_parms, dt$pop, design)
+    set_structural(scenario_parms, dt$pop, design)
     # TODO I can calculate the effect of xps change to disease prb for
     # efficiency No need to recalculate disease probability for everyone only
     # apply disease impact on attendees (works only with kismet == TRUE)

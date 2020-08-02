@@ -56,7 +56,7 @@ tabPanel(
         "simulation_period_slider",
         "Period to simulate",
         2013,
-        2040,
+        2041,
         c(2020, 2035),
         1,
         sep = "",
