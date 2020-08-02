@@ -117,8 +117,7 @@ server = function(input, output, session) {
        # Because from the outer loop 1 worker never parallelises the inner loop, the
        # inner loop need not be cpu/2
      ))
-    init_parameters <- reactiveValuesToList(input)
-    design$update_fromGUI(init_parameters)
+    design$update_fromGUI(reactiveValuesToList(input))
     future({
         SynthPop$
         new(0, design)$
@@ -138,7 +137,7 @@ server = function(input, output, session) {
     parameters <- reactiveValuesToList(input)
     design$update_fromGUI(parameters)
 
-    # qsave(parameters, "./DELETEme_parameters.qs") # TODO delete for production
+    qsave(parameters, "./DELETEme_parameters.qs") # TODO delete for production
     # parameters <- qread("./DELETEme_parameters.qs") # TODO delete for production
 
     withProgress(message = 'Running workHORSE model.',

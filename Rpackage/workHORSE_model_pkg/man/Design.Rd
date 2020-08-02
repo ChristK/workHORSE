@@ -95,7 +95,7 @@ The `Design` object.
 \subsection{Method \code{update_fromGUI()}}{
 Updates the design object from GUI.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Design$update_fromGUI(GUI_prm = parameters)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Design$update_fromGUI(GUI_prm)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
