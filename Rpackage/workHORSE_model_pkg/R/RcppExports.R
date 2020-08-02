@@ -217,6 +217,16 @@ simsmok_cessation <- function(smok_status, smok_quit_yrs, smok_dur, sex, qimd, n
 }
 
 #' @export
+simsmok_policy_impact_incr <- function(smok_status, smok_quit_yrs, smok_dur, new_pid, hc_eff) {
+    .Call('_workHORSEmisc_simsmok_policy_impact_incr', PACKAGE = 'workHORSEmisc', smok_status, smok_quit_yrs, smok_dur, new_pid, hc_eff)
+}
+
+#' @export
+simsmok_policy_impact_decr <- function(smok_status, smok_quit_yrs, smok_dur, smok_cig, new_pid, hc_eff) {
+    .Call('_workHORSEmisc_simsmok_policy_impact_decr', PACKAGE = 'workHORSEmisc', smok_status, smok_quit_yrs, smok_dur, smok_cig, new_pid, hc_eff)
+}
+
+#' @export
 wtd_ADstat <- function(a, wa, b, wb) {
     .Call('_workHORSEmisc_wtd_ADstat', PACKAGE = 'workHORSEmisc', a, wa, b, wb)
 }

@@ -197,19 +197,20 @@ List simsmok_cessation(const IntegerVector& smok_status,
   {
     if (!new_pid[i]) // if not a new simulant
     {
-      if (out_status[i] == 4 && hc_eff[i] == 1)
+      if (out_status[i] == 4 && hc_eff[i] == 1) // out_status[i] == 4 not ensured in R side because hc_eff carried forward
       {
-        marker = true; // marker == true only for pids that quitafter a  HC
+        marker = true; // marker == true only for pids that quit after a  HC
         out_status[i] = 3;
         out_quit_yrs[i] = 1;
         out_dur[i] = out_dur[i-1];
       }
-      if (out_status[i-1] == 3 && marker && out_quit_yrs[i-1] <= relapse_cutoff)
+      if (marker && out_status[i-1] == 3 && out_quit_yrs[i-1] <= relapse_cutoff)
       {
-        switch (sex[i]) {
+        switch (sex[i])
+        {
         case 1: nrow = qimd[i] - 1; break;
         case 2: nrow = qimd[i] + 4; break;
-      }
+        }
         if (relapse_rn[i] < (pr_relapse(nrow, smok_quit_yrs[i-1] - 1)))
         {
           out_status[i] = 4;
@@ -229,10 +230,147 @@ List simsmok_cessation(const IntegerVector& smok_status,
           out_dur[i] = out_dur[i-1];
           }
       }
-    } else marker = false; // reset market for each pid
+    }
+    else // if new pid
+    {
+      marker = false; // reset market for each pid
+      if (out_status[i] == 4 && hc_eff[i] == 1) // out_status[i] == 4 not ensured in R side because hc_eff carried forward
+      {
+        marker = true; // marker == true only for pids that quit after a  HC
+        out_status[i] = 3;
+        out_quit_yrs[i] = 1;
+        out_dur[i] = smok_dur[i] - 1;
+      }
+    }
   }
   return List::create(_["smok_status"]= out_status,
                       _["smok_quit_yrs"]= out_quit_yrs,
                       _["smok_dur"]= out_dur);
 }
 
+
+// ex smokers are turning into smokers. Used in structural smoking when smoking
+// is increasing.
+//' @export
+// [[Rcpp::export]]
+List simsmok_policy_impact_incr(const IntegerVector& smok_status,
+                                const IntegerVector& smok_quit_yrs,
+                                const IntegerVector& smok_dur,
+                                const LogicalVector& new_pid,
+                                const IntegerVector& hc_eff)
+{
+  // id should be sorted by year
+  const int n = smok_status.size();
+  IntegerVector out_status = clone(smok_status);
+  IntegerVector out_quit_yrs = clone(smok_quit_yrs);
+  IntegerVector out_dur = clone(smok_dur);
+  bool marker = false;
+
+  for (int i = 0; i < n; i++)
+  {
+    if (hc_eff[i] == 1) // out_status[i] == 3 ensured in R side
+    {
+      marker = true; // marker == true only for pids that quit after a  HC
+      out_status[i] = 4;
+      out_quit_yrs[i] = 0;
+      out_dur[i] = smok_dur[i] + 1;
+    }
+
+    if (marker && hc_eff[i] == 0 && !new_pid[i])
+    {
+      if (out_status[i] == 4)
+      {
+        out_quit_yrs[i] = 0;
+        out_dur[i] = out_dur[i-1] + 1;
+      }
+      if (out_status[i] == 3)
+      {
+        out_quit_yrs[i] = out_quit_yrs[i - 1] + 1;
+        out_dur[i] = out_dur[i-1];
+      }
+    }
+
+    if (new_pid[i]) marker = false; // reset market for each pid
+  }
+  return List::create(_["smok_status"]= out_status,
+                      _["smok_quit_yrs"]= out_quit_yrs,
+                      _["smok_dur"]= out_dur);
+}
+
+
+// smokers are turning into ex smokers. Used in structural smoking when smoking
+// is increasing.
+//' @export
+// [[Rcpp::export]]
+List simsmok_policy_impact_decr(const IntegerVector& smok_status,
+                                const IntegerVector& smok_quit_yrs,
+                                const IntegerVector& smok_dur,
+                                const IntegerVector& smok_cig,
+                                const LogicalVector& new_pid,
+                                const IntegerVector& hc_eff)
+{
+  // id should be sorted by year
+  const int n = smok_status.size();
+  IntegerVector out_status = clone(smok_status);
+  IntegerVector out_quit_yrs = clone(smok_quit_yrs);
+  IntegerVector out_dur = clone(smok_dur);
+  IntegerVector out_cig = clone(smok_cig);
+  bool marker = false;
+
+  for (int i = 0; i < n; i++)
+  {
+    if (hc_eff[i] == 1 && new_pid[i]) // out_status[i] == 4 ensured in R side
+    {
+      marker = true; // marker == true only for pids that quit after a  HC
+      out_status[i] = 3; // NOTE to avoid smokers that go from status 1 to 3 without 4
+      out_quit_yrs[i] = 1;
+      out_dur[i] = smok_dur[i] - 1;
+    }
+
+    if (hc_eff[i] == 1 && !new_pid[i]) // out_status[i] == 4 ensured in R side
+    {
+      marker = true; // marker == true only for pids that quit after a  HC
+      if (out_status[i - 1] != 1)
+      {
+        out_status[i] = 3; // NOTE to avoid smokers that go from status 1 to 3 without 4
+        out_quit_yrs[i] = 1;
+        out_dur[i] = smok_dur[i] - 1;
+      }
+      else // if previous status was 1
+      {
+        out_status[i] = 1; // NOTE to avoid smokers that go from status 1 to 3 without 4
+        out_quit_yrs[i] = 0;
+        out_dur[i] = 0;
+        out_cig[i] = 0;
+      }
+
+    }
+
+    if (marker && hc_eff[i] == 0 && !new_pid[i])
+    {
+      if (out_status[i-1] == 1)
+      {
+        out_status[i] = 1; // NOTE to avoid smokers that go from status 1 to 3 without 4
+        out_quit_yrs[i] = 0;
+        out_dur[i] = 0;
+        out_cig[i] = 0;
+      }
+      if (out_status[i] == 4) // NOTE out_status[i] not out_status[i-1]
+      {
+        out_quit_yrs[i] = 0;
+        out_dur[i] = out_dur[i-1] + 1;
+      }
+      if (out_status[i] == 3) // NOTE out_status[i] not out_status[i-1]
+      {
+        out_quit_yrs[i] = out_quit_yrs[i - 1] + 1;
+        out_dur[i] = out_dur[i-1];
+      }
+    }
+
+    if (new_pid[i]) marker = false; // reset market for each pid
+  }
+  return List::create(_["smok_status"]= out_status,
+                      _["smok_quit_yrs"]= out_quit_yrs,
+                      _["smok_dur"]= out_dur,
+                      _["smok_cig"]= out_cig);
+}

@@ -41,6 +41,7 @@ bsCollapsePanel(
   "General Parameters",
   style = "default",
   wellPanel(fluidRow(
+    ## col 1 ----
     column(
       2, align = "left", style='padding:0px;',
       div(
@@ -48,7 +49,8 @@ bsCollapsePanel(
       %>%
         shinyInput_label_embed(
           icon("info") %>%
-            bs_embed_popover(title = "Please pick a name for this scenario. This will be used in all model outputs.")
+            bs_embed_popover(title = "Please pick a name for this scenario.
+                             This will be used in all model outputs.")
         )),
       div(colourpicker::colourInput(
         inputId = "col_sc6",
@@ -79,6 +81,7 @@ bsCollapsePanel(
         ))
 
     ),
+    ## col 2 ----
     column(
       2, offset = 2, align = "left", style='padding:0px;',
       div(
@@ -104,7 +107,7 @@ bsCollapsePanel(
       div(uiOutput("init_year_slider_sc6"))
 
 )),
-
+    ## col 3 ----
     column(
       3, offset = 2, align = "left", style='padding:0px;',
       div(actionButton(
@@ -142,6 +145,7 @@ bsCollapsePanel(
       #
       #        ")
     ),
+    ## col 4 ----
     column(
       1, align = "left",
       div(icon("info") %>%
@@ -171,6 +175,7 @@ bsCollapsePanel(
 bsCollapsePanel("Eligibility Criteria",
                 style = "success",
                 wellPanel(fluidRow(
+                  ## col 1 ----
                   column(
                     4,
                     sliderInput(
@@ -205,6 +210,7 @@ bsCollapsePanel("Eligibility Criteria",
                           bs_embed_popover(title = "Please select the minimum number of years between two concecutive Health Checks")
                       )
                   ),
+                  ## col 2 ----
                   column(
                     4,
                     switchInput(
@@ -236,6 +242,7 @@ bsCollapsePanel("Eligibility Criteria",
                           bs_embed_popover(title ="Please select whether known diabetics should be eligible for a Health Check")
                       )
                   ),
+                  ## col 3 ----
                   column(
                     4,
                     switchInput(
@@ -260,6 +267,7 @@ bsCollapsePanel(
   style = "success",
   wellPanel(
     fluidRow(
+      ## col 1 ----
       column(
         4,
         sliderInput(
@@ -279,6 +287,7 @@ bsCollapsePanel(
               bs_embed_popover(title = "Please select the percentage of eligible population that is invited every year")
           )
       ),
+      ## col 2 ----
       column(
         4,
         numericInput(
@@ -295,6 +304,7 @@ bsCollapsePanel(
               bs_embed_popover(title = "Please enter the cost per invitation")
           )
       ),
+      ## col 3 ----
       column(
         4,
         br(),
@@ -312,7 +322,10 @@ bsCollapsePanel(
           )
       )
     ),
-    fluidRow(column(
+    ## row 2 ----
+    fluidRow(
+      ## col 1 ----
+      column(
       4,
       sliderInput(
         "coverage_qimd1_slider_sc6",
@@ -331,6 +344,7 @@ bsCollapsePanel(
             bs_embed_popover(title = "Please select the percentage of eligible population in QIMD 1 (most deprived) areas that is invited every year")
         )
     ),
+    ## col 2 ----
     column(
       4,
       numericInput(
@@ -347,7 +361,10 @@ bsCollapsePanel(
             bs_embed_popover(title = "Please enter the cost per invitation in QIMD 1 (most deprived) areas")
         )
     )),
-    fluidRow(column(
+    ## row 3 ----
+    fluidRow(
+      ## col 1 ----
+      column(
       4,
       sliderInput(
         "coverage_qimd2_slider_sc6",
@@ -366,6 +383,7 @@ bsCollapsePanel(
             bs_embed_popover(title = "Please select the percentage of eligible population in QIMD 2 areas that is invited every year")
         )
     ),
+    ## col 2 ----
     column(
       4,
       numericInput(
@@ -382,7 +400,10 @@ bsCollapsePanel(
             bs_embed_popover(title = "Please enter the cost per invitation in QIMD 2 areas")
         )
     )),
-    fluidRow(column(
+    ## row 4 ----
+    fluidRow(
+      ## col 1 ----
+      column(
       4,
       sliderInput(
         "coverage_qimd3_slider_sc6",
@@ -401,6 +422,7 @@ bsCollapsePanel(
             bs_embed_popover(title = "Please select the percentage of eligible population in QIMD 3 areas that is invited every year")
         )
     ),
+    ## col 2 ----
     column(
       4,
       numericInput(
@@ -496,6 +518,7 @@ bsCollapsePanel("Health Checks Received (%)",
                 style = "success",
                 wellPanel(
                   fluidRow(
+                    ## col 1 ----
                     column(
                       4,
                       sliderInput(
@@ -515,6 +538,7 @@ bsCollapsePanel("Health Checks Received (%)",
                             bs_embed_popover(title = "Please select the percentage of people who complete a Health Check after an invitation")
                         )
                     ),
+                    ## col 2 ----
                     column(
                       4,
                       numericInput("uptake_cost_sc6",
@@ -525,6 +549,7 @@ bsCollapsePanel("Health Checks Received (%)",
                             bs_embed_popover(title = "Please enter the cost per individual completing a Health Check")
                         )
                     ),
+                    ## col 3 ----
                     column(
                       4,
                       br(),
@@ -570,6 +595,7 @@ bsCollapsePanel(
   style = "success",
   wellPanel(
     fluidRow(
+      ## col 1 ----
       column(
         4,
         sliderInput(
@@ -589,6 +615,7 @@ bsCollapsePanel(
               bs_embed_popover(title = "Please select the percentage of attendees who have completed a Health Check and have been prescribed a statin as a consequence. Note that the denomiator here are all attendees, not just those that a statin would be recommended.")
           )
       ),
+      ## col 2 ----
       column(
         4,
         sliderInput(
@@ -608,6 +635,7 @@ bsCollapsePanel(
               bs_embed_popover(title = "Please select the percentage of attendees who have completed a Health Check and have been prescribed antihypertensive medication as a consequence. Note that the denomiator here are all attendees, not just those that treatment for hypertension would be recommended." )
           )
       ),
+      ## col 3 ----
       column(
         4,
         br(),
@@ -646,6 +674,7 @@ bsCollapsePanel(
   style = "success",
   wellPanel(helpText(h5('Smoking cessation')),
             fluidRow(
+              ## col 1 ----
               column(
                 4,
                 sliderInput(
@@ -665,6 +694,7 @@ bsCollapsePanel(
                         bs_embed_popover(title = "Please enter the percentage of people quitting smoking in the last year")
                     )
               ),
+              ## col 2 ----
               column(
                 4,
                 numericInput(
@@ -681,6 +711,7 @@ bsCollapsePanel(
                       bs_embed_popover(title = "Please enter the cost per participant in the smoking cessation program")
                   )
               ),
+              ## col 3 ----
               column(
                 4,
                 numericInput(
@@ -911,7 +942,31 @@ bsCollapsePanel(
           )
       )
     )
-  )
+  ),
+  wellPanel(helpText(h5('Attrition rate')),
+            fluidRow(
+              ## col 1 ----
+              column(
+                4,
+                sliderInput(
+                  "lifestyle_attrition_slider_sc6",
+                  "Percentage of participants reverting back to pre health check lifestyle every year",
+                  0,
+                  100,
+                  20,
+                  0.5,
+                  sep = "",
+                  ticks = FALSE,
+                  post  = " %"
+                )
+                %>%
+                  shinyInput_label_embed(
+                    icon("info") %>%
+                      bs_embed_popover(title = "Please enter the percentage of people that revert to their previous lifestyle every year, after succesfully improving their lifestyle because of a health check. For example, 20% attrition rate per year means that after 5 years only (1-0.2)^5 = 33% of those successfuly improved their lifestyle initially are still observe the lifestyle change. The same attrition rate applies to all of the risk factor above, except for smoking.")
+                  )
+              )
+            )
+          )
 ),
 
 # Advanced panel  ------------------------------------------------
@@ -919,8 +974,10 @@ bsCollapsePanel(
   "Advanced",
   style = "default",
   wellPanel(fluidRow(
+    ## Scenario ensembles ----
     h5("Scenario ensembles"),
-    h6("In this section you can specify the above scenario to be part of a serial or parallel ensemble."),
+    h6("In this section you can specify the above scenario to be part of a serial
+       or parallel ensemble."),
     HTML("<br> <br/> "),
     column(6,
   switchInput(
@@ -973,6 +1030,7 @@ fluidRow(
       )
     ))),
   wellPanel(fluidRow(
+    ## Digital Health Checks ----
     h5("Digital Health Checks"),
     HTML("<br> <br/> "),
     column(3,
@@ -1025,11 +1083,13 @@ fluidRow(
     )
     )),
   wellPanel(fluidRow(
+    ## Structural Policies ----
     h5("Structural Policies / Calibration"),
-    h6("In this section the effect of implementing structural/population level strategies in addition",
-               "to the health checks programm specified above can be modelled. ",
-      "Alternatively, this section can be used to adjust the model risk factors population model",
-     "to match local estimates if data is available."),
+    h6("In this section the effect of implementing structural/population level
+       strategies  can be modelled, in addition",
+       "to the health checks programm specified above",
+       "On occasion, this section can be used to calibrate the synthetic
+        population exposure to risk factors."),
     HTML("<br> <br/> "),
     column(6,
            sliderInput(
@@ -1037,7 +1097,7 @@ fluidRow(
              "Smoking prevalence relative percentage change across population",
              -20,
              20,
-             c(0, 0),
+             0,
              0.1,
              sep = "",
              ticks = FALSE,
@@ -1046,14 +1106,39 @@ fluidRow(
            %>%
              shinyInput_label_embed(
                icon("info") %>%
-                 bs_embed_popover(title = "Relative change (%) in the prevalence of smoking as result of a structural policy")
+                 bs_embed_popover(title = "Relative (%) in smoking
+                                  prevalence as result of a structural policy.
+                                  It does not affect the prevalence of never
+                                  smokers. When negative, it forces more smokers
+                                  to quit (i.e. it increases the probability of
+                                  cessation). When positive, smokers are coming
+                                  from the pool of ex-smokers (i.e. it increases
+                                  the probability of relapse).")
            ),
+           # sliderInput(
+           #   "structural_neversmk_slider_sc6",
+           #   "Never-smoking prevalence absolute percentage change across
+           #   population",
+           #   -20,
+           #   20,
+           #   0,
+           #   0.1,
+           #   sep = "",
+           #   ticks = FALSE,
+           #   post  = " %"
+           # )
+           # %>%
+           #   shinyInput_label_embed(
+           #     icon("info") %>%
+           #       bs_embed_popover(title = "Absolute change (%) in the
+           # cprevalence of smoking as result of a structural policy")
+           #   ),
            sliderInput(
              "structural_fv_slider_sc6",
              "Fruit & veg relative percentage change across population",
              -20,
              20,
-             c(0, 0),
+             0,
              0.1,
              sep = "",
              ticks = FALSE,
@@ -1061,14 +1146,16 @@ fluidRow(
            )  %>%
              shinyInput_label_embed(
                icon("info") %>%
-                 bs_embed_popover(title = "Relative change (%) in the prevalence of fruit and vegetable consumption as result of a structural policy")
+                 bs_embed_popover(title = "Relative change (%) in the prevalence
+                                  of fruit and vegetable consumption as result
+                                  of a structural policy")
            ),
            sliderInput(
              "structural_alcohol_slider_sc6",
              "Alcohol relative percentage change across population",
              -20,
              20,
-             c(0, 0),
+             0,
              0.1,
              sep = "",
              ticks = FALSE,
@@ -1076,29 +1163,16 @@ fluidRow(
            )  %>%
              shinyInput_label_embed(
                icon("info") %>%
-                 bs_embed_popover(title = "Relative change (%) in the population mean of alcohol consumption as result of a structural policy")
-           ),
-           sliderInput(
-             "structural_pa_slider_sc6",
-             "Physical activity relative percentage change across population",
-             -20,
-             20,
-             c(0, 0),
-             0.1,
-             sep = "",
-             ticks = FALSE,
-             post  = " %"
-           )  %>%
-             shinyInput_label_embed(
-               icon("info") %>%
-                 bs_embed_popover(title = "Relative change (%) in the prevalence of physical activity as result of a structural policy")
+                 bs_embed_popover(title = "Relative change (%) in the population
+                                  mean of alcohol consumption as result of a
+                                  structural policy")
            ),
            sliderInput(
              "structural_bmi_slider_sc6",
              "BMI relative percentage change across population",
              -20,
              20,
-             c(0, 0),
+             0,
              0.1,
              sep = "",
              ticks = FALSE,
@@ -1113,7 +1187,7 @@ fluidRow(
              "Systolic blood pressure relative percentage change across population",
              -20,
              20,
-             c(0, 0),
+             0,
              0.1,
              sep = "",
              ticks = FALSE,
@@ -1128,7 +1202,7 @@ fluidRow(
              "Cholesterol relative percentage change across population",
              -20,
              20,
-             c(0, 0),
+             0,
              0.1,
              sep = "",
              ticks = FALSE,
@@ -1137,7 +1211,24 @@ fluidRow(
              shinyInput_label_embed(
                icon("info") %>%
                  bs_embed_popover(title = "Relative change (%) in the population mean of cholesterol as result of a structural policy")
-           )
+           ),
+           sliderInput(
+             "structural_pa_slider_sc6",
+             "Physical activity change in active days per week across
+             population",
+             -7,
+             7,
+             0,
+             1,
+             sep = "",
+             ticks = TRUE,
+             post  = " active days/week"
+           )  %>%
+             shinyInput_label_embed(
+               icon("info") %>%
+                 bs_embed_popover(title = "Change in the active days per week
+                 as result of a structural policy")
+             )
     ),
     column(3
 

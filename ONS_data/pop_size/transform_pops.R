@@ -24,7 +24,7 @@ setnames(f, tolower(names(f)))
 f[, component := NULL]
 f[, sex := "women"]
 f[age_group == "90 and over", age_group := 90]
-f[, age := as.integer(age_group)] # All_ages ic converted to NA. That's desirable
+f[, age := as.integer(age_group)] # All_ages is converted to NA. That's desirable!
 f[, age_group := NULL]
 f <- na.omit(f)
 

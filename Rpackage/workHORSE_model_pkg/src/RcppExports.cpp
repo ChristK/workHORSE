@@ -661,6 +661,37 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// simsmok_policy_impact_incr
+List simsmok_policy_impact_incr(const IntegerVector& smok_status, const IntegerVector& smok_quit_yrs, const IntegerVector& smok_dur, const LogicalVector& new_pid, const IntegerVector& hc_eff);
+RcppExport SEXP _workHORSEmisc_simsmok_policy_impact_incr(SEXP smok_statusSEXP, SEXP smok_quit_yrsSEXP, SEXP smok_durSEXP, SEXP new_pidSEXP, SEXP hc_effSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const IntegerVector& >::type smok_status(smok_statusSEXP);
+    Rcpp::traits::input_parameter< const IntegerVector& >::type smok_quit_yrs(smok_quit_yrsSEXP);
+    Rcpp::traits::input_parameter< const IntegerVector& >::type smok_dur(smok_durSEXP);
+    Rcpp::traits::input_parameter< const LogicalVector& >::type new_pid(new_pidSEXP);
+    Rcpp::traits::input_parameter< const IntegerVector& >::type hc_eff(hc_effSEXP);
+    rcpp_result_gen = Rcpp::wrap(simsmok_policy_impact_incr(smok_status, smok_quit_yrs, smok_dur, new_pid, hc_eff));
+    return rcpp_result_gen;
+END_RCPP
+}
+// simsmok_policy_impact_decr
+List simsmok_policy_impact_decr(const IntegerVector& smok_status, const IntegerVector& smok_quit_yrs, const IntegerVector& smok_dur, const IntegerVector& smok_cig, const LogicalVector& new_pid, const IntegerVector& hc_eff);
+RcppExport SEXP _workHORSEmisc_simsmok_policy_impact_decr(SEXP smok_statusSEXP, SEXP smok_quit_yrsSEXP, SEXP smok_durSEXP, SEXP smok_cigSEXP, SEXP new_pidSEXP, SEXP hc_effSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const IntegerVector& >::type smok_status(smok_statusSEXP);
+    Rcpp::traits::input_parameter< const IntegerVector& >::type smok_quit_yrs(smok_quit_yrsSEXP);
+    Rcpp::traits::input_parameter< const IntegerVector& >::type smok_dur(smok_durSEXP);
+    Rcpp::traits::input_parameter< const IntegerVector& >::type smok_cig(smok_cigSEXP);
+    Rcpp::traits::input_parameter< const LogicalVector& >::type new_pid(new_pidSEXP);
+    Rcpp::traits::input_parameter< const IntegerVector& >::type hc_eff(hc_effSEXP);
+    rcpp_result_gen = Rcpp::wrap(simsmok_policy_impact_decr(smok_status, smok_quit_yrs, smok_dur, smok_cig, new_pid, hc_eff));
+    return rcpp_result_gen;
+END_RCPP
+}
 // wtd_ADstat
 double wtd_ADstat(const NumericVector& a, const NumericVector& wa, const NumericVector& b, const NumericVector& wb);
 RcppExport SEXP _workHORSEmisc_wtd_ADstat(SEXP aSEXP, SEXP waSEXP, SEXP bSEXP, SEXP wbSEXP) {
@@ -734,6 +765,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_workHORSEmisc_simsmok_postcalibration", (DL_FUNC) &_workHORSEmisc_simsmok_postcalibration, 1},
     {"_workHORSEmisc_simsmok_cig", (DL_FUNC) &_workHORSEmisc_simsmok_cig, 1},
     {"_workHORSEmisc_simsmok_cessation", (DL_FUNC) &_workHORSEmisc_simsmok_cessation, 10},
+    {"_workHORSEmisc_simsmok_policy_impact_incr", (DL_FUNC) &_workHORSEmisc_simsmok_policy_impact_incr, 5},
+    {"_workHORSEmisc_simsmok_policy_impact_decr", (DL_FUNC) &_workHORSEmisc_simsmok_policy_impact_decr, 6},
     {"_workHORSEmisc_wtd_ADstat", (DL_FUNC) &_workHORSEmisc_wtd_ADstat, 4},
     {"_workHORSEmisc_wtd_KSstat", (DL_FUNC) &_workHORSEmisc_wtd_KSstat, 4},
     {NULL, NULL, 0}
