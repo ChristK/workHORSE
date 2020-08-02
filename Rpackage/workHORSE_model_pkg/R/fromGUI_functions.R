@@ -50,19 +50,6 @@ fromGUI_to_dt <- function(parameters) {
 # parameters_dt <- fromGUI_to_dt(parameters)
 
 #' @export
-fromGUI_location <- function(parameters) {
-  par <- parameters$locality_select
-  # if (!exists("localities_indx")) localities_indx <- read_fst("./synthpop/lsoa_to_locality_indx.fst", as.data.table = TRUE)
-  # localities_indx <- unique(localities_indx[, .(LAD17CD, LAD17NM, SHA11CD, SHA11NM)])
-  # if (length(par) == 1L && par %in% localities_indx$LAD17NM) {
-  #   return(localities_indx[LAD17NM == par, as.character(LAD17CD)])
-  # } else if (length(par) == 1L && par == "England") {
-  #   return("national")
-  # }
-}
-# fromGUI_location(parameters)
-
-#' @export
 fromGUI_timeframe <- function(parameters) {
   out <- c(parameters$simulation_period_slider[1],
            parameters$simulation_period_slider[2] - parameters$simulation_period_slider[1])

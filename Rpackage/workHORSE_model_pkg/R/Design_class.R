@@ -64,10 +64,10 @@ Design <-
         stopifnot(
           c(
             "iteration_n"           ,
+            "iteration_n_final"     ,
             "clusternumber"         ,
             "n_cpus"                ,
             "logs"                  ,
-            "process_output"        ,
             "scenarios"             ,
             "cols_for_output"       ,
             "strata_for_output"     ,
@@ -153,19 +153,47 @@ Design <-
       #' @description Updates the design object from GUI.
       #' @param GUI_prm A GUI parameter object.
       #' @return The `Design` object.
-      update_fromGUI = function(GUI_prm = parameters) {
+      update_fromGUI = function(GUI_prm) {
         self$sim_prm$national_qimd       <- GUI_prm$national_qimd_checkbox
         # T = use national qimd, F = use local qimd
         self$sim_prm$init_year_fromGUI   <-
           fromGUI_timeframe(GUI_prm)["init year"] - 2000L
         self$sim_prm$sim_horizon_fromGUI <-
           fromGUI_timeframe(GUI_prm)["horizon"]
-        self$sim_prm$locality            <-
-          fromGUI_location(GUI_prm)
+        self$sim_prm$locality <- GUI_prm$locality_select
         if (!GUI_prm$national_qimd_checkbox) {
           self$sim_prm$cols_for_output <-
             c(setdiff(self$sim_prm$cols_for_output, "lqimd"), "nqimd")
         }
+        self$sim_prm$iteration_n            <- GUI_prm$iteration_n_gui
+        self$sim_prm$iteration_n_final      <- GUI_prm$iteration_n_final_gui
+        self$sim_prm$n_cpus                 <- GUI_prm$n_cpus_gui
+        self$sim_prm$n                      <- GUI_prm$n_gui
+        self$sim_prm$n_synthpop_aggregation <- GUI_prm$n_synthpop_aggregation_gui
+        self$sim_prm$n_primers              <- GUI_prm$n_primers_gui
+        self$sim_prm$n_synthpop_aggregation <- GUI_prm$n_synthpop_aggregation_gui
+        self$sim_prm$cvd_lag                <- GUI_prm$cvd_lag_gui
+        self$sim_prm$copd_lag               <- GUI_prm$copd_lag_gui
+        self$sim_prm$cancer_lag             <- GUI_prm$cancer_lag_gui
+        self$sim_prm$nonmodelled_lag        <- GUI_prm$nonmodelled_lag_gui
+        self$sim_prm$cancer_cure            <- GUI_prm$cancer_cure_gui
+        self$sim_prm$jumpiness              <- GUI_prm$jumpiness_gui
+
+        # Gen new lags enum after deleting existing ones
+        self$sim_prm[grepl("_enum$", names(self$sim_prm))] <- NULL
+
+        tt <- self$sim_prm[grepl("_lag$", names(self$sim_prm))]
+        l <- lapply(names(tt), function(x) {
+          disease_enum <-
+            (cumsum(unlist(tt) == tt[[x]]) * duplicated(tt))[[x]]
+          if (disease_enum == 0L)
+            disease_enum <- 1L
+          names(disease_enum) <- NULL
+          return(disease_enum)
+        })
+        names(l) <- paste0(names(tt), "_enum")
+        self$sim_prm <- c(self$sim_prm, l)
+
         invisible(self)
       },
 
