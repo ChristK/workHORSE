@@ -39,16 +39,11 @@ output$out_year_slider <- renderUI({
 hlp_frienly_names <- reactive({
   hlp_frienly_names <- list()
   for (i in seq_len(input$scenarios_number_slider)) {
-
-    if (!input[[paste0("baseline_sc", i)]] && !input[[paste0("parallel_ensemble_checkbox_sc", i)]]) {
-
+    if (!input[[paste0("baseline_sc", i)]]) {
       # hlp_frienly_names[link()$n] <- link()$n
-      hlp_frienly_names[[input[[paste0("friendly_name_sc", i)]]]] <-  input[[paste0("friendly_name_sc", i)]]
-
-    } else if (!input[[paste0("baseline_sc", i)]] && input[[paste0("parallel_ensemble_checkbox_sc", i)]]) {
-
-      hlp_frienly_names[[paste0(input[[paste0("friendly_name_sc", i)]], "_ens")]] <-
-        paste0(input[[paste0("friendly_name_sc", i)]], "_ens")
+      nam <- input[[paste0("friendly_name_sc", i)]]
+      if (!nam %in% hlp_frienly_names)
+        hlp_frienly_names[[nam]] <- nam
     }
   }
   hlp_frienly_names
@@ -58,8 +53,8 @@ observe({
   updatePickerInput(session, "inout_scenario_select_cypp", choices = hlp_frienly_names(), selected = hlp_frienly_names()[[1]])
   updatePickerInput(session, "inout_scenario_select_cpp", choices = hlp_frienly_names(), selected = hlp_frienly_names()[[1]])
 
-  updatePickerInput(session, "inout_scenario_diseases_select_cypp", choices = hlp_frienly_names(), selected = hlp_frienly_names())
-  updatePickerInput(session, "inout_scenario_diseases_select_cpp", choices = hlp_frienly_names(), selected = hlp_frienly_names())
+  updatePickerInput(session, "inout_scenario_diseases_select_cypp", choices = hlp_frienly_names(), selected = hlp_frienly_names()[1])
+  updatePickerInput(session, "inout_scenario_diseases_select_cpp", choices = hlp_frienly_names(), selected = hlp_frienly_names()[1])
 })
 
 output$out_scenario_select <- renderUI({
