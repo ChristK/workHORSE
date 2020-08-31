@@ -114,8 +114,8 @@ server = function(input, output, session) {
        # 1 worker for GUI and one for parallel population write.
        tweak(multiprocess, workers = 2L), # outer loop
        tweak(multiprocess, workers = design$sim_prm$clusternumber) # inner loop
-       # Because from the outer loop 1 worker never parallelises the inner loop, the
-       # inner loop need not be cpu/2
+       # Because from the outer loop 1 worker never parallelises the inner loop,
+       # the inner loop need not be cpu/2. But RAM usage is excess.
      ))
     design$update_fromGUI(reactiveValuesToList(input))
     future({
@@ -145,10 +145,10 @@ server = function(input, output, session) {
           {
             # TODO remove before release
             if (file.exists("./output/results.fst")) {
-              # out <- read_fst("./output/results.fst", as.data.table = TRUE)
-              # out
-              file.remove("./output/results.fst")
-              run_simulation(parameters, design, FALSE)
+              out <- read_fst("./output/results.fst", as.data.table = TRUE)
+              out
+              # file.remove("./output/results.fst")
+              # run_simulation(parameters, design, FALSE)
             } else {
               run_simulation(parameters, design, FALSE)
             }

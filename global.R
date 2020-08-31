@@ -55,7 +55,8 @@ strata_for_gui <- c("mc", "friendly_name", design$sim_prm$strata_for_output)
 def_col <- viridis(16, option = "D")
 def_col_small <- def_col[c(1, 9, 5, 3, 7, 2, 8, 4, 6)]
 
-def_sym <- c("circle-dot", "square", "diamond", "cross", "triangle-up", "pentagon", " star", "hexagon-open-dot", "triangle-down")
+def_sym <- c("circle-dot", "square", "diamond", "cross", "triangle-up",
+  "pentagon", " star", "hexagon-open-dot", "triangle-down")
 
 # Produce scenario tabs 2-9 using scenario 1 as a template if not exist ------
 for (i in 2:9) {
