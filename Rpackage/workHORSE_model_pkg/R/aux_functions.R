@@ -1936,7 +1936,9 @@ run_scenario <-
       unique_pid <- dt$pop[, unique(pid)] # all pid
 
       if (sum(tt) == 1) {
-        hlp$sc_alloc <- sample(names(tt), length(unique_pid), TRUE, tt)
+        ttt <- sample(names(tt), length(unique_pid), TRUE, tt)
+        hlp$sc_alloc <- lapply(names(tt), function(x) unique_pid[ttt==x])
+        names(hlp$sc_alloc) <- names(tt)
       } else if (sum(tt) < 1) {
         tt <- c(tt, 1-sum(tt))
         names(tt) <- c(head(names(tt), -1), "excluded_")
@@ -2435,7 +2437,7 @@ run_simulation <- function(parameters, design, final = FALSE) {
     to_agegrp(output_chunk, 20L, 89L, "age", "agegrp", TRUE, 30L)
 
     # Scale-up to ONS population projections
-
+    # output_chunk[, sum(wt), keyby = .(year, scenario)]
     for (nam in grep("_prvl$|_dgn$|_incd|_mrtl$|_cost$|^eq5d",
                      names(output_chunk),
                      value = TRUE)) {
@@ -2496,7 +2498,7 @@ run_simulation <- function(parameters, design, final = FALSE) {
       for (nam in grep("_ovrhd$", names(l), value = TRUE)) {
         newnam <- gsub("^sc_ls_|_cost_ovrhd$", "", nam)
         newnam <- paste0(newnam, "_ovrhd_cost")
-        output[scenario  == tt[scenario == sc_nam]$true_scenario,
+        output[scenario == tt[scenario == sc_nam]$true_scenario,
           (newnam) := pops * l[[nam]] / sum(pops), by = year]
       }
     }
@@ -2504,7 +2506,7 @@ run_simulation <- function(parameters, design, final = FALSE) {
       for (nam in grep("_ovrhd$", names(l), value = TRUE)) {
         newnam <- gsub("^sc_ls_|_cost_ovrhd$", "", nam)
         newnam <- paste0(newnam, "_ovrhd_cost")
-        output[scenario  == tt[scenario == sc_nam]$true_scenario &
+        output[scenario == tt[scenario == sc_nam]$true_scenario &
             between(year, l$sc_init_year, l$sc_last_year),
           (newnam) := pops * l[[nam]] / sum(pops), by = year]
       }
@@ -2513,7 +2515,10 @@ run_simulation <- function(parameters, design, final = FALSE) {
       for (nam in grep("_ovrhd$", names(l), value = TRUE)) {
         newnam <- gsub("^sc_ls_|_cost_ovrhd$", "", nam)
         newnam <- paste0(newnam, "_ovrhd_cost")
-        output[scenario  == tt[scenario == sc_nam]$true_scenario &
+        # TODO better logic on how to spread overheads for parallel scenarios
+        # currently it assumes parallel scenarios have identical overheads and
+        # those of the last scenario ovewrite the previous overheads.
+        output[scenario == tt[scenario == sc_nam]$true_scenario &
             between(year, l$sc_init_year, l$sc_last_year),
           (newnam) := pops * l[[nam]] / sum(pops), by = year]
       }
