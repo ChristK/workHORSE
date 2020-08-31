@@ -1205,22 +1205,51 @@ generate_health_econ <- function(dt) {
 }
 
 #' @export
-set_eligible <- function(scenario_parms, dt) {
+set_eligible <- function(scenario_parms, dt, hlp, env = parent.frame()) {
   colnam <- "eligible_sc"
+  if (scenario_parms$sc_ens_is && colnam %in% names(dt)) {
+    env$hlp$previous_elig <- clamp(hlp$previous_elig + dt$eligible_sc)
+  }
+
   set(dt, NULL, colnam, 0L)
   if (!scenario_parms$sc_eligib_noone) {
-    dt[between(year + 2000L, scenario_parms$sc_init_year, scenario_parms$sc_last_year) &
-         between(age, scenario_parms$sc_eligib_age[[1]], scenario_parms$sc_eligib_age[[2]]) &
-         dead == FALSE &
-         # statin_px_curr_xps == 0L &
-         # af_dgn == 0L &
-         htn_dgn < fifelse(scenario_parms$sc_eligib_htn, Inf, 1) &
-         t2dm_dgn < fifelse(scenario_parms$sc_eligib_diab, Inf, 1L) &
-         # ckd_prvl_curr_xps <= 3L &
-         # ra_prvl == 0L &
-         chd_dgn == 0L &
-         stroke_dgn == 0L,
-       (colnam) := 1L]
+    if (!scenario_parms$sc_ens_parallel_is) {
+      # if not parallel ensemble (following works OK with serial)
+      dt[between(year + 2000L,
+                 scenario_parms$sc_init_year,
+                 scenario_parms$sc_last_year) &
+           between(age,
+                   scenario_parms$sc_eligib_age[[1]],
+                   scenario_parms$sc_eligib_age[[2]]) &
+           dead == FALSE &
+           # statin_px_curr_xps == 0L &
+           # af_dgn == 0L &
+           htn_dgn < fifelse(scenario_parms$sc_eligib_htn, Inf, 1) &
+           t2dm_dgn < fifelse(scenario_parms$sc_eligib_diab, Inf, 1L) &
+           # ckd_prvl_curr_xps <= 3L &
+           # ra_prvl == 0L &
+           chd_dgn == 0L &
+           stroke_dgn == 0L,
+         (colnam) := 1L]
+    } else { # if parallel ensemble
+      dt[between(year + 2000L,
+                 scenario_parms$sc_init_year,
+                 scenario_parms$sc_last_year) &
+           between(age,
+                   scenario_parms$sc_eligib_age[[1]],
+                   scenario_parms$sc_eligib_age[[2]]) &
+           dead == FALSE &
+           # statin_px_curr_xps == 0L &
+           # af_dgn == 0L &
+           htn_dgn < fifelse(scenario_parms$sc_eligib_htn, Inf, 1) &
+           t2dm_dgn < fifelse(scenario_parms$sc_eligib_diab, Inf, 1L) &
+           # ckd_prvl_curr_xps <= 3L &
+           # ra_prvl == 0L &
+           chd_dgn == 0L &
+           stroke_dgn == 0L &
+           pid %in% hlp$sc_alloc[[scenario_parms$sc_name]],
+         (colnam) := 1L]
+    }
   }
   invisible(dt)
   # dt[year == 20 &
@@ -1235,10 +1264,13 @@ set_eligible <- function(scenario_parms, dt) {
 # prop_if(eligible_sc1 == 1), keyby = age]
 
 #' @export
-set_invitees <- function(scenario_parms, dt) {
+set_invitees <- function(scenario_parms, dt, hlp, env = parent.frame()) {
   colnam <- "invitees_sc"
   colnam_cost <- "invitation_cost_sc"
   elig_colnam <- "eligible_sc"
+  if (scenario_parms$sc_ens_is && colnam %in% names(dt)) {
+      env$hlp$previous_invitees <- clamp(hlp$previous_invitees + dt$invitees_sc)
+  }
   set(dt, NULL, colnam, 0L)
 
   # TODO find better approach
@@ -1250,6 +1282,11 @@ set_invitees <- function(scenario_parms, dt) {
       mu = scenario_parms$sc_invit_qimd1,
       freq = scenario_parms$sc_eligib_freq
     )
+    # for serial ensembles take into account previous scenarios
+    if (scenario_parms$sc_ens_serial_is) {
+      tt1 <- rbind(hlp$invit_tbl1, tt1)
+      env$hlp$invit_tbl1 <- copy(tt1)
+    }
     elig <- vector("numeric", nrow(tt1))
     for (i in seq_len(nrow(tt1))) {
       if (i == 1L)
@@ -1270,6 +1307,10 @@ set_invitees <- function(scenario_parms, dt) {
         mu = scenario_parms$sc_invit_qimd2,
         freq = scenario_parms$sc_eligib_freq
       )
+    if (scenario_parms$sc_ens_serial_is) {
+      tt2 <- rbind(hlp$invit_tbl2, tt2)
+      env$hlp$invit_tbl2 <- copy(tt2)
+    }
     elig <- vector("numeric", nrow(tt2))
     for (i in seq_len(nrow(tt2))) {
       if (i == 1L)
@@ -1290,6 +1331,10 @@ set_invitees <- function(scenario_parms, dt) {
         mu = scenario_parms$sc_invit_qimd3,
         freq = scenario_parms$sc_eligib_freq
       )
+    if (scenario_parms$sc_ens_serial_is) {
+      tt3 <- rbind(hlp$invit_tbl3, tt3)
+      env$hlp$invit_tbl3 <- copy(tt3)
+    }
     elig <- vector("numeric", nrow(tt3))
     for (i in seq_len(nrow(tt3))) {
       if (i == 1L)
@@ -1310,6 +1355,10 @@ set_invitees <- function(scenario_parms, dt) {
         mu = scenario_parms$sc_invit_qimd4,
         freq = scenario_parms$sc_eligib_freq
       )
+    if (scenario_parms$sc_ens_serial_is) {
+      tt4 <- rbind(hlp$invit_tbl4, tt4)
+      env$hlp$invit_tbl4 <- copy(tt4)
+    }
     elig <- vector("numeric", nrow(tt4))
     for (i in seq_len(nrow(tt4))) {
       if (i == 1L)
@@ -1330,6 +1379,10 @@ set_invitees <- function(scenario_parms, dt) {
         mu = scenario_parms$sc_invit_qimd5,
         freq = scenario_parms$sc_eligib_freq
       )
+    if (scenario_parms$sc_ens_serial_is) {
+      tt5 <- rbind(hlp$invit_tbl5, tt5)
+      env$hlp$invit_tbl5 <- copy(tt5)
+    }
     elig <- vector("numeric", nrow(tt5))
     for (i in seq_len(nrow(tt5))) {
       if (i == 1L)
@@ -1344,6 +1397,7 @@ set_invitees <- function(scenario_parms, dt) {
     tt5[is.na(mu), mu := 0] # i.e. for freq 5 and prb 0.25
 
     tt <- rbind(tt1, tt2, tt3, tt4, tt5)
+    tt <- tt[between(year + 2000L, scenario_parms$sc_init_year, scenario_parms$sc_last_year)]
 
     ttcost <-
       data.table(
@@ -1368,6 +1422,12 @@ set_invitees <- function(scenario_parms, dt) {
       mu = scenario_parms$sc_invit_qimdall,
       freq = scenario_parms$sc_eligib_freq
     )
+    # for serial ensembles take into account previous scenarios
+    if (scenario_parms$sc_ens_serial_is) {
+      tt <- rbind(hlp$invit_tbl, tt)
+      env$hlp$invit_tbl <- copy(tt)
+    }
+
     elig <- vector("numeric", nrow(tt))
     for (i in seq_len(nrow(tt))) {
       if (i == 1L)
@@ -1380,6 +1440,7 @@ set_invitees <- function(scenario_parms, dt) {
     }
     tt[, mu := clamp(mu / elig)]
     tt[is.na(mu), mu := 0] # i.e. for freq 5 and prb 0.25
+    tt <- tt[between(year + 2000L, scenario_parms$sc_init_year, scenario_parms$sc_last_year)]
 
     ttcost <- data.table(1L, scenario_parms$sc_invit_qimdall_cost)
     setnames(ttcost, c(colnam, colnam_cost))
@@ -1387,9 +1448,9 @@ set_invitees <- function(scenario_parms, dt) {
 
   absorb_dt(dt, tt)
   setnafill(dt, "c", 0, cols = c("mu", "freq"))
-  dt[, (colnam) := identify_invitees(eligible_sc, mu, freq, pid_mrk)]
+  dt[, (colnam) := identify_invitees(eligible_sc, hlp$previous_invitees, mu, freq, pid_mrk)]
   dt[, c("mu", "freq") := NULL]
-  absorb_dt(dt, ttcost)
+  absorb_dt(dt, ttcost, on = setdiff(names(ttcost), colnam_cost))
   setnafill(dt, "c", 0, cols = colnam_cost)
   invisible(dt)
   # dt[ eligible_sc1 == 1L &
@@ -1400,10 +1461,14 @@ set_invitees <- function(scenario_parms, dt) {
 # set_invitees("sc2", POP, parameters_dt)
 
 #' @export
-set_attendees <- function(scenario_parms, dt, scenario_nam, parameters_dt, design) {
+set_attendees <- function(scenario_parms, dt, scenario_nam, parameters_dt,
+  design, hlp, env = parent.frame()) {
   colnam       <- "attendees_sc"
   colnam_cost  <- "attendees_cost_sc"
   invit_colnam <- "invitees_sc"
+  if (scenario_parms$sc_ens_is && colnam %in% names(dt)) {
+    env$hlp$previous_attendees <- clamp(hlp$previous_attendees + dt$attendees_sc)
+  }
   set(dt, NULL, colnam_cost, 0L)
 
 
@@ -1460,7 +1525,7 @@ set_attendees <- function(scenario_parms, dt, scenario_nam, parameters_dt, desig
 
 #' @export
 set_px <- function(scenario_parms, dt) {
-  dt[, "Qrisk2_cat" := Qrisk2(.SD, FALSE,  FALSE, FALSE)$Qrisk2_cat]
+  dt[, "Qrisk2_cat" := Qrisk2(.SD, FALSE, FALSE, FALSE)$Qrisk2_cat]
   atte_colnam <- "attendees_sc"
 
   # for statins
@@ -1498,7 +1563,7 @@ set_px <- function(scenario_parms, dt) {
        (colnam) := rbinom(.N, 1L, px_statins_wt)]
   }
   setnafill(dt, "c", 0, cols = colnam)
-  dt[, (colnam) := hc_effect(statin_px_sc, 0.9749866, pid_mrk)]
+  dt[year + 2000L >= scenario_parms$sc_init_year, (colnam) := hc_effect(statin_px_sc, 0.9749866, pid_mrk)]
   # 0.9749866 comes from the following study in Wales.
   # King W, Lacey A, White J, Farewell D, Dunstan F, Fone D. Socioeconomic
   # inequality in medication persistence in primary and secondary prevention of
@@ -1530,9 +1595,10 @@ set_px <- function(scenario_parms, dt) {
   # or to avoid dependency for rpert
   # adherence <- rBE(1e6, 0.8, 0.1) # proportion of prescribed dose taken
 
-  dt[, (colnam_bio) := tchol_curr_xps]
+  if (!colnam_bio %in% names(dt)) dt[, (colnam_bio) := tchol_curr_xps]
   dt[statin_px_sc == 1L &
-       statin_px_curr_xps == 0L,
+       statin_px_curr_xps == 0L &
+       year + 2000L >= scenario_parms$sc_init_year,
      (colnam_bio) := tchol_curr_xps * (1 - atorv_eff * rBE(.N, 0.8, 0.2))]
 
   # for bpmed
@@ -1563,13 +1629,14 @@ set_px <- function(scenario_parms, dt) {
        (colnam) := rbinom(.N, 1L, px_antihtn_wt)]
   }
   setnafill(dt, "c", 0, cols = colnam)
-  dt[, (colnam) := hc_effect(bpmed_px_sc, 0.9749866, pid_mrk)]
+  dt[year + 2000L >= scenario_parms$sc_init_year, (colnam) := hc_effect(bpmed_px_sc, 0.9749866, pid_mrk)]
   # assume same prb as statins
 
   # Estimate sbp change
-  dt[, (colnam_bio) := sbp_curr_xps]
+  if (!colnam_bio %in% names(dt)) dt[, (colnam_bio) := sbp_curr_xps]
   dt[bpmed_px_sc == 1L &
-       bpmed_curr_xps == 0L,
+       bpmed_curr_xps == 0L &
+       year + 2000L >= scenario_parms$sc_init_year,
      (colnam_bio) := sbp_curr_xps - clamp((sbp_curr_xps - 135) *
                                             rBE(.N, 0.8, 0.2), 0, 1e3)]
   # Assume that antihtn medication can potentially achieve sbp 135 for all. Not
@@ -1577,7 +1644,7 @@ set_px <- function(scenario_parms, dt) {
 
   dt[, c("Qrisk2_cat", "px_statins_wt", "px_antihtn_wt") := NULL]
 
-  dt
+  invisible(dt)
 }
 
 #' @export
@@ -1586,64 +1653,68 @@ set_lifestyle <-
     atte_colnam <- "attendees_sc"
 
     # PA
-    set(dt, NULL, "hc_eff", 0L)
     colnam      <- "active_days_sc"
     colnam_cost <- "active_days_cost_sc"
-    dt[, (colnam) := active_days_curr_xps]
-    set(dt, NULL, colnam_cost, 0)
-    dt[attendees_sc == 1L, hc_eff := rbinom(.N, 1, scenario_parms$sc_ls_papct)]
-    dt[hc_eff == 1L, (colnam_cost) := scenario_parms$sc_ls_pa_cost_ind]
+    if (!"hc_eff_pa" %in% names(dt))      set(dt, NULL, "hc_eff_pa", 0L)
+    if (!colnam %in% names(dt))        dt[, (colnam) := active_days_curr_xps]
+    if (!colnam_cost %in% names(dt))   set(dt, NULL, colnam_cost, 0)
+    dt[attendees_sc == 1L, hc_eff_pa := rbinom(.N, 1, scenario_parms$sc_ls_papct)]
+    dt[hc_eff_pa == 1L & year + 2000L >= scenario_parms$sc_init_year,
+       (colnam_cost) := scenario_parms$sc_ls_pa_cost_ind]
     # Cost only the year of referral
-    dt[, hc_eff := hc_effect(hc_eff, (1 - scenario_parms$sc_ls_attrition), pid_mrk)]
-    dt[hc_eff == 1L, (colnam) :=
+    dt[year + 2000L >= scenario_parms$sc_init_year,
+       hc_eff_pa := hc_effect(hc_eff_pa, (1 - scenario_parms$sc_ls_attrition), pid_mrk)]
+    dt[hc_eff_pa == 1L, (colnam) :=
          as.integer(round(clamp(active_days_sc + scenario_parms$sc_ls_papincr, 0, 7)))]
 
     # Weight management
-    set(dt, NULL, "hc_eff", 0L)
     colnam      <- "bmi_sc"
     colnam_cost <- "bmi_cost_sc"
-    dt[, (colnam) := bmi_curr_xps]
-    set(dt, NULL, colnam_cost, 0)
+    if (!"hc_eff_wm" %in% names(dt)) set(dt, NULL, "hc_eff_wm", 0L)
+    if (!colnam %in% names(dt))      dt[, (colnam) := bmi_curr_xps]
+    if (!colnam_cost %in% names(dt)) set(dt, NULL, colnam_cost, 0)
     dt[attendees_sc == 1L &
-         bmi_curr_xps > 30, hc_eff := rbinom(.N, 1, scenario_parms$sc_ls_wghtpct)]
-    dt[hc_eff == 1L, (colnam_cost) := scenario_parms$sc_ls_wghtloss_cost_ind]
+         bmi_curr_xps > 30, hc_eff_wm := rbinom(.N, 1, scenario_parms$sc_ls_wghtpct)]
+    dt[hc_eff_wm == 1L  & year + 2000L >= scenario_parms$sc_init_year,
+       (colnam_cost) := scenario_parms$sc_ls_wghtloss_cost_ind]
     # Cost only the year of referral
-    dt[, hc_eff := hc_effect(hc_eff, (1 - scenario_parms$sc_ls_attrition), pid_mrk)]
-    dt[hc_eff == 1L, (colnam) := bmi_sc * (1 - scenario_parms$sc_ls_wghtreduc)]
+    dt[year + 2000L >= scenario_parms$sc_init_year,
+       hc_eff_wm := hc_effect(hc_eff_wm, (1 - scenario_parms$sc_ls_attrition), pid_mrk)]
+    dt[hc_eff_wm == 1L, (colnam) := bmi_sc * (1 - scenario_parms$sc_ls_wghtreduc)]
 
     # Alcohol
-    set(dt, NULL, "hc_eff", 0L)
     colnam      <- "alcohol_sc"
     colnam_cost <- "alcohol_cost_sc"
-    dt[, (colnam) := alcohol_curr_xps]
-    set(dt, NULL, colnam_cost, 0)
+    if (!"hc_eff_al" %in% names(dt)) set(dt, NULL, "hc_eff_al", 0L)
+    if (!colnam %in% names(dt))      dt[, (colnam) := alcohol_curr_xps]
+    if (!colnam_cost %in% names(dt)) set(dt, NULL, colnam_cost, 0)
     dt[attendees_sc == 1L &
-         alcohol_curr_xps >= 16, hc_eff := rbinom(.N, 1, scenario_parms$sc_ls_alcoholpct)]
-    dt[hc_eff == 1L, (colnam_cost) := scenario_parms$sc_ls_alcoholreduc_cost_ind]
+         alcohol_curr_xps >= 16, hc_eff_al := rbinom(.N, 1, scenario_parms$sc_ls_alcoholpct)]
+    dt[hc_eff_al == 1L & year + 2000L >= scenario_parms$sc_init_year,
+       (colnam_cost) := scenario_parms$sc_ls_alcoholreduc_cost_ind]
     # Cost only the year of referral
-    dt[, hc_eff := hc_effect(hc_eff, (1 - scenario_parms$sc_ls_attrition), pid_mrk)]
-    dt[hc_eff == 1L, (colnam) :=
+    dt[year + 2000L >= scenario_parms$sc_init_year,
+       hc_eff_al := hc_effect(hc_eff_al, (1 - scenario_parms$sc_ls_attrition), pid_mrk)]
+    dt[hc_eff_al == 1L, (colnam) :=
          as.integer(round(alcohol_sc * (1 - scenario_parms$sc_ls_alcoholreduc)))]
 
 
     # Smoking cessation
-    set(dt, NULL, "hc_eff", 0L)
     colnam_status   <- "smok_status_sc"
     colnam_quit_yrs <- "smok_quit_yrs_sc"
     colnam_dur      <- "smok_dur_sc"
     colnam_cig      <- "smok_cig_sc"
     colnam_cost     <- "smoking_cost_sc"
-    dt[, (c(colnam_status, colnam_quit_yrs, colnam_dur, colnam_cig)) :=
-         .(
-           smok_status_curr_xps,
-           smok_quit_yrs_curr_xps,
-           smok_dur_curr_xps,
-           smok_cig_curr_xps
-         )]
-    set(dt, NULL, colnam_cost, 0)
+    if (!"hc_eff_sm" %in% names(dt))     set(dt, NULL, "hc_eff_sm", 0L)
+    if (!colnam_status %in% names(dt))   dt[, (colnam_status) := smok_status_curr_xps]
+    if (!colnam_quit_yrs %in% names(dt)) dt[, (colnam_quit_yrs) := smok_quit_yrs_curr_xps]
+    if (!colnam_dur %in% names(dt))      dt[, (colnam_dur) := smok_dur_curr_xps]
+    if (!colnam_cig %in% names(dt))      dt[, (colnam_cig) := smok_cig_curr_xps]
+    if (!colnam_cost %in% names(dt)) set(dt, NULL, colnam_cost, 0)
     dt[attendees_sc == 1L & smok_status_curr_xps == "4",
-       hc_eff := rbinom(.N, 1, scenario_parms$sc_ls_smkcess)]
-    dt[hc_eff == 1L, (colnam_cost) := scenario_parms$sc_ls_smkcess_cost_ind]
+       hc_eff_sm := rbinom(.N, 1, scenario_parms$sc_ls_smkcess)]
+    dt[hc_eff_sm == 1L  & year + 2000L >= scenario_parms$sc_init_year,
+       (colnam_cost) := scenario_parms$sc_ls_smkcess_cost_ind]
     # Cost only the year of referral
 
     # Handle smok_relapse probabilities
@@ -1654,7 +1725,8 @@ set_lifestyle <-
     nam <- tbl[, paste0(sex, " ", qimd)]
     tbl <- as.matrix(tbl[, mget(paste0(1:15))], rownames = nam)
 
-    dt[, (c(colnam_status, colnam_quit_yrs, colnam_dur)) :=
+    dt[year + 2000L >= scenario_parms$sc_init_year,
+       (c(colnam_status, colnam_quit_yrs, colnam_dur)) :=
          simsmok_cessation(
            smok_status_sc,
            smok_quit_yrs_sc,
@@ -1662,7 +1734,7 @@ set_lifestyle <-
            sex,
            qimd,
            pid_mrk,
-           hc_eff,
+           hc_eff_sm,
            dqrunif(.N),
            tbl,
            design$sim_prm$smoking_relapse_limit
@@ -1676,7 +1748,6 @@ set_lifestyle <-
     dt[smok_status_sc == "4" & smok_cig_sc < 10L, smoke_cat_sc := 2L]
     dt[smok_status_sc == "4" & smok_cig_sc > 19L, smoke_cat_sc := 4L]
 
-    dt[, hc_eff := NULL]
     invisible(dt)
   }
 
@@ -1840,7 +1911,7 @@ set_structural <-
 
 #' @export
 run_scenario <-
-  function(scenario_nam,
+  function(scenario_nam, # This is true_scenario names
            dt,
            parameters_dt,
            design,
@@ -1849,15 +1920,54 @@ run_scenario <-
     if (timing[[1]])
       ptm <- proc.time()
 
-    scenario_parms <- fromGUI_scenario_parms(scenario_nam, parameters_dt)
+    basic_sc_nam <- parameters_dt[true_scenario == scenario_nam, unique(true_scenario), keyby = scenario]$scenario
 
-    # The order is important
-    set_eligible(  scenario_parms, dt$pop)
-    set_invitees(  scenario_parms, dt$pop)
-    set_attendees( scenario_parms, dt$pop, scenario_nam,  parameters_dt, design)
-    set_px(        scenario_parms, dt$pop) # slow
-    set_lifestyle( scenario_parms, dt$pop, design)
-    set_structural(scenario_parms, dt$pop, design)
+    scenario_parms <- lapply(basic_sc_nam, fromGUI_scenario_parms, parameters_dt)
+    names(scenario_parms) <- basic_sc_nam
+    # Sort scenarios in chronological order (important for serial ensembles)
+    basic_sc_nam <- names(sort(unlist(lapply(scenario_parms, `[[`, "sc_init_year"))))
+    scenario_parms <- scenario_parms[basic_sc_nam]
+    hlp <- list() # aux object to pass information between scenarios
+    hlp$previous_invitees <- hlp$previous_elig <- hlp$previous_attendees <- rep(0L, nrow(dt$pop))
+
+    # logic for parallel ensemble
+    tt <- unlist(lapply(scenario_parms, `[[`, "sc_ens_parallel_prc"))
+    if (length(tt) > 0) { # if parallel ensemble
+      unique_pid <- dt$pop[, unique(pid)] # all pid
+
+      if (sum(tt) == 1) {
+        hlp$sc_alloc <- sample(names(tt), length(unique_pid), TRUE, tt)
+      } else if (sum(tt) < 1) {
+        tt <- c(tt, 1-sum(tt))
+        names(tt) <- c(head(names(tt), -1), "excluded_")
+        ttt <- sample(names(tt), length(unique_pid), TRUE, tt)
+        hlp$sc_alloc <- lapply(names(tt), function(x) unique_pid[ttt==x])
+        names(hlp$sc_alloc) <- names(tt)
+      } else { # if > 1
+        hlp$sc_alloc <- lapply(names(tt),
+               function(x, tt) {
+                 unique_pid[as.logical(rbinom(length(unique_pid), 1, tt[x]))]
+        }, tt
+        )
+        names(hlp$sc_alloc) <- names(tt)
+      }
+      rm(unique_pid)
+    }
+
+
+    for (sc in basic_sc_nam) {
+      set_eligible(scenario_parms[[sc]], dt$pop, hlp)
+      set_invitees(scenario_parms[[sc]], dt$pop, hlp)
+      set_attendees(scenario_parms[[sc]], dt$pop, scenario_nam,  parameters_dt, design, hlp)
+      set_px(scenario_parms[[sc]], dt$pop) # slow
+      set_lifestyle(scenario_parms[[sc]], dt$pop, design)
+      set_structural(scenario_parms[[sc]], dt$pop, design)
+    }
+
+    dt$pop[, eligible_sc  := clamp(eligible_sc + hlp$previous_elig)]
+    dt$pop[, invitees_sc  := clamp(invitees_sc + hlp$previous_invitees)]
+    dt$pop[, attendees_sc := clamp(attendees_sc + hlp$previous_attendees)]
+    dt$pop[, c("hc_eff_pa", "hc_eff_wm", "hc_eff_al", "hc_eff_sm") := NULL]
     # TODO I can calculate the effect of xps change to disease prb for
     # efficiency No need to recalculate disease probability for everyone only
     # apply disease impact on attendees (works only with kismet == TRUE)
@@ -2206,15 +2316,14 @@ simulate_init_prvl <-
 
 
 #' @export
-run_simulation <- function(parameters, iteration_n, design) {
-  # NOTE iteration should be a vector, i.e. 1:20
+run_simulation <- function(parameters, design, final = FALSE) {
+  # NOTE final = F for the exploratory runs
   output_dir <- function(x = "") {
     file.path(design$sim_prm$output_dir, x)
   }
 
   on.exit(file.remove(output_dir("intermediate_out.csv")))
-  # parameters <- qread("./DELETEme_parameters.qs") # TODO remove before release
-  # iteration_n = 1:20L
+
   parameters_dt <- fromGUI_to_dt(parameters)
 
   if (design$sim_prm$logs)
@@ -2222,7 +2331,10 @@ run_simulation <- function(parameters, iteration_n, design) {
 
   # Parallelisation ----
   foreach(
-    mc_iter = iteration_n,
+    mc_iter = 1:(ifelse(final,
+                     design$sim_prm$iteration_n_final,
+                     design$sim_prm$iteration_n) *
+                   design$sim_prm$n_synthpop_aggregation),
     .inorder = FALSE,
     .verbose = TRUE,
     .packages = c(
@@ -2238,8 +2350,8 @@ run_simulation <- function(parameters, iteration_n, design) {
       "CKutils"
     )
   ) %dopar% {
-    data.table::setDTthreads(design$sim_prm$n_cpus)
-    fst::threads_fst(design$sim_prm$n_cpus)
+    setDTthreads(design$sim_prm$n_cpus)
+    threads_fst(design$sim_prm$n_cpus)
 
     if (design$sim_prm$logs) {
       if (!dir.exists(output_dir("logs/"))) {
@@ -2266,7 +2378,8 @@ run_simulation <- function(parameters, iteration_n, design) {
       print("scenario outputs")
     output_chunk <- list()
     output_chunk <- sapply(
-      fromGUI_scenario_names(parameters_dt)$true_scenario,
+      sort(fromGUI_scenario_names(parameters_dt)$true_scenario),
+      # parameters_dt[grepl("^sc[1-9]", scenario), sort(unique(scenario))],
       run_scenario,
       POP,
       parameters_dt,
@@ -2286,9 +2399,6 @@ run_simulation <- function(parameters, iteration_n, design) {
       setnames(x, oldnam, newnam)
     }))
     output_chunk <- rbindlist(output_chunk, idcol = "scenario")
-
-    # POP[year == 30, sum(t2dm_prvl>0)]
-    # output_chunk[year == 30 & scenario == "sc1", sum(t2dm_prvl>0)]
 
     setkey(output_chunk, scenario, pid, year) # for identify_longdeads
     output_chunk <-
@@ -2376,12 +2486,37 @@ run_simulation <- function(parameters, iteration_n, design) {
   output <- output[, lapply(.SD, sum), keyby = eval(strata)]
 
   # spread overhead policy costs to individuals
-  for (sc_nam in levels(output$scenario)) { # TODO check whether should be true_scenario
+  tt <-
+    parameters_dt[scenario != "global", .(scenario = unique(scenario)),
+      keyby = c("true_scenario", "friendly_name")]
+
+  for (sc_nam in tt$scenario) {
     l <- fromGUI_scenario_parms(sc_nam, parameters_dt)
-    for (nam in grep("_ovrhd$", names(l), value = TRUE)) {
-      newnam <- gsub("^sc_ls_|_cost_ovrhd$", "", nam)
-      newnam <- paste0(newnam, "_ovrhd_cost")
-      output[, (newnam) := pops * l[[nam]] / sum(pops), by = year]
+    if (!l$sc_ens_is) {
+      for (nam in grep("_ovrhd$", names(l), value = TRUE)) {
+        newnam <- gsub("^sc_ls_|_cost_ovrhd$", "", nam)
+        newnam <- paste0(newnam, "_ovrhd_cost")
+        output[scenario  == tt[scenario == sc_nam]$true_scenario,
+          (newnam) := pops * l[[nam]] / sum(pops), by = year]
+      }
+    }
+    if (l$sc_ens_serial_is) {
+      for (nam in grep("_ovrhd$", names(l), value = TRUE)) {
+        newnam <- gsub("^sc_ls_|_cost_ovrhd$", "", nam)
+        newnam <- paste0(newnam, "_ovrhd_cost")
+        output[scenario  == tt[scenario == sc_nam]$true_scenario &
+            between(year, l$sc_init_year, l$sc_last_year),
+          (newnam) := pops * l[[nam]] / sum(pops), by = year]
+      }
+    }
+    if (l$sc_ens_parallel_is) {
+      for (nam in grep("_ovrhd$", names(l), value = TRUE)) {
+        newnam <- gsub("^sc_ls_|_cost_ovrhd$", "", nam)
+        newnam <- paste0(newnam, "_ovrhd_cost")
+        output[scenario  == tt[scenario == sc_nam]$true_scenario &
+            between(year, l$sc_init_year, l$sc_last_year),
+          (newnam) := pops * l[[nam]] / sum(pops), by = year]
+      }
     }
   }
 

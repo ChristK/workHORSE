@@ -454,16 +454,17 @@ BEGIN_RCPP
 END_RCPP
 }
 // identify_invitees
-IntegerVector identify_invitees(const IntegerVector& elig, const NumericVector& prb, const IntegerVector& freq, const LogicalVector& pid);
-RcppExport SEXP _workHORSEmisc_identify_invitees(SEXP eligSEXP, SEXP prbSEXP, SEXP freqSEXP, SEXP pidSEXP) {
+IntegerVector identify_invitees(const IntegerVector& elig, const IntegerVector& prev_inv, const NumericVector& prb, const IntegerVector& freq, const LogicalVector& pid);
+RcppExport SEXP _workHORSEmisc_identify_invitees(SEXP eligSEXP, SEXP prev_invSEXP, SEXP prbSEXP, SEXP freqSEXP, SEXP pidSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const IntegerVector& >::type elig(eligSEXP);
+    Rcpp::traits::input_parameter< const IntegerVector& >::type prev_inv(prev_invSEXP);
     Rcpp::traits::input_parameter< const NumericVector& >::type prb(prbSEXP);
     Rcpp::traits::input_parameter< const IntegerVector& >::type freq(freqSEXP);
     Rcpp::traits::input_parameter< const LogicalVector& >::type pid(pidSEXP);
-    rcpp_result_gen = Rcpp::wrap(identify_invitees(elig, prb, freq, pid));
+    rcpp_result_gen = Rcpp::wrap(identify_invitees(elig, prev_inv, prb, freq, pid));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -750,7 +751,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_workHORSEmisc_carry_backward", (DL_FUNC) &_workHORSEmisc_carry_backward, 2},
     {"_workHORSEmisc_mk_new_simulant_markers", (DL_FUNC) &_workHORSEmisc_mk_new_simulant_markers, 1},
     {"_workHORSEmisc_identify_longdeads", (DL_FUNC) &_workHORSEmisc_identify_longdeads, 2},
-    {"_workHORSEmisc_identify_invitees", (DL_FUNC) &_workHORSEmisc_identify_invitees, 4},
+    {"_workHORSEmisc_identify_invitees", (DL_FUNC) &_workHORSEmisc_identify_invitees, 5},
     {"_workHORSEmisc_hc_effect", (DL_FUNC) &_workHORSEmisc_hc_effect, 3},
     {"_workHORSEmisc_fbound", (DL_FUNC) &_workHORSEmisc_fbound, 3},
     {"_workHORSEmisc_QDiabetes", (DL_FUNC) &_workHORSEmisc_QDiabetes, 2},

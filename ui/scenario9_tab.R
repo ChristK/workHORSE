@@ -977,7 +977,8 @@ bsCollapsePanel(
     ## Scenario ensembles ----
     h5("Scenario ensembles"),
     h6("In this section you can specify the above scenario to be part of a serial
-       or parallel ensemble."),
+       or parallel ensemble. Scenarios in the same ensemble need to share the same
+       friendly name!"),
     HTML("<br> <br/> "),
     column(6,
   switchInput(
@@ -991,7 +992,7 @@ bsCollapsePanel(
   %>%
     shinyInput_label_embed(
       icon("info") %>%
-        bs_embed_popover(title = "This allows you to run simultaneously different scenarios for different time spans, e.g scenario 1 from years 1-5 and scenario 2 from years 6-10")
+        bs_embed_popover(title = "This allows you to run simultaneously different scenarios for different time spans, e.g. scenario 1 from years 1-5 and scenario 2 from years 6-10. ")
     )
   )),
   fluidRow(div(style="display: inline-block;vertical-align:top; width: 10px; height: 30px",HTML("<br>"))),

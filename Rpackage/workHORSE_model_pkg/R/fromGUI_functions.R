@@ -20,7 +20,43 @@
 ## Boston, MA 02110-1301 USA.
 
 #' @export
+fromGUI_has_ensemble <- function(parameters) {
+  if (is.data.table(parameters)) { # for parameters_dt
+    out <- list("has_any_ensemble" = parameters[grepl("ensemble_checkbox", input_names), any(unlist(value))],
+                "has_parallel_ensemble" = parameters[grepl("^parallel_ensemble_checkbox", input_names), any(unlist(value))],
+                "has_serial_ensemble" = parameters[grepl("^serial_ensemble_checkbox", input_names), any(unlist(value))],
+                "has_both_types" = all(parameters[grepl("^parallel_ensemble_checkbox", input_names), any(unlist(value))],
+                                       parameters[grepl("^serial_ensemble_checkbox", input_names), any(unlist(value))])
+    )
+  } else { # if list
+  out <- list("has_any_ensemble" = any(unlist(parameters[grepl("ensemble_checkbox", names(parameters))])),
+              "has_parallel_ensemble" = any(unlist(parameters[grepl("^parallel_ensemble_checkbox", names(parameters))])),
+              "has_serial_ensemble" = any(unlist(parameters[grepl("^serial_ensemble_checkbox", names(parameters))])),
+              "has_both_types" = all(any(unlist(parameters[grepl("^parallel_ensemble_checkbox", names(parameters))])),
+                                     any(unlist(parameters[grepl("^serial_ensemble_checkbox", names(parameters))])))
+              )
+  }
+  return(out)
+}
+
+#' @export
+fromGUI_prune <- function(parameters) {
+  # Prune unused scenario slots
+  tt <- paste0("_sc", (unlist(parameters[grepl("scenarios_number_slider", names(parameters))]) + 1):9, "$")
+  tt <- paste(tt, collapse = "|")
+  parameters[grepl(tt, names(parameters))] <- NULL
+  tt <- "^shinyjs-delay-|^btn-|inTabset|^out_|^next_|shinytheme_selector|previous_"
+  parameters[grepl(tt, names(parameters))] <- NULL
+  tt <- "^collapse_panel_|^res_|^load_|^run_simulation_|level|scenario_select"
+  parameters[grepl(tt, names(parameters))] <- NULL
+  tt <- "^produce_report|_validator$"
+  parameters[grepl(tt, names(parameters))] <- NULL
+  return(parameters)
+}
+
+#' @export
 fromGUI_to_dt <- function(parameters) {
+  parameters_dt <- fromGUI_prune(parameters)
   parameters_dt <- lapply(parameters, unclass)
   parameters_dt <- data.table(
     "input_names" = names(parameters_dt),
@@ -34,16 +70,18 @@ fromGUI_to_dt <- function(parameters) {
   parameters_dt <-
     parameters_dt[lapply(lapply(value, `[`), length) > 0, ]
   setkey(parameters_dt, input_names)
-  tt <- parameters_dt["scenarios_number_slider", value[[1]]]
-  parameters_dt <-
-    parameters_dt[scenario %in% c("global", paste0("sc", seq_len(tt))), ]
-  parameters_dt <-
-    parameters_dt[!input_names %like% "^shinyjs-delay-|^btn-"]
+  # tt <- parameters_dt["scenarios_number_slider", value[[1]]]
+  # parameters_dt <-
+  #   parameters_dt[scenario %in% c("global", paste0("sc", seq_len(tt))), ]
+  # parameters_dt <-
+  #   parameters_dt[!input_names %like% "^shinyjs-delay-|^btn-"]
   # write_fst(parameters_dt, "./parameters_dt.fst")
 
   # parameters_dt[, transpose(lapply(lapply(value, `[`), length))][, table(V1)]
   parameters_dt[, value1 := sapply(value, `[`, 1)]
   parameters_dt[, value2 := sapply(value, `[`, 2)]
+  tt <- parameters_dt[input_names %flike% "friendly", .(scenario, friendly_name = unlist(value))]
+  absorb_dt(parameters_dt, tt)
   fromGUI_scenario_names(parameters_dt)
   return(parameters_dt)
 }
@@ -60,29 +98,9 @@ fromGUI_timeframe <- function(parameters) {
 # fromGUI_timeframe(parameters)["horizon"]
 
 #' @export
-fromGUI_scenario_count <- function(parameters_dt) {
-  if (!is.data.table(parameters_dt)) parameters_dt <- fromGUI_to_dt(parameters_dt)
-  # TODO make it work for more than one parallel and one serial ensemble scenarios
-  ns <-
-    parameters_dt[input_names %flike% "scenarios_number_slider",
-                  as.integer(value1)]
-  # get parallel ensemble scenarios
-  nsp <-
-    parameters_dt[input_names %flike% "parallel_ensemble_checkbox",
-                  sum(as.logical(value1))]
-  nss <-
-    parameters_dt[input_names %flike% "serial_ensemble_checkbox",
-                  sum(as.logical(value1))]
-  return(ns - nsp - nss + 2L)
-}
-# fromGUI_scenario_count(parameters_dt)
-# system.time({fromGUI_scenario_count(parameters_dt)})
-# system.time({fromGUI_scenario_count(parameters)})
-
-#' @export
 fromGUI_scenario_names <- function(parameters_dt) {
   if (!"friendly_name" %in% names(parameters_dt)) {
-    tt = parameters_dt[input_names %flike% "friendly", .(scenario, friendly_name = unlist(value))]
+    tt <- parameters_dt[input_names %flike% "friendly", .(scenario, friendly_name = unlist(value))]
     absorb_dt(parameters_dt, tt)
   }
   # taking into account ensembles
@@ -220,99 +238,93 @@ fromGUI_antihtn_table <- function(scenario_nam, parameters_dt) {
 #' @export
 fromGUI_scenario_parms <- function(scenario_nam, parameters_dt) {
   l <- list()
-  l$sc_is_ensemble <- parameters_dt[true_scenario == scenario_nam &
-                                      input_names %like% "^parallel_ensemble_checkbox|^serial_ensemble_checkbox",
-                                    any(as.logical(value1))]
-  if (l$sc_is_ensemble) {
-    # TODO logic for ensembles
-    l$sc_is_baseline <-
-      parameters_dt[true_scenario == scenario_nam &
-                      input_names == "baseline", any(as.logical(value1))]
-
-  } else {
+  l$sc_name <- scenario_nam
+  l$sc_friendly_name <-
+    parameters_dt[scenario == scenario_nam, unique(friendly_name)]
 
     l$sc_is_health_econ_perspective <-
-      parameters_dt[true_scenario == scenario_nam &
+      parameters_dt[scenario == scenario_nam &
                       input_names == "health_econ_perspective_checkbox", unlist(value)]
     l$sc_is_baseline <-
-      parameters_dt[true_scenario == scenario_nam &
+      parameters_dt[scenario == scenario_nam &
                       input_names == "baseline", as.logical(value1)]
     l$sc_init_year <-
-      parameters_dt[true_scenario == scenario_nam &
+      parameters_dt[scenario == scenario_nam &
                       input_names %flike% "ininit_year_slider", as.integer(value1)]
     l$sc_last_year <-
       parameters_dt[input_names %flike% "simulation_period_slider", as.integer(value2)]
     l$sc_eligib_age <-
-      parameters_dt[true_scenario == scenario_nam &
+      parameters_dt[scenario == scenario_nam &
                       input_names %flike% "age_eligibility_slider", unlist(value)]
     l$sc_eligib_freq <-
-      parameters_dt[true_scenario == scenario_nam &
+      parameters_dt[scenario == scenario_nam &
                       input_names %flike% "frequency_eligibility_slider", as.integer(value1)]
     l$sc_eligib_htn <-
-      parameters_dt[true_scenario == scenario_nam &
+      parameters_dt[scenario == scenario_nam &
                       input_names %flike% "invite_known_hypertensives_checkbox", as.logical(value1)]
     l$sc_eligib_diab <-
-      parameters_dt[true_scenario == scenario_nam &
+      parameters_dt[scenario == scenario_nam &
                       input_names %flike% "invite_known_diabetics_checkbox", as.logical(value1)]
     l$sc_eligib_noone <-
-      parameters_dt[true_scenario == scenario_nam &
+      parameters_dt[scenario == scenario_nam &
                       input_names %flike% "cancel_program_checkbox", as.logical(value1)]
     l$sc_invit_detailed <-
-      parameters_dt[true_scenario == scenario_nam &
+      parameters_dt[scenario == scenario_nam &
                       input_names %flike% "coverage_detailed_checkbox", as.logical(value1)]
     if (l$sc_invit_detailed) { # if by qimd
       l$sc_invit_qimd1 <-
-        parameters_dt[true_scenario == scenario_nam &
+        parameters_dt[scenario == scenario_nam &
                         input_names %flike% "coverage_qimd1_slider", as.numeric(value1)/100]
       l$sc_invit_qimd2 <-
-        parameters_dt[true_scenario == scenario_nam &
+        parameters_dt[scenario == scenario_nam &
                         input_names %flike% "coverage_qimd2_slider", as.numeric(value1)/100]
       l$sc_invit_qimd3 <-
-        parameters_dt[true_scenario == scenario_nam &
+        parameters_dt[scenario == scenario_nam &
                         input_names %flike% "coverage_qimd3_slider", as.numeric(value1)/100]
       l$sc_invit_qimd4 <-
-        parameters_dt[true_scenario == scenario_nam &
+        parameters_dt[scenario == scenario_nam &
                         input_names %flike% "coverage_qimd4_slider", as.numeric(value1)/100]
       l$sc_invit_qimd5 <-
-        parameters_dt[true_scenario == scenario_nam &
+        parameters_dt[scenario == scenario_nam &
                         input_names %flike% "coverage_qimd5_slider", as.numeric(value1)/100]
 
       l$sc_invit_qimd1_cost <-
-        parameters_dt[true_scenario == scenario_nam &
+        parameters_dt[scenario == scenario_nam &
                         input_names %flike% "coverage_cost_qimd1", as.numeric(value1)]
       l$sc_invit_qimd2_cost <-
-        parameters_dt[true_scenario == scenario_nam &
+        parameters_dt[scenario == scenario_nam &
                         input_names %flike% "coverage_cost_qimd2", as.numeric(value1)]
       l$sc_invit_qimd3_cost <-
-        parameters_dt[true_scenario == scenario_nam &
+        parameters_dt[scenario == scenario_nam &
                         input_names %flike% "coverage_cost_qimd3", as.numeric(value1)]
       l$sc_invit_qimd4_cost <-
-        parameters_dt[true_scenario == scenario_nam &
+        parameters_dt[scenario == scenario_nam &
                         input_names %flike% "coverage_cost_qimd4", as.numeric(value1)]
       l$sc_invit_qimd5_cost <-
-        parameters_dt[true_scenario == scenario_nam &
+        parameters_dt[scenario == scenario_nam &
                         input_names %flike% "coverage_cost_qimd5", as.numeric(value1)]
     } else {
       l$sc_invit_qimdall <-
-        parameters_dt[true_scenario == scenario_nam &
+        parameters_dt[scenario == scenario_nam &
                         input_names %flike% "coverage_qimd0_slider", as.numeric(value1)/100]
       l$sc_invit_qimdall_cost <-
-        parameters_dt[true_scenario == scenario_nam &
+        parameters_dt[scenario == scenario_nam &
                         input_names %flike% "coverage_cost_qimd0", as.numeric(value1)]
     }
 
     l$sc_qrisk_ignore_tchol <-
-      parameters_dt[true_scenario == scenario_nam &
+      parameters_dt[scenario == scenario_nam &
                       input_names %flike% "ignore_cholesterol_checkbox", as.logical(value1)]
     l$sc_qrisk_ignore_sbp <-
-      parameters_dt[true_scenario == scenario_nam &
+      parameters_dt[scenario == scenario_nam &
                       input_names %flike% "ignore_sbp_checkbox", as.logical(value1)]
     l$sc_qrisk_ignore_bmi <-
-      parameters_dt[true_scenario == scenario_nam &
+      parameters_dt[scenario == scenario_nam &
                       input_names %flike% "ignore_bmi_checkbox", as.logical(value1)]
     l$sc_uptake_detailed <-
-      parameters_dt[true_scenario == scenario_nam &
+      parameters_dt[scenario == scenario_nam &
                       input_names %flike% "uptake_detailed_checkbox", as.logical(value1)]
+
     if (l$sc_uptake_detailed) { # if detailed uptake
       l$sc_uptake <- fromGUI_uptake_table(scenario_nam = scenario_nam, parameters_dt = parameters_dt)
       setnafill(l$sc_uptake, "c", 0, cols = "val")
@@ -320,23 +332,24 @@ fromGUI_scenario_parms <- function(scenario_nam, parameters_dt) {
       setnames(l$sc_uptake, "val", "uptake_wt")
 
       l$sc_uptake_structural0s <-
-        parameters_dt[true_scenario == scenario_nam &
+        parameters_dt[scenario == scenario_nam &
                         input_names %flike% "uptake_structural_zeroes", as.logical(value1)]
     }
+
     l$sc_uptake_all <-
-      parameters_dt[true_scenario == scenario_nam &
+      parameters_dt[scenario == scenario_nam &
                       input_names %flike% "uptake_slider", as.numeric(value1)/100]
     l$sc_uptake_all_cost <-
-      parameters_dt[true_scenario == scenario_nam &
+      parameters_dt[scenario == scenario_nam &
                       input_names %flike% "uptake_cost", as.numeric(value1)]
     l$sc_px_statins <-
-      parameters_dt[true_scenario == scenario_nam &
+      parameters_dt[scenario == scenario_nam &
                       input_names %flike% "statin_px_slider", as.numeric(value1)/100]
     l$sc_px_antihtn <-
-      parameters_dt[true_scenario == scenario_nam &
+      parameters_dt[scenario == scenario_nam &
                       input_names %flike% "antihtn_px_slider", as.numeric(value1)/100]
     l$sc_px_detailed <-
-      parameters_dt[true_scenario == scenario_nam &
+      parameters_dt[scenario == scenario_nam &
                       input_names %flike% "px_detailed_checkbox", as.logical(value1)]
     if (l$sc_px_detailed) {
       l$sc_px_statins_wt <- fromGUI_statins_table(scenario_nam = scenario_nam,
@@ -356,111 +369,172 @@ fromGUI_scenario_parms <- function(scenario_nam, parameters_dt) {
     }
 
     l$sc_ls_smkcess <-
-      parameters_dt[true_scenario == scenario_nam &
+      parameters_dt[scenario == scenario_nam &
                       input_names %flike% "smkcess_slider",
                     as.numeric(value1)/100]
     l$sc_ls_smkcess_cost_ind <-
-      parameters_dt[true_scenario == scenario_nam &
+      parameters_dt[scenario == scenario_nam &
                       input_names %like% "smkcess_cost$",
                     as.numeric(value1)]
     l$sc_ls_smkcess_cost_ovrhd <-
-      parameters_dt[true_scenario == scenario_nam &
+      parameters_dt[scenario == scenario_nam &
                       input_names %flike% "smkcess_cost_ovrhd",
                     as.numeric(value1)]
     l$sc_ls_wghtpct <-
-      parameters_dt[true_scenario == scenario_nam &
+      parameters_dt[scenario == scenario_nam &
                       input_names %flike% "wghtpct_slider",
                     as.numeric(value1)/100]
     l$sc_ls_wghtreduc <-
-      parameters_dt[true_scenario == scenario_nam &
+      parameters_dt[scenario == scenario_nam &
                       input_names %flike% "wghtreduc_slider",
                     as.numeric(value1)/100]
     l$sc_ls_wghtloss_cost_ind <-
-      parameters_dt[true_scenario == scenario_nam &
+      parameters_dt[scenario == scenario_nam &
                       input_names %like% "wghtloss_cost$",
                     as.numeric(value1)]
     l$sc_ls_wghtloss_cost_ovrhd <-
-      parameters_dt[true_scenario == scenario_nam &
+      parameters_dt[scenario == scenario_nam &
                       input_names %flike% "wghtloss_cost_ovrhd",
                     as.numeric(value1)]
     l$sc_ls_papct <-
-      parameters_dt[true_scenario == scenario_nam &
+      parameters_dt[scenario == scenario_nam &
                       input_names %flike% "papct_slider",
                     as.numeric(value1)/100]
     l$sc_ls_papincr <-
-      parameters_dt[true_scenario == scenario_nam &
+      parameters_dt[scenario == scenario_nam &
                       input_names %flike% "papincr_slider",
                     as.integer(value1)]
     l$sc_ls_pa_cost_ind <-
-      parameters_dt[true_scenario == scenario_nam &
+      parameters_dt[scenario == scenario_nam &
                       input_names %like% "pa_cost$",
                     as.numeric(value1)]
     l$sc_ls_pa_cost_ovrhd <-
-      parameters_dt[true_scenario == scenario_nam &
+      parameters_dt[scenario == scenario_nam &
                       input_names %flike% "pa_cost_ovrhd",
                     as.numeric(value1)]
     l$sc_ls_alcoholpct <-
-      parameters_dt[true_scenario == scenario_nam &
+      parameters_dt[scenario == scenario_nam &
                       input_names %flike% "alcoholpct_slider",
                     as.numeric(value1)/100]
     l$sc_ls_alcoholreduc <-
-      parameters_dt[true_scenario == scenario_nam &
+      parameters_dt[scenario == scenario_nam &
                       input_names %flike% "alcoholreduc_slider",
                     as.integer(value1)/100]
     l$sc_ls_alcoholreduc_cost_ind <-
-      parameters_dt[true_scenario == scenario_nam &
+      parameters_dt[scenario == scenario_nam &
                       input_names %like% "alcoholreduc_cost$",
                     as.numeric(value1)]
     l$sc_ls_alcoholreduc_cost_ovrhd <-
-      parameters_dt[true_scenario == scenario_nam &
+      parameters_dt[scenario == scenario_nam &
                       input_names %flike% "alcoholreduc_cost_ovrhd",
                     as.numeric(value1)]
     l$sc_ls_attrition <-
-      parameters_dt[true_scenario == scenario_nam &
+      parameters_dt[scenario == scenario_nam &
                       input_names %flike% "lifestyle_attrition_slider",
                     as.numeric(value1)/100]
 
 
     l$sc_str_smk_change <-
-      parameters_dt[true_scenario == scenario_nam &
+      parameters_dt[scenario == scenario_nam &
                       input_names %flike% "structural_smk_slider",
                     as.numeric(value1)/100]
 
     # l$sc_str_nevsmk_change <-
-    #   parameters_dt[true_scenario == scenario_nam &
+    #   parameters_dt[scenario == scenario_nam &
     #                   input_names %flike% "structural_neversmk_slider",
     #                 as.numeric(value1)/100]
 
     l$sc_str_fv_change <-
-      parameters_dt[true_scenario == scenario_nam &
+      parameters_dt[scenario == scenario_nam &
                       input_names %flike% "structural_fv_slider",
                     as.numeric(value1)/100]
 
     l$sc_str_alcohol_change <-
-      parameters_dt[true_scenario == scenario_nam &
+      parameters_dt[scenario == scenario_nam &
                       input_names %flike% "structural_alcohol_slider",
                     as.numeric(value1)/100]
 
     l$sc_str_pa_change <-
-      parameters_dt[true_scenario == scenario_nam &
+      parameters_dt[scenario == scenario_nam &
                       input_names %flike% "structural_pa_slider",
                     as.integer(value1)]
 
     l$sc_str_bmi_change <-
-      parameters_dt[true_scenario == scenario_nam &
+      parameters_dt[scenario == scenario_nam &
                       input_names %flike% "structural_bmi_slider",
                     as.numeric(value1)/100]
 
     l$sc_str_sbp_change <-
-      parameters_dt[true_scenario == scenario_nam &
+      parameters_dt[scenario == scenario_nam &
                       input_names %flike% "structural_sbp_slider",
                     as.numeric(value1)/100]
 
     l$sc_str_tchol_change <-
-      parameters_dt[true_scenario == scenario_nam &
+      parameters_dt[scenario == scenario_nam &
                       input_names %flike% "structural_chol_slider",
                     as.numeric(value1)/100]
 
-  }
+    # Ensemble logic
+    l$sc_ens_is <- FALSE
+    l$sc_ens_parallel_is <- FALSE
+    l$sc_ens_serial_is <- FALSE
+    if (parameters_dt[scenario == scenario_nam &
+                      grepl("ensemble_checkbox", input_names),
+                      any(unlist(value))]) {
+      l$sc_ens_is <- TRUE
+
+
+
+      if (parameters_dt[scenario == scenario_nam &
+                        grepl("^parallel_ensemble_checkbox", input_names),
+                        any(unlist(value))]) {
+        l$sc_ens_parallel_is <- TRUE
+        l$sc_ens_parallel_prc <-
+          parameters_dt[scenario == scenario_nam &
+                          input_names %flike% "parallel_ensemble_slider",
+                        as.numeric(value1)/100]
+
+        # logic for finding out whether scenarios in a parallel ensemble add up
+        # to more than 100%
+        tt <- parameters_dt[grepl("^parallel_ensemble_checkbox", input_names)
+        ][(unlist(value)), scenario, by = friendly_name]
+        tt <- parameters_dt[tt, on = .NATURAL][input_names == "parallel_ensemble_slider"]
+        tt[, value1 := as.numeric(value1)/100]
+        # focus on the current ensemble
+        tt <- tt[friendly_name == tt[scenario == scenario_nam, friendly_name]]
+        l$sc_ens_parallel_prc_above1 <- tt[, sum(value1)] > 1
+        l$sc_ens_parallel_prc_other_scn <- tt[, .(scenario, value1)]
+      }
+
+      if (parameters_dt[scenario == scenario_nam &
+                        grepl("^serial_ensemble_checkbox", input_names),
+                        any(unlist(value))]) {
+        l$sc_ens_serial_is <- TRUE
+        # logic for finding out last year for the scenario. Should be one year
+        # before the init year of the next scenario in the serial ensemble. For
+        # the last scenario in the ensemble should be the simulation horizon
+        # year.
+        tt <- parameters_dt[grepl("^serial_ensemble_checkbox", input_names)
+                            ][(unlist(value)), scenario, by = friendly_name]
+        tt <- parameters_dt[tt, on = .NATURAL][input_names == "ininit_year_slider"]
+        tt[, value1 := as.integer(value1)]
+        if (any(tt[, any(duplicated(value1)), by = friendly_name]$V1))
+          stop("Scenarios in a serial ensemble must each start on a different year!")
+        # focus on the current ensemble
+        tt <- tt[friendly_name == tt[scenario == scenario_nam, friendly_name]]
+        setkeyv(tt, c("value1"))
+        tt[, rn := .I]
+        row_ <- tt[scenario == scenario_nam, rn]
+        if (row_ < nrow(tt)) {
+          l$sc_last_year <- tt[row_ + 1, value1 - 1L]
+        } # else l$sc_last_year has already assigned the simulation horizon at the beginning of this function
+        l$sc_ens_serial_prc_other_scn <- tt[, .(scenario, value1)]
+      }
+
+    }
+
+
+
+
   return(l)
 }
