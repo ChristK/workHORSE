@@ -53,8 +53,8 @@ observe({
   updatePickerInput(session, "inout_scenario_select_cypp", choices = hlp_frienly_names(), selected = hlp_frienly_names()[[1]])
   updatePickerInput(session, "inout_scenario_select_cpp", choices = hlp_frienly_names(), selected = hlp_frienly_names()[[1]])
 
-  updatePickerInput(session, "inout_scenario_diseases_select_cypp", choices = hlp_frienly_names(), selected = hlp_frienly_names()[1])
-  updatePickerInput(session, "inout_scenario_diseases_select_cpp", choices = hlp_frienly_names(), selected = hlp_frienly_names()[1])
+  updatePickerInput(session, "inout_scenario_diseases_select_cypp", choices = hlp_frienly_names(), selected = hlp_frienly_names())
+  updatePickerInput(session, "inout_scenario_diseases_select_cpp", choices = hlp_frienly_names(), selected = hlp_frienly_names())
 })
 
 output$out_scenario_select <- renderUI({
@@ -1327,13 +1327,13 @@ output$out_scenario_disease_select_cypp <- renderUI({
   tagList(
     pickerInput(inputId = "inout_scenario_diseases_select_cypp",
                 label = "Scenario",
-                choices = out_proc()[, unique(friendly_name)],
-                selected = first(out_proc()[, unique(friendly_name)]),
+                choices = out_proc()[, as.character(unique(friendly_name))],
+                selected = first(out_proc()[, as.character(unique(friendly_name))]),
                 options = list(`actions-box` = TRUE, `live-search` = FALSE),
                 multiple = FALSE)    %>%
       shinyInput_label_embed(
         icon("info") %>%
-          bs_embed_popover(title = "Please select the scenario that you would like to analyse.")
+          bs_embed_popover(title = "Please select the scenario that you would like to plot.")
       )
   )
 })
@@ -1342,13 +1342,13 @@ output$out_scenario_disease_select_cpp <- renderUI({
   tagList(
     pickerInput(inputId = "inout_scenario_diseases_select_cpp",
                 label = "Scenario",
-                choices = out_proc()[, unique(friendly_name)],
-                selected = first(out_proc()[, unique(friendly_name)]),
+                choices = out_proc()[, as.character(unique(friendly_name))],
+                selected = first(out_proc()[, as.character(unique(friendly_name))]),
                 options = list(`actions-box` = TRUE, `live-search` = FALSE),
                 multiple = FALSE)    %>%
       shinyInput_label_embed(
         icon("info") %>%
-          bs_embed_popover(title = "Please select the scenario that you would like to analyse.")
+          bs_embed_popover(title = "Please select the scenario that you would like to plot.")
       )
   )
 })
@@ -1357,7 +1357,7 @@ output$out_scenario_disease_select_cpp <- renderUI({
 
 output$cyppy_stacked_area <- renderPlotly({
   scn_sel <- reactive({ifelse(length(input$inout_scenario_diseases_select_cypp) == 0,
-                              first(out_proc()[, unique(friendly_name)]),
+                              first(out_proc()[, as.character(unique(friendly_name))]),
                               input$inout_scenario_diseases_select_cypp)})
   tt <- out_proc()[, .(
     cypp_chd_cml,
@@ -1469,7 +1469,7 @@ output$cyppy_stacked_area <- renderPlotly({
 
 output$cppy_stacked_area <- renderPlotly({
   scn_sel <- reactive({ifelse(length(input$inout_scenario_diseases_select_cpp) == 0,
-                              first(out_proc()[, unique(friendly_name)]),
+                              first(out_proc()[, as.character(unique(friendly_name))]),
                               input$inout_scenario_diseases_select_cpp)})
   tt <- out_proc()[, .(
     cpp_chd_cml,
