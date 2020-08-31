@@ -1933,7 +1933,7 @@ SynthPop <-
         tt[, year := year - 2000L]
         dt[, wt := .N, by = .(year, age, sex)]
         absorb_dt(dt, tt)
-        dt[, wt := pops / (wt) * design$sim_prm$n_synthpop_aggregation]
+        dt[, wt := pops / (wt * design$sim_prm$n_synthpop_aggregation)]
         dt[, pops := NULL]
 
         invisible(dt)
