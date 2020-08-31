@@ -83,25 +83,31 @@ LogicalVector identify_longdeads(const IntegerVector& x, const LogicalVector& pi
 //' @export
 // [[Rcpp::export]]
 IntegerVector identify_invitees(const IntegerVector& elig,
+                                const IntegerVector& prev_inv,
                                 const NumericVector& prb,
                                 const IntegerVector& freq,
                                 const LogicalVector& pid
 ) {
+  // prev_inv only relevant for serial ensembles. Signifies whether invited in previous scenario
   const int n = elig.size();
-  int counter = 1;
+  int counter = 1000; // to ensure > max(freq)
+  // int counter1 = 1;
   IntegerVector out(n, 0);
   for (int i = 0; i < n; i++)
   {
-    if (elig[i] == 1) out[i] = R::rbinom(1.0, prb[i]);
-    if (out[i] == 1)
-    {
-      counter = 1;
-      while (counter <=i && counter < freq[i] && !pid[i-counter] && out[i] == 1)
-      {
-        if (out[i-counter] == 1) out[i] = 0; // had HC recently
-        counter++;
-      }
-    }
+    if (pid[i]) counter = 1000; //how many years since previous invitation?
+    if (prev_inv[i] == 1) counter = 0;
+    else if (counter < 1000) counter++; // counter == 2, 2 year has passed
+    if (elig[i] == 1 && counter >= freq[i]) out[i] = R::rbinom(1.0, prb[i]);
+    if (out[i] == 1) counter = 0;
+    // {
+    //   counter1 = 1;
+    //   while (counter1 <= i && counter1 < freq[i] && !pid[i-counter1] && out[i] == 1)
+    //   {
+    //     if (out[i-counter1] == 1) out[i] = 0; // invited recently
+    //     counter1++;
+    //   }
+    // }
   }
   return out;
 }

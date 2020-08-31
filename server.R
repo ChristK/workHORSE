@@ -129,37 +129,53 @@ server = function(input, output, session) {
 
 # Run simulation ----
   out <-
-    eventReactive(
-      input[[paste0("run_simulation_sc", input$scenarios_number_slider)]],
-    {
+    eventReactive(input[[paste0("run_simulation_sc", input$scenarios_number_slider)]],
+      {
+        plan(multiprocess, workers = design$sim_prm$clusternumber)
+
+        parameters <- fromGUI_prune(reactiveValuesToList(input))
+        design$update_fromGUI(parameters)
+
+        # qsave(parameters, "./DELETEme_parameters.qs") # TODO delete for production
+        # parameters <- qread("./DELETEme_parameters.qs") # TODO delete for production
+
+        withProgress(message = 'Running workHORSE model.',
+          detail = 'This may take a couple of minutes...',
+          value = 0,
+          {
+            # TODO remove before release
+            if (file.exists("./output/results.fst")) {
+              # out <- read_fst("./output/results.fst", as.data.table = TRUE)
+              # out
+              file.remove("./output/results.fst")
+              run_simulation(parameters, design, FALSE)
+            } else {
+              run_simulation(parameters, design, FALSE)
+            }
+          })
+      },
+      ignoreNULL = TRUE,
+      ignoreInit = TRUE)
+
+  # Report button ----
+  out_report <- eventReactive(input$produce_report, {
+    # qsave(reactiveValuesToList(input), "./DELETEme_input.qs") # TODO delete for production
     plan(multiprocess, workers = design$sim_prm$clusternumber)
 
-    parameters <- reactiveValuesToList(input)
+    parameters <- fromGUI_prune(reactiveValuesToList(input))
     design$update_fromGUI(parameters)
 
-    qsave(parameters, "./DELETEme_parameters.qs") # TODO delete for production
-    # parameters <- qread("./DELETEme_parameters.qs") # TODO delete for production
-
+    # progress$inc(1/n, detail = paste("Doing part", i))
     withProgress(message = 'Running workHORSE model.',
-                 detail = 'This may take a couple of minutes...', value = 0, {
+      detail = 'This may take a couple of hours...',
+      value = 0,
+      {
+        run_simulation(parameters, design, TRUE)
+      })
+  },
+    ignoreNULL = TRUE,
+    ignoreInit = TRUE)
 
-    # TODO remove before release
-    if (file.exists("./output/results.fst")) {
-
-      out <- read_fst("./output/results.fst", as.data.table = TRUE)
-      out
-
-    } else {
-    run_simulation(
-       parameters,
-       1:(
-         design$sim_prm$iteration_n * design$sim_prm$n_synthpop_aggregation
-         ),
-         design
-       )
-    }
-     })
-  })
 
 
 # change to output panel
@@ -177,7 +193,8 @@ server = function(input, output, session) {
         input$baseline_sc8,
         input$baseline_sc9
       )
-    # TODO What if more than one baseline scenario is selected
+    # TODO What if more than one baseline scenario is selected. It needs to take
+    # into account ensemble scenarios.
 
     if (!check_locality) {
 
@@ -277,20 +294,6 @@ server = function(input, output, session) {
     input$inout_year_slider - input$simulation_period_slider[1]
   })
 
-  # Report button ----
-  out_report <- eventReactive(input$produce_report, {
-    parameters <- reactiveValuesToList(input)
-
-    # progress$inc(1/n, detail = paste("Doing part", i))
-    withProgress(message = 'Running workHORSE model.',
-                 detail = 'This may take a couple of hours...',
-                 value = 0,
-                 {
-                   run_simulation(parameters, 21:(design$iteration_n * 5L)) # 100
-
-                 }
-  )
-})
 
 # Automated graph explanation text  ------------------------------------------------------
 

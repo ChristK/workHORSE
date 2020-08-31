@@ -119,7 +119,7 @@ tabPanel(
         menuItem(
           "Health Economics",
           sliderInput(
-            "out_discount_cost_slider",
+            "out_discount_costs_slider",
             "Annual discount rate for costs",
             0,
             10,

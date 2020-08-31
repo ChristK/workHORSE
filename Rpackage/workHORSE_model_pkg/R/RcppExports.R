@@ -142,8 +142,8 @@ identify_longdeads <- function(x, pid) {
 }
 
 #' @export
-identify_invitees <- function(elig, prb, freq, pid) {
-    .Call('_workHORSEmisc_identify_invitees', PACKAGE = 'workHORSEmisc', elig, prb, freq, pid)
+identify_invitees <- function(elig, prev_inv, prb, freq, pid) {
+    .Call('_workHORSEmisc_identify_invitees', PACKAGE = 'workHORSEmisc', elig, prev_inv, prb, freq, pid)
 }
 
 #' @export

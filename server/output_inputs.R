@@ -111,39 +111,50 @@ out_proc_raw <- reactive(
     ) %in% input$out_characteristics_select]
 
 
-    dt <- out()[year <= input$inout_year_slider &
-                  friendly_name %in% input$inout_scenario_select &
-                  agegrp %in% agegroup_filter &
-                  sex %in% sex_filter &
-                  qimd %in% qimd_filter &
-                  ethnicity %in% ethn_filter ,
-    ][, `:=` (
-      # TODO FIX cumsums. Need to remove year from 'by'
+    if (input$produce_report > 0L) {
+      dt <- out_report()[year <= input$inout_year_slider &
+          friendly_name %in% input$inout_scenario_select &
+          agegrp %in% agegroup_filter &
+          sex %in% sex_filter &
+          qimd %in% qimd_filter &
+          ethnicity %in% ethn_filter , ]
+    } else {
+      dt <- out()[year <= input$inout_year_slider &
+          friendly_name %in% input$inout_scenario_select &
+          agegrp %in% agegroup_filter &
+          sex %in% sex_filter &
+          qimd %in% qimd_filter &
+          ethnicity %in% ethn_filter , ]
+    }
+
+
+    dt[, `:=` (
       # TODO use lapply and grep _cost$, and net utility
+      # discounting
       net_utility = deflate(net_utility, input$out_discount_qalys_slider, year, 2019L),
-      invitation_cost = deflate(invitation_cost, input$out_discount_cost_slider, year, 2019L),
-      attendees_cost = deflate(attendees_cost, input$out_discount_cost_slider, year, 2019L),
-      active_days_cost = deflate(active_days_cost, input$out_discount_cost_slider, year, 2019L),
-      bmi_cost = deflate(bmi_cost, input$out_discount_cost_slider, year, 2019L),
-      alcohol_cost = deflate(alcohol_cost, input$out_discount_cost_slider, year, 2019L),
-      smoking_cost = deflate(smoking_cost, input$out_discount_cost_slider, year, 2019L),
-      healthcare_cost = deflate(healthcare_cost, input$out_discount_cost_slider, year, 2019L),
-      socialcare_cost = deflate(socialcare_cost, input$out_discount_cost_slider, year, 2019L),
-      productivity_cost = deflate(productivity_cost, input$out_discount_cost_slider, year, 2019L),
-      informal_care_cost = deflate(informal_care_cost, input$out_discount_cost_slider, year, 2019L),
-      smkcess_ovrhd_cost = deflate(smkcess_ovrhd_cost, input$out_discount_cost_slider, year, 2019L),
-      wghtloss_ovrhd_cost = deflate(wghtloss_ovrhd_cost, input$out_discount_cost_slider, year, 2019L),
-      pa_ovrhd_cost = deflate(pa_ovrhd_cost, input$out_discount_cost_slider, year, 2019L),
-      alcoholreduc_ovrhd_cost = deflate(alcoholreduc_ovrhd_cost, input$out_discount_cost_slider, year, 2019L),
-      policy_cost = deflate(policy_cost, input$out_discount_cost_slider, year, 2019L),
-      net_policy_cost = deflate(net_policy_cost, input$out_discount_cost_slider, year, 2019L),
-      net_healthcare_cost = deflate(net_healthcare_cost, input$out_discount_cost_slider, year, 2019L),
-      net_socialcare_cost = deflate(net_socialcare_cost, input$out_discount_cost_slider, year, 2019L),
-      net_informal_care_cost = deflate(net_informal_care_cost, input$out_discount_cost_slider, year, 2019L),
-      net_productivity_cost = deflate(net_productivity_cost, input$out_discount_cost_slider, year, 2019L),
-      total_hcp_cost = deflate(total_hcp_cost, input$out_discount_cost_slider, year, 2019L),
-      total_hscp_cost = deflate(total_hscp_cost, input$out_discount_cost_slider, year, 2019L),
-      societal_cost = deflate(societal_cost, input$out_discount_cost_slider, year, 2019L)
+      invitation_cost = deflate(invitation_cost, input$out_discount_costs_slider, year, 2019L),
+      attendees_cost = deflate(attendees_cost, input$out_discount_costs_slider, year, 2019L),
+      active_days_cost = deflate(active_days_cost, input$out_discount_costs_slider, year, 2019L),
+      bmi_cost = deflate(bmi_cost, input$out_discount_costs_slider, year, 2019L),
+      alcohol_cost = deflate(alcohol_cost, input$out_discount_costs_slider, year, 2019L),
+      smoking_cost = deflate(smoking_cost, input$out_discount_costs_slider, year, 2019L),
+      healthcare_cost = deflate(healthcare_cost, input$out_discount_costs_slider, year, 2019L),
+      socialcare_cost = deflate(socialcare_cost, input$out_discount_costs_slider, year, 2019L),
+      productivity_cost = deflate(productivity_cost, input$out_discount_costs_slider, year, 2019L),
+      informal_care_cost = deflate(informal_care_cost, input$out_discount_costs_slider, year, 2019L),
+      smkcess_ovrhd_cost = deflate(smkcess_ovrhd_cost, input$out_discount_costs_slider, year, 2019L),
+      wghtloss_ovrhd_cost = deflate(wghtloss_ovrhd_cost, input$out_discount_costs_slider, year, 2019L),
+      pa_ovrhd_cost = deflate(pa_ovrhd_cost, input$out_discount_costs_slider, year, 2019L),
+      alcoholreduc_ovrhd_cost = deflate(alcoholreduc_ovrhd_cost, input$out_discount_costs_slider, year, 2019L),
+      policy_cost = deflate(policy_cost, input$out_discount_costs_slider, year, 2019L),
+      net_policy_cost = deflate(net_policy_cost, input$out_discount_costs_slider, year, 2019L),
+      net_healthcare_cost = deflate(net_healthcare_cost, input$out_discount_costs_slider, year, 2019L),
+      net_socialcare_cost = deflate(net_socialcare_cost, input$out_discount_costs_slider, year, 2019L),
+      net_informal_care_cost = deflate(net_informal_care_cost, input$out_discount_costs_slider, year, 2019L),
+      net_productivity_cost = deflate(net_productivity_cost, input$out_discount_costs_slider, year, 2019L),
+      total_hcp_cost = deflate(total_hcp_cost, input$out_discount_costs_slider, year, 2019L),
+      total_hscp_cost = deflate(total_hscp_cost, input$out_discount_costs_slider, year, 2019L),
+      societal_cost = deflate(societal_cost, input$out_discount_costs_slider, year, 2019L)
     )
     ][,
       `:=` (
@@ -227,7 +238,7 @@ out_proc_raw <- reactive(
         total_hscp_cost_cml = round(cumsum(total_hscp_cost)),
         societal_cost_cml = round(cumsum(societal_cost))
       ),
-      by = strata_for_gui
+      by = setdiff(strata_for_gui, "year") # strata_for_gui
     ][, nmb_cml := net_monetary_benefit_cml(.SD, input$health_econ_perspective_checkbox, input$out_wtp_box)
     ]
     # CBR cannot be summed because it is a ratio so it is inappropriate to put here
@@ -265,21 +276,31 @@ out_proc <- reactive(
       "other"
     ) %in% input$out_characteristics_select]
 
-
-    dt <- out()[year <= input$inout_year_slider &
-                  friendly_name %in% input$inout_scenario_select &
-                  agegrp %in% agegroup_filter &
-                  sex %in% sex_filter &
-                  qimd %in% qimd_filter &
-                  ethnicity %in% ethn_filter,
-    ]
-
+    if (input$produce_report > 0L) {
+      dt <- out_report()[year <= input$inout_year_slider &
+          friendly_name %in% input$inout_scenario_select &
+          agegrp %in% agegroup_filter &
+          sex %in% sex_filter &
+          qimd %in% qimd_filter &
+          ethnicity %in% ethn_filter,]
+    } else {
+      dt <- out()[year <= input$inout_year_slider &
+          friendly_name %in% input$inout_scenario_select &
+          agegrp %in% agegroup_filter &
+          sex %in% sex_filter &
+          qimd %in% qimd_filter &
+          ethnicity %in% ethn_filter,]
+    }
     dt <- sum_dt(dt)
 
     # Discounting costs and utility
-    nam <- grep("_cost$|_utility$", names(dt), value = TRUE)
-    for (i in nam) {
-      set(dt, NULL, i, deflate(dt[[i]], input$out_discount_qalys_slider, dt$year, 2019L))
+    nam <- grep("_utility$", names(dt), value = TRUE)
+    for (j in nam) {
+      set(dt, NULL, j, deflate(dt[[j]], input$out_discount_qalys_slider, dt$year, 2019L))
+    }
+    nam <- grep("_cost$", names(dt), value = TRUE)
+    for (j in nam) {
+      set(dt, NULL, j, deflate(dt[[j]], input$out_discount_costs_slider, dt$year, 2019L))
     }
 
     setkey(dt, year, friendly_name, mc)
@@ -403,22 +424,33 @@ out_proc_qimd <- reactive(
       "other"
     ) %in% input$out_characteristics_select]
 
-
-    dt <- out()[year <= input$inout_year_slider &
-                  friendly_name %in% input$inout_scenario_select &
-                  agegrp %in% agegroup_filter &
-                  sex %in% sex_filter &
-                  qimd %in% qimd_filter &
-                  ethnicity %in% ethn_filter,
-    ]
+    if (input$produce_report > 0L) {
+      dt <- out_report()[year <= input$inout_year_slider &
+          friendly_name %in% input$inout_scenario_select &
+          agegrp %in% agegroup_filter &
+          sex %in% sex_filter &
+          qimd %in% qimd_filter &
+          ethnicity %in% ethn_filter, ]
+    } else {
+      dt <- out()[year <= input$inout_year_slider &
+          friendly_name %in% input$inout_scenario_select &
+          agegrp %in% agegroup_filter &
+          sex %in% sex_filter &
+          qimd %in% qimd_filter &
+          ethnicity %in% ethn_filter, ]
+    }
 
     dt <- sum_dt(dt, c("year", "friendly_name", "mc", "qimd"))
 
 
     # Discounting costs and utility
-    nam <- grep("_cost$|_utility$", names(dt), value = TRUE)
-    for (i in nam) {
-      set(dt, NULL, i, deflate(dt[[i]], input$out_discount_qalys_slider, dt$year, 2019L))
+    nam <- grep("_utility$", names(dt), value = TRUE)
+    for (j in nam) {
+      set(dt, NULL, j, deflate(dt[[j]], input$out_discount_qalys_slider, dt$year, 2019L))
+    }
+    nam <- grep("_cost$", names(dt), value = TRUE)
+    for (j in nam) {
+      set(dt, NULL, j, deflate(dt[[j]], input$out_discount_costs_slider, dt$year, 2019L))
     }
 
     setkey(dt, year, friendly_name, qimd, mc)
@@ -515,11 +547,13 @@ out_summary <- reactive({
   dt     <-  melt(out_proc(), strata)
   setkey(dt, variable)
   probabilities <- c(0.5, 0.025, 0.975, 0.1, 0.9)
+  if (nrow(dt) > 0) { # for nrow == 0 fquantile crashes
   dt <- dt[, fquantile_byid(value, probabilities, variable, TRUE),
            by = c("year", "friendly_name")]
   setnames(dt, c("year", "friendly_name", paste0("V", 1:6)),
            c("Year", "Scenario", "Output", "Median", "2.5% UI", "97.5% UI",
              "10% UI", "90% UI"))
+  }
   dt
 })
 
