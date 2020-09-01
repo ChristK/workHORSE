@@ -2,10 +2,6 @@
 
 ------
 
-[TOC]
-
-
-
 workHORSE is an implementation of the IMPACTncd framework, developed by Chris Kypridemos with contributions from Peter Crowther (Melandra Ltd), Maria Guzman-Castillo, Amandine Robert, and Piotr Bandosz. This work has been funded by NIHR  HTA Project: 16/165/01 - workHORSE: Health Outcomes
 Research Simulation Environment.  The views expressed are those of the authors and not necessarily those of the NHS, the NIHR or the Department of Health. The main purpose of workHORSE is for in-silico experimentation with different forms of Health Checks, including the [NHS Health Check Programme](https://www.healthcheck.nhs.uk/), in England.
 
