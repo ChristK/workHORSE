@@ -42,11 +42,11 @@ sudo docker volume create workhorse-volume
 
 4. Run docker image:
 ```bash
-sudo docker run --mount source=workhorse-volume,target=/mnt/storage_fast/synthpop -p 8090:9898 -it chriskypri/workhorse-app
+sudo docker run --mount source=workhorse-volume,target=/mnt/storage_fast/synthpop -p 9898:9898 -it chriskypri/workhorse-app
 ```
 
 2. Now you should be able to run the WorkHORSE app by opening web browser and
-   open address **localhost:8090**
+   open address **localhost:9898**
 
 #### Windows 10 (not Home Edition)
 1. Download Docker Desktop for Windows [here](https://www.docker.com/get-started)
@@ -78,7 +78,7 @@ Then click 'Apply & Restart'
 ```bash
 docker pull chriskypri/workhorse-app
 docker volume create workhorse-volume
-docker run --mount source=workhorse-volume,target=/mnt/storage_fast/synthpop -p 8090:9898 -it chriskypri/workhorse-app
+docker run --mount source=workhorse-volume,target=/mnt/storage_fast/synthpop -p 9898:9898 -it chriskypri/workhorse-app
 ```
 
 7.  The window like below should appear. Allow docker to communicate via network interface
@@ -86,7 +86,7 @@ docker run --mount source=workhorse-volume,target=/mnt/storage_fast/synthpop -p 
 
 ![](www/images/5a8401c5b8c394a55654afb0ae66fe5c.png?raw=true)
     
-8.  Now you should be able to run the WorkHORSE app by opening web browser and open address: **localhost:8090**
+8.  Now you should be able to run the WorkHORSE app by opening web browser and open address: **localhost:9898**
 
 ### Multi-user installation (Linux – Ubuntu 20.04 LTS)
 
