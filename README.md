@@ -110,7 +110,7 @@ sudo docker volume create workhorse-volume
 
 5. Run command
 ```bash
-sudo docker network create sp-example-net
+sudo docker network create sp-workhorse-net
 ```
 6. Run shinyproxy image
 ```bash
