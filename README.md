@@ -42,7 +42,7 @@ sudo docker volume create workhorse-volume
 
 4. Run docker image:
 ```bash
-sudo docker run --mount source=workhorse-volume,target=/mnt/storage_fast/synthpop -p 8090:3838 -it chriskypri/workhorse-app
+sudo docker run --mount source=workhorse-volume,target=/mnt/storage_fast/synthpop -p 8090:9898 -it chriskypri/workhorse-app
 ```
 
 2. Now you should be able to run the WorkHORSE app by opening web browser and
@@ -78,7 +78,7 @@ Then click 'Apply & Restart'
 ```bash
 docker pull chriskypri/workhorse-app
 docker volume create workhorse-volume
-docker run --mount source=workhorse-volume,target=/mnt/storage_fast/synthpop -p 8090:3838 -it chriskypri/workhorse-app
+docker run --mount source=workhorse-volume,target=/mnt/storage_fast/synthpop -p 8090:9898 -it chriskypri/workhorse-app
 ```
 
 7.  The window like below should appear. Allow docker to communicate via network interface
