@@ -25,7 +25,7 @@ cat("Initialising workHORSE model...\n\n")
 if (!require(CKutils)) {
   if (!require(remotes))
     install.packages("remotes")
-  remotes::install_github("ChristK/CKutils")
+  remotes::install_github("ChristK/CKutils", force = TRUE)
   library(CKutils)
 }
 if (!require(workHORSEmisc)) {
