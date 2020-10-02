@@ -441,15 +441,15 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// identify_longdeads
-LogicalVector identify_longdeads(const IntegerVector& x, const LogicalVector& pid);
-RcppExport SEXP _workHORSEmisc_identify_longdeads(SEXP xSEXP, SEXP pidSEXP) {
+// identify_longdead
+LogicalVector identify_longdead(const IntegerVector& x, const LogicalVector& pid);
+RcppExport SEXP _workHORSEmisc_identify_longdead(SEXP xSEXP, SEXP pidSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const IntegerVector& >::type x(xSEXP);
     Rcpp::traits::input_parameter< const LogicalVector& >::type pid(pidSEXP);
-    rcpp_result_gen = Rcpp::wrap(identify_longdeads(x, pid));
+    rcpp_result_gen = Rcpp::wrap(identify_longdead(x, pid));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -750,7 +750,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_workHORSEmisc_carry_forward", (DL_FUNC) &_workHORSEmisc_carry_forward, 3},
     {"_workHORSEmisc_carry_backward", (DL_FUNC) &_workHORSEmisc_carry_backward, 2},
     {"_workHORSEmisc_mk_new_simulant_markers", (DL_FUNC) &_workHORSEmisc_mk_new_simulant_markers, 1},
-    {"_workHORSEmisc_identify_longdeads", (DL_FUNC) &_workHORSEmisc_identify_longdeads, 2},
+    {"_workHORSEmisc_identify_longdead", (DL_FUNC) &_workHORSEmisc_identify_longdead, 2},
     {"_workHORSEmisc_identify_invitees", (DL_FUNC) &_workHORSEmisc_identify_invitees, 5},
     {"_workHORSEmisc_hc_effect", (DL_FUNC) &_workHORSEmisc_hc_effect, 3},
     {"_workHORSEmisc_fbound", (DL_FUNC) &_workHORSEmisc_fbound, 3},

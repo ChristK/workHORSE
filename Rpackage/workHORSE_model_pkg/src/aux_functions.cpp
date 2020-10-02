@@ -70,7 +70,7 @@ LogicalVector mk_new_simulant_markers(const IntegerVector& pid)
 
 //' @export
 // [[Rcpp::export]]
-LogicalVector identify_longdeads(const IntegerVector& x, const LogicalVector& pid) {
+LogicalVector identify_longdead(const IntegerVector& x, const LogicalVector& pid) {
   const int n = x.size();
   LogicalVector out(n);
   for (int i = 0; i < n; i++)

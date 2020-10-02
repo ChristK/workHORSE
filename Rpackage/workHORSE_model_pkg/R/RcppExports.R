@@ -137,8 +137,8 @@ mk_new_simulant_markers <- function(pid) {
 }
 
 #' @export
-identify_longdeads <- function(x, pid) {
-    .Call('_workHORSEmisc_identify_longdeads', PACKAGE = 'workHORSEmisc', x, pid)
+identify_longdead <- function(x, pid) {
+    .Call('_workHORSEmisc_identify_longdead', PACKAGE = 'workHORSEmisc', x, pid)
 }
 
 #' @export

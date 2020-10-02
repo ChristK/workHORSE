@@ -952,7 +952,7 @@ generate_eq5d_decr <- function(dt) {
 
   # half eq5d for year of death
   out <-
-    out / ((dt$all_cause_mrtl > 0) + 1L) # out/1 for alive and out/2 for deads
+    out / ((dt$all_cause_mrtl > 0) + 1L) # out/1 for alive and out/2 for dead
 
   clamp(out, 0, 1, TRUE)
   dt[, eq5d := out]
@@ -960,107 +960,50 @@ generate_eq5d_decr <- function(dt) {
 # generate_eq5d_decr(output)
 # output[, summary(eq5d)]
 
+get_healthcare_costs <- function(mc) {
+  if (mc < 1L | mc > 1000L) stop("mc need to be between 1 and 1000")
+  out <- list()
+  tt <- read_fst("./simulation/health_econ/healthcare_costs_indx.fst",
+    from = mc, to = mc,
+    as.data.table = TRUE)
+  tt <- read_fst("./simulation/health_econ/healthcare_costs_l.fst",
+    from = tt$from, to = tt$to,
+    columns = c("disease", "years_since_diagnosis", "healthcare_cost"),
+    as.data.table = TRUE)
+  out$lung_ca_costs_young <- tt[disease == "lung_ca_18_64", c(0, healthcare_cost)] # (first element is for prevalence 0)
+  out$lung_ca_costs_old <- tt[disease == "lung_ca_65+", c(0, healthcare_cost)]
+  out$colon_ca_costs_young <- tt[disease == "colon_ca_18_64", c(0, healthcare_cost)]
+  out$colon_ca_costs_old <- tt[disease == "colon_ca_65+", c(0, healthcare_cost)]
+  out$breast_ca_costs_young <- tt[disease == "breast_ca_18_64", c(0, healthcare_cost)]
+  out$breast_ca_costs_old <- tt[disease == "breast_ca_65+", c(0, healthcare_cost)]
+  out$other <- tt[disease == "other", healthcare_cost]
+  out$htn <- tt[disease == "hypertension", healthcare_cost]
+  out$af <- tt[disease == "atrial_fibrillation", healthcare_cost]
+  out$t2dm <- tt[disease == "t2dm", healthcare_cost]
+  out$chd <- tt[disease == "chd", healthcare_cost]
+  out$stroke_y1 <- tt[disease %in% c("stroke_acute_event", "stroke_first_year"),
+    sum(healthcare_cost)]
+  out$stroke_posty1 <- tt[disease == "stroke_year_2+", healthcare_cost]
+  out$poststroke_dementia <- tt[disease == "dementia", healthcare_cost]
+  out$copd <- tt[disease == "copd", healthcare_cost]
+  out
+}
 
-#' @export
-generate_healthcare_costs <- function(dt) {
-  # cancers cost by year since diagnosis age < 65 and >=65
-  # (first element is for 0)
-  lung_ca_cost_young <-
-    c(
-      0,
-      16356.18,
-      5276.19,
-      4650.95,
-      3104.12,
-      2964.66,
-      2964.66,
-      2964.66,
-      2964.66,
-      2964.66,
-      2964.66
-    )
-  lung_ca_cost_old <-
-    c(
-      0,
-      14092.30,
-      5020.51,
-      4584.70,
-      3910.65,
-      3536.44,
-      3536.44,
-      3536.44,
-      3536.44,
-      3536.44,
-      3536.44
-    )
-  colon_ca_cost_young <-
-    c(
-      0,
-      21763.69,
-      5827.05,
-      4284.87,
-      3401.63,
-      2775.23,
-      2118.61,
-      2277.83,
-      1961.72,
-      1592.15,
-      1592.15
-    )
-  colon_ca_cost_old <-
-    c(
-      0,
-      20270.32,
-      4917.08,
-      3954.82,
-      3278.44,
-      3218.01,
-      3185.47,
-      2720.61,
-      3056.47,
-      2598.58,
-      2598.58
-    )
-  breast_ca_cost_young <-
-    c(
-      0,
-      13877.30,
-      4272.08,
-      2528.85,
-      2070.96,
-      1984.96,
-      1912.91,
-      1695.59,
-      1664.21,
-      1529.40,
-      1529.40
-    )
-  breast_ca_cost_old <-
-    c(
-      0,
-      11332.18,
-      3108.77,
-      2638.09,
-      2653.20,
-      2540.47,
-      2582.31,
-      2464.93,
-      2491.66,
-      2646.23,
-      2646.23
-    )
+generate_healthcare_costs <- function(dt, mc) {
+  costs <- get_healthcare_costs(mc)
 
-  out <- 1237 + 72 * (dt$htn_prvl > 0L) + 1102 * (dt$af_prvl > 0L) +
-    586 * (dt$t2dm_prvl > 0L) + 1667 * (dt$chd_prvl > 0L) +
-    (10603 + 9040) * (dt$stroke_prvl == 1L) +
-    5569 * (dt$stroke_prvl > 1L) + 2404 * (dt$copd_prvl > 0L) +
-    lung_ca_cost_young[1L + dt$lung_ca_prvl] * (dt$age < 65) +
-    lung_ca_cost_old[1L + dt$lung_ca_prvl] * (dt$age >= 65) +
-    colon_ca_cost_young[1L + dt$colon_ca_prvl] * (dt$age < 65) +
-    colon_ca_cost_old[1L + dt$colon_ca_prvl] * (dt$age >= 65) +
-    breast_ca_cost_young[1L + dt$breast_ca_prvl] * (dt$age < 65) +
-    breast_ca_cost_old[1L + dt$breast_ca_prvl] * (dt$age >= 65) +
-    2289 * (dt$poststroke_dementia_prvl > 0L)
+  out <- costs$other + costs$htn * (dt$htn_prvl > 0L) +
+    costs$t2dm * (dt$t2dm_prvl > 0L) + costs$chd * (dt$chd_prvl > 0L) +
+    costs$stroke_y1 * (dt$stroke_prvl == 1L) +
+    costs$stroke_posty1 * (dt$stroke_prvl > 1L) +
+    costs$copd * (dt$copd_prvl > 0L) + costs$af * (dt$af_prvl > 0L) +
+    costs$lung_ca_costs_young[1L + dt$lung_ca_prvl] * (dt$age < 65) +
+    costs$lung_ca_costs_old[1L + dt$lung_ca_prvl] * (dt$age >= 65) +
+    costs$colon_ca_costs_young[1L + dt$colon_ca_prvl] * (dt$age < 65) +
+    costs$colon_ca_costs_old[1L + dt$colon_ca_prvl] * (dt$age >= 65) +
+    costs$breast_ca_costs_young[1L + dt$breast_ca_prvl] * (dt$age < 65) +
+    costs$breast_ca_costs_old[1L + dt$breast_ca_prvl] * (dt$age >= 65) +
+    costs$poststroke_dementia * (dt$poststroke_dementia_prvl > 0L)
 
   # half cost for year of death
   out <-
@@ -1068,10 +1011,56 @@ generate_healthcare_costs <- function(dt) {
   dt[, healthcare_cost := out]
 }
 
-#' @export
-generate_productivity_costs <- function(dt) {
-  tt <- fread("./simulation/health_econ/costs_productivity_use.csv",
-              stringsAsFactors = TRUE)
+
+get_socialcare_costs <- function(mc) {
+  if (mc < 1L | mc > 1000L) stop("mc need to be between 1 and 1000")
+  out <- list()
+  tt <- read_fst("./simulation/health_econ/socialcare_costs_indx.fst",
+    from = mc, to = mc,
+    as.data.table = TRUE)
+  out$socialcare_cost <- read_fst("./simulation/health_econ/socialcare_costs_l.fst",
+    from = tt$from, to = tt$to,
+    columns = c("socialcare_cost"),
+    as.data.table = FALSE)$socialcare_cost
+  tt <- read_fst("./simulation/health_econ/socialcare_costs_added_diseases_indx.fst",
+    from = mc, to = mc,
+    as.data.table = TRUE)
+  tt <- read_fst("./simulation/health_econ/socialcare_costs_added_diseases_l.fst",
+    from = tt$from, to = tt$to,
+    columns = c("disease", "socialcare_cost"),
+    as.data.table = TRUE)
+  out$socialcare_cost_stroke <- tt[disease == "stroke", socialcare_cost]
+  out$socialcare_cost_poststroke_dementia <- tt[disease == "poststroke_dementia", socialcare_cost]
+  out
+}
+
+generate_socialcare_costs <- function(dt, mc) {
+  costs <- get_socialcare_costs(mc)
+  # for ages 18 to 100. Hence, age - 17L
+  out <-
+    costs$socialcare_cost[dt$age - 17L] + costs$socialcare_cost_stroke * (dt$stroke_prvl > 0L) +
+    costs$socialcare_cost_poststroke_dementia * (dt$poststroke_dementia_prvl > 0L)
+
+  # half cost for year of death
+  out <-
+    out / ((dt$all_cause_mrtl > 0) + 1L) # out/1 for alive and out/2 for dead
+  dt[, socialcare_cost := out]
+  dt
+}
+
+get_productivity_costs <- function(mc) {
+  if (mc < 1L | mc > 1000L) stop("mc need to be between 1 and 1000")
+  tt <- read_fst("./simulation/health_econ/productivity_costs_indx.fst",
+    from = mc, to = mc,
+    as.data.table = TRUE)
+  read_fst("./simulation/health_econ/productivity_costs_l.fst",
+    from = tt$from, to = tt$to,
+    columns = c("age", "sex", "eq5d_r", "productivity_cost"),
+    as.data.table = TRUE)
+}
+
+generate_productivity_costs <- function(dt, mc) {
+  tt <- get_productivity_costs(mc)
   tt[, eq5d_r := as.integer(100L * eq5d_r)]
   dt[, eq5d_r := as.integer(100L * round(eq5d / 0.05) * 0.05)]
   absorb_dt(dt, tt)
@@ -1081,110 +1070,20 @@ generate_productivity_costs <- function(dt) {
   dt
 }
 
-#' @export
-generate_socialcare_costs <- function(dt) {
-  socialcare_costs <-
-    c(
-      34,
-      67,
-      101,
-      134,
-      168,
-      168,
-      168,
-      168,
-      168,
-      168,
-      168,
-      168,
-      168,
-      168,
-      168,
-      168,
-      168,
-      168,
-      168,
-      168,
-      168,
-      168,
-      168,
-      168,
-      168,
-      168,
-      168,
-      168,
-      199,
-      229,
-      260,
-      291,
-      322,
-      322,
-      322,
-      322,
-      322,
-      322,
-      322,
-      322,
-      322,
-      322,
-      322,
-      322,
-      322,
-      322,
-      322,
-      307,
-      292,
-      277,
-      263,
-      248,
-      287,
-      327,
-      366,
-      405,
-      445,
-      500,
-      556,
-      611,
-      667,
-      722,
-      909,
-      1096,
-      1282,
-      1469,
-      1656,
-      2115,
-      2574,
-      3034,
-      3493,
-      3953,
-      3953,
-      3953,
-      3953,
-      3953,
-      3953,
-      3953,
-      3953,
-      3953,
-      3953,
-      3953,
-      3953
-    )
-  # for ages 18 to 100
-  out <-
-    socialcare_costs[dt$age - 17L] + 699 * (dt$stroke_prvl > 0L) +
-    4862 * (dt$poststroke_dementia_prvl > 0L)
 
-  # half cost for year of death
-  out <-
-    out / ((dt$all_cause_mrtl > 0) + 1L) # out/1 for alive and out/2 for deads
-  dt[, socialcare_cost := out]
-  dt
+get_informal_care_costs <- function(mc) {
+  if (mc < 1L | mc > 1000L) stop("mc need to be between 1 and 1000")
+  tt <- read_fst("./simulation/health_econ/informal_care_costs_indx.fst",
+    from = mc, to = mc,
+    as.data.table = TRUE)
+  read_fst("./simulation/health_econ/informal_care_costs_l.fst",
+    from = tt$from, to = tt$to,
+    columns = c("age", "sex", "eq5d_r", "informal_care_cost"),
+    as.data.table = TRUE)
 }
 
-#' @export
-generate_informal_care_costs <- function(dt) {
-  tt <- fread("./simulation/health_econ/costs_informal_care.csv",
-              stringsAsFactors = TRUE)
+generate_informal_care_costs <- function(dt, mc) {
+  tt <- get_informal_care_costs(mc)
   tt[, eq5d_r := as.integer(100L * eq5d_r)]
   dt[, eq5d_r := as.integer(100 * round(eq5d / 0.05) * 0.05)]
   absorb_dt(dt, tt)
@@ -1195,12 +1094,12 @@ generate_informal_care_costs <- function(dt) {
 }
 
 #' @export
-generate_health_econ <- function(dt) {
+generate_health_econ <- function(dt, mc) {
   generate_eq5d_decr(dt)
-  generate_healthcare_costs(dt)
-  generate_socialcare_costs(dt)
-  generate_productivity_costs(dt)
-  generate_informal_care_costs(dt)
+  generate_healthcare_costs(dt, mc)
+  generate_socialcare_costs(dt, mc)
+  generate_productivity_costs(dt, mc)
+  generate_informal_care_costs(dt, mc)
   invisible(dt)
 }
 
@@ -2343,8 +2242,7 @@ run_simulation <- function(parameters, design, final = FALSE) {
       "R6",
       "data.table",
       "workHORSEmisc",
-      "gamlss.dist",
-      # For distr in prevalence.R
+      "gamlss.dist", # For distr in prevalence.R
       "dqrng",
       "qs",
       "fst",
@@ -2402,16 +2300,17 @@ run_simulation <- function(parameters, design, final = FALSE) {
     }))
     output_chunk <- rbindlist(output_chunk, idcol = "scenario")
 
-    setkey(output_chunk, scenario, pid, year) # for identify_longdeads
+    setkey(output_chunk, scenario, pid, year) # for identify_longdead
     output_chunk <-
       output_chunk[output_chunk$year >= design$sim_prm$init_year_fromGUI &
                      between(output_chunk$age,
                              design$sim_prm$ageL,
                              design$sim_prm$ageH) &
-                     !identify_longdeads(all_cause_mrtl, pid_mrk), ]
+                     !identify_longdead(all_cause_mrtl, pid_mrk), ]
     output_chunk[, pid_mrk  := mk_new_simulant_markers(pid)]
     output_chunk[, scenario := factor(scenario)]
-    generate_health_econ(output_chunk)
+    generate_health_econ(output_chunk, ceiling(mc_iter /
+        design$sim_prm$n_synthpop_aggregation))
     output_chunk[, c("ncc", "pid", "income", "education") := NULL]
 
     # gen incd
