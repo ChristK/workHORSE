@@ -1711,7 +1711,7 @@ SynthPop <-
               if (yr > design_$sim_prm$init_year) {
                 setkey(output, pid, year)
                 output[, pid_mrk := mk_new_simulant_markers(pid)]
-                output[, dead := identify_longdeads(all_cause_mrtl, pid_mrk)]
+                output[, dead := identify_longdead(all_cause_mrtl, pid_mrk)]
                 output <- output[year == yr & !(dead), .SD,
                                  .SDcols = !patterns("_dgn$")]
               } else { # for init year
@@ -1898,7 +1898,7 @@ SynthPop <-
 
           absorb_dt(dt, output, on = c("year", "pid"))
           rm(output)
-          dt[, dead := identify_longdeads(all_cause_mrtl, pid_mrk)]
+          dt[, dead := identify_longdead(all_cause_mrtl, pid_mrk)]
 
           dt[, ncc := clamp(
             ncc - (chd_prvl > 0) - (stroke_prvl > 0) -
