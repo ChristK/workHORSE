@@ -319,16 +319,45 @@ server = function(input, output, session) {
     , br(), br(),
 
 
-      "This scenario had a societal incremental cost effectiveness ratio of ",
-      round(scn_icer_cml(out_proc(), first(most_benefit_cost_ratio(out_proc(),
-                                                            input$health_econ_perspective_checkbox,
-                                                            input$out_wtp_box, 2)),
-                   input$health_econ_perspective_checkbox) -
-      scn_icer_cml(out_proc(), last(most_benefit_cost_ratio(out_proc(),
-                                                            input$health_econ_perspective_checkbox,
-                                                            input$out_wtp_box, 2)),
-                   input$health_econ_perspective_checkbox)),
-      " per QALY when compared to the next best scenario. ", br(), br(),
+        "This scenario had a societal incremental cost effectiveness ratio of ",
+        round(
+          scn_icer_cml(
+            out_proc(),
+            first(
+              most_benefit_cost_ratio(
+                out_proc(),
+                input$health_econ_perspective_checkbox,
+                input$out_wtp_box,
+                2
+              )
+            ),
+            input$health_econ_perspective_checkbox
+          ) -
+            ifelse(is.na(scn_icer_cml(
+              out_proc(),
+              last(
+                most_benefit_cost_ratio(
+                  out_proc(),
+                  input$health_econ_perspective_checkbox,
+                  input$out_wtp_box,
+                  2
+                )
+              ),
+              input$health_econ_perspective_checkbox
+            )), 0, scn_icer_cml(
+              out_proc(),
+              last(
+                most_benefit_cost_ratio(
+                  out_proc(),
+                  input$health_econ_perspective_checkbox,
+                  input$out_wtp_box,
+                  2
+                )
+              ),
+              input$health_econ_perspective_checkbox
+            ))
+        ),
+        " per QALY when compared to the next best scenario. ", br(), br(),
 
 
        "The order of the scenarios, starting from the most cost effective was ",
@@ -431,9 +460,9 @@ server = function(input, output, session) {
 
 
    output$note_social_benef <- renderUI({
-     HTML(paste0("As well as healthcare benefits, ", most_equitable(out_proc())," scenario would produce additional social care cost savings of ",
-                 social_care_cost_sav(), ", productivity benefits of ", prod_benef(), " (including earnings
-and the value of household productivity) and informal care cost savings of", inform_care_cost_sav(), br()))
+     HTML(paste0("As well as healthcare benefits, ", most_equitable(out_proc_qimd())," scenario would produce additional social care cost savings of ",
+                 social_care_cost_sav(out_proc())[most_equitable(out_proc_qimd())]$V1, ", productivity benefits of ", prod_benef(out_proc())[most_equitable(out_proc_qimd())]$V1, " (including earnings
+and the value of household productivity) and informal care cost savings of", inform_care_cost_sav(out_proc())[most_equitable(out_proc_qimd())]$V1, br()))
    })
 
  output$info_ce_plane <- renderText({

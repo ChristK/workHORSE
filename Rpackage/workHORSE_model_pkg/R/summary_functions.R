@@ -24,7 +24,7 @@ most_cost_effective <- function(dt) {
   names(dt[year == max(year), .(nmb_cml, mc, friendly_name)
   ][, sum_dt(.SD, c("mc", "friendly_name"), character(0))
   ][, friendly_name[which.max(nmb_cml)], by = mc
-  ][, first(sort(counts(V1), decreasing = TRUE))])
+  ][, first(sort(table(V1), decreasing = TRUE))])
 }
 
 #' @export
@@ -32,37 +32,45 @@ rank_cost_effective <- function(dt) {
   names(dt[year == max(year), .(nmb_cml, mc, friendly_name)][,
     sum_dt(.SD, c("mc", "friendly_name"), character(0))][,
       friendly_name[which.max(nmb_cml)], by = mc][,
-        sort(counts(V1), decreasing = TRUE)])
+        sort(table(V1), decreasing = TRUE)])
 }
 
 #' @export
 most_effective <- function(dt) {
   names(dt[year == max(year),
-    .(
-      cpp_cml = sum(net_utility_cml)
-
-    ), by = .(mc, friendly_name)
-  ][, friendly_name[which.max(cpp_cml)], by = mc
-  ][, first(sort(counts(V1), decreasing = TRUE))])
+    .(eq5d_cml, mc, friendly_name)
+  ][, friendly_name[which.max(eq5d_cml)], by = mc
+  ][, first(sort(table(V1), decreasing = TRUE))])
 }
 
 #' @export
+# based on absolute equity
 most_equitable <- function(dt) {
-  # TODO combine rel and abs ineq
   tt <- dt[year == max(year), .(net_utility_cml, nmb_cml, eq5d_cml, pops_cml, mc, friendly_name, qimd)
   ][, sum_dt(.SD, c("mc", "friendly_name", "qimd"), character(0))]
   calc_rigit_scores(tt, c("mc", "friendly_name"))
   calc_sei(tt, c("mc", "friendly_name"))
-  names(tt[, .(nmb_cml = sum(nmb_cml), sei = mean(sei)), by = c("mc", "friendly_name")][, friendly_name[which.max(sei)], by = mc][, head(sort(counts(V1), decreasing = TRUE), 1L)])
+  names(tt[, .(nmb_cml = sum(nmb_cml), sei = mean(sei)), by = c("mc", "friendly_name")][, friendly_name[which.max(sei)], by = mc][, head(sort(table(V1), decreasing = TRUE), 1L)])
 }
 
 #' @export
 most_equitable_rel <- function(dt) {
-  tt <- dt[year == max(year), .(net_utility_cml, nmb_cml, eq5d_cml, pops_cml, mc, friendly_name, qimd)
-  ][, sum_dt(.SD, c("mc", "friendly_name", "qimd"), character(0))]
+  tt <-
+    dt[year == max(year), .(net_utility_cml,
+      nmb_cml, eq5d_cml, pops_cml, mc, friendly_name, qimd)
+      ][, sum_dt(.SD, c("mc", "friendly_name", "qimd"), character(0))]
   calc_rigit_scores(tt, c("mc", "friendly_name"))
+  calc_sei(tt, c("mc", "friendly_name"))
   calc_rei(tt, c("mc", "friendly_name"))
-  names(tt[, .(nmb_cml = sum(nmb_cml), rei = mean(rei)), by = c("mc", "friendly_name")][, friendly_name[which.max(rei)], by = mc][, head(sort(counts(V1), decreasing = TRUE), 1L)])
+  names(tt[, .(
+    nmb_cml = sum(nmb_cml),
+    sei = mean(sei),
+    rei = mean(rei)
+  ), by = c("mc", "friendly_name")
+    ][, .(abs = friendly_name[which.max(sei)],
+    rel = friendly_name[which.max(rei)]),
+    by = mc
+      ][rel == abs, head(sort(table(rel), decreasing = TRUE), 1L)])
 }
 
 #' @export
@@ -71,16 +79,7 @@ most_equitable_abs <- function(dt) {
   ][, sum_dt(.SD, c("mc", "friendly_name", "qimd"), character(0))]
   calc_rigit_scores(tt, c("mc", "friendly_name"))
   calc_sei(tt, c("mc", "friendly_name"))
-  names(tt[, .(nmb_cml = sum(nmb_cml), sei = mean(sei)), by = c("mc", "friendly_name")][, friendly_name[which.max(sei)], by = mc][, head(sort(counts(V1), decreasing = TRUE), 1L)])
-}
-
-#' @export
-benefit_cost_ratio <- function(dt) {
-  dt[year == max(year),
-    .(
-      cbr_cml = sum(nmb_cml)/sum(intervention_cost_cml)
-    ), by = .(mc, friendly_name)
-  ][, mean(cbr_cml), by = friendly_name][, signif(first(sort(V1, decreasing = TRUE)), 2)]
+  names(tt[, .(nmb_cml = sum(nmb_cml), sei = mean(sei)), by = c("mc", "friendly_name")][, friendly_name[which.max(sei)], by = mc][, head(sort(table(V1), decreasing = TRUE), 1L)])
 }
 
 #' @export
@@ -101,14 +100,22 @@ reduce_rel_index_ineq <- function() " 'X, fill me!' "   # TODO
 increase_abs_index_ineq <- function() " 'X, fill me!' " # TODO
 
 #' @export
-social_care_cost_sav <- function() " '£X, fill me!' "   # TODO
+social_care_cost_sav <- function(dt) {
+  dt[year == max(year), signif(median(net_socialcare_cost_cml), 2), keyby = friendly_name
+  ]
+}
 
 #' @export
-prod_benef <- function() " '£X, fill me!' "             # TODO
+prod_benef <- function(dt) {
+  dt[year == max(year), signif(median(net_productivity_cost_cml), 2), keyby = friendly_name
+  ]
+}
 
 #' @export
-inform_care_cost_sav <- function() " '£X, fill me!' "   # TODO
-
+inform_care_cost_sav <- function(dt) {
+  dt[year == max(year), signif(median(net_informal_care_cost_cml), 2), keyby = friendly_name
+    ]
+}
 
 #' @export
 benefit_cost_ratio_cml <-
@@ -155,7 +162,7 @@ most_benefit_cost_ratio <- function(dt,
   ][, sum_dt(.SD, c("mc", "friendly_name"), character(0))
   ][, bcr_cml := benefit_cost_ratio_cml(.SD, perspective = perspective, wtp = wtp)
   ][, friendly_name[which.max(bcr_cml)], by = mc
-  ][, head(sort(counts(V1), decreasing = TRUE), how_many)])
+  ][, head(sort(table(V1), decreasing = TRUE), how_many)])
 }
 
 #' @export
@@ -172,7 +179,7 @@ most_benefit_cost_ratio_value <- function(dt,
   ][, sum_dt(.SD, c("mc", "friendly_name"), character(0))
   ][, bcr_cml := benefit_cost_ratio_cml(.SD, perspective = perspective, wtp = wtp)
   ][, friendly_name[which.max(bcr_cml)], by = mc
-  ][, head(sort(counts(V1), decreasing = TRUE), 1)]
+  ][, head(sort(table(V1), decreasing = TRUE), 1)]
 
 }
 
@@ -190,7 +197,7 @@ rank_benefit_cost_ratio <- function(dt,
   ][, sum_dt(.SD, c("mc", "friendly_name"), character(0))
   ][, bcr_cml := benefit_cost_ratio_cml(.SD, perspective = perspective, wtp = wtp)
   ]
-    [, friendly_name[which.max(bcr_cml)], by = mc][, sort(counts(V1), decreasing = TRUE)])
+    [, friendly_name[which.max(bcr_cml)], by = mc][, sort(table(V1), decreasing = TRUE)])
 }
 
 #' @export
@@ -268,7 +275,7 @@ most_benefit_cost_ratio_value <- function(dt,
   ][, sum_dt(.SD, c("mc", "friendly_name"), character(0))
   ][, nmb_cml := net_monetary_benefit_cml(.SD, perspective = perspective, wtp = wtp)
   ][, friendly_name[which.max(nmb_cml)], by = mc
-  ][, head(sort(counts(V1), decreasing = TRUE), 1)]
+  ][, head(sort(table(V1), decreasing = TRUE), 1)]
 
 }
 
