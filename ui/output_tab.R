@@ -150,14 +150,7 @@ tabPanel(
           ),
           icon = icon("toolbox")
         ),
-        # actionButton(
-        #   "update_output",
-        #   "Update results",
-        #   icon = icon("caret-square-right"),
-        #   style = "color: #fff; background-color: #337ab7; border-color: #2e6da4",
-        #   #class = "btn-info",
-        #   width = "auto"
-        # ),
+        br(),
         actionButton(
           "produce_report",
           "Produce report",
@@ -165,7 +158,35 @@ tabPanel(
           style = "color: #fff; background-color: #337ab7; border-color: #2e6da4",
           #class = "btn-info",
           width = "auto"
-        )
+        ) # ,
+        # br(),
+        # br(),
+        # downloadButton(
+        #   "save_analysis",
+        #   "Archive analysis",
+        #   icon("save"),
+        #   style = "margin-left: 15px;"
+        #   # class = "btn-info",
+        #   # labelWidth = "100%"
+        # ),
+        # fileInput(
+        #   "load_analysis",
+        #   "",
+        #   multiple = FALSE,
+        #   accept = ".qs",
+        #   placeholder = "",
+        #   buttonLabel = "Load archived analysis"
+        # ),
+        # actionButton(
+        #   "view_analysis",
+        #   "View archived analysis",
+        #   icon = icon("file-contract"),
+        #   # style = "color: #fff; background-color: #337ab7; border-color: #2e6da4",
+        #   #class = "btn-info",
+        #   width = "auto"
+        # ),
+        # bookmarkButton(id = "bookmarkBtn"),
+        # tags$style(type = 'text/css', "#bookmarkBtn { width:100%; margin-top: 25px;}")
       )
     ),
     dashboardBody(
