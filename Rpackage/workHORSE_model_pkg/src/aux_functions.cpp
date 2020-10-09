@@ -41,7 +41,7 @@ IntegerVector carry_forward(const IntegerVector& x, const LogicalVector& pid, co
 IntegerVector carry_backward(const IntegerVector& x, const LogicalVector& pid) {
   const int n = x.size();
   IntegerVector out = clone(x);
-  for (int i = n - 1; i > 0; i--) // Go backwards bat strt from one row before the last
+  for (int i = n - 1; i > 0; i--) // Go backwards but stop from one row before the last
   {
     if (!pid[i] && out[i] > 0) out[i - 1] = out[i] - 1;
     if (i < n && pid[i] && !pid[i + 1] && out[i + 1] > 0 && out[i] == 0) out[i] = out[i + 1] - 1;
