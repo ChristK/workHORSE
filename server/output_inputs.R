@@ -105,8 +105,7 @@ out_proc_raw <- reactive(
       "other"
     ) %in% input$out_characteristics_select]
 
-
-    if (input$produce_report > 0L) {
+  if (input$produce_report > 0L) {
       dt <- out_report()[year <= input$inout_year_slider &
           friendly_name %in% input$inout_scenario_select &
           agegrp %in% agegroup_filter &
@@ -277,14 +276,14 @@ out_proc <- reactive(
           agegrp %in% agegroup_filter &
           sex %in% sex_filter &
           qimd %in% qimd_filter &
-          ethnicity %in% ethn_filter,]
+          ethnicity %in% ethn_filter , ]
     } else {
       dt <- out()[year <= input$inout_year_slider &
           friendly_name %in% input$inout_scenario_select &
           agegrp %in% agegroup_filter &
           sex %in% sex_filter &
           qimd %in% qimd_filter &
-          ethnicity %in% ethn_filter,]
+          ethnicity %in% ethn_filter , ]
     }
     dt <- sum_dt(dt)
 
@@ -425,14 +424,14 @@ out_proc_qimd <- reactive(
           agegrp %in% agegroup_filter &
           sex %in% sex_filter &
           qimd %in% qimd_filter &
-          ethnicity %in% ethn_filter, ]
+          ethnicity %in% ethn_filter , ]
     } else {
       dt <- out()[year <= input$inout_year_slider &
           friendly_name %in% input$inout_scenario_select &
           agegrp %in% agegroup_filter &
           sex %in% sex_filter &
           qimd %in% qimd_filter &
-          ethnicity %in% ethn_filter, ]
+          ethnicity %in% ethn_filter , ]
     }
 
     dt <- sum_dt(dt, c("year", "friendly_name", "mc", "qimd"))
@@ -552,7 +551,7 @@ out_summary <- reactive({
   dt
 })
 
-# CE plane (TODO allow different perspectives)
+# CE plane (TODO allow different perspectives) ----
 output$cep1_1 <- renderPlotly({
 
   tt <-  out_proc()[year == max(year),
@@ -576,12 +575,12 @@ output$cep1_1 <- renderPlotly({
       x = ~ net_utility_cml,
       y = ~ societal_cost_cml,
       color = ~ friendly_name,
-      colors =  colours()[names %in% input$inout_scenario_select, colour],
+      colors =  colsymb()[names %in% input$inout_scenario_select, colour],
       # frame = ~ year,
       type = "scatter",
       mode = "markers",
       symbol = ~ friendly_name,
-      symbols = colours()[names %in% input$inout_scenario_select, symbol],
+      symbols = colsymb()[names %in% input$inout_scenario_select, symbol],
       showlegend = TRUE
     )
 
@@ -636,12 +635,12 @@ output$cep1 <- renderPlotly({
       x = ~ net_utility_cml,
       y = ~ societal_cost_cml,
       color = ~ friendly_name,
-      colors =  colours()[names %in% input$inout_scenario_select, colour],
+      colors =  colsymb()[names %in% input$inout_scenario_select, colour],
       # frame = ~ year,
       type = "scatter",
       mode = "markers",
       symbol = ~ friendly_name,
-      symbols = colours()[names %in% input$inout_scenario_select, symbol],
+      symbols = colsymb()[names %in% input$inout_scenario_select, symbol],
       showlegend = TRUE
     )
 
@@ -692,12 +691,12 @@ output$cep_anim <- renderPlotly({
       x = ~ net_utility_cml,
       y = ~ societal_cost_cml,
       color = ~ friendly_name,
-      colors = colours()[names %in% input$inout_scenario_select, colour],
+      colors = colsymb()[names %in% input$inout_scenario_select, colour],
       frame = ~ year,
       type = "scatter",
       mode = "markers",
       symbol = ~ friendly_name,
-      symbols = colours()[names %in% input$inout_scenario_select, symbol],
+      symbols = colsymb()[names %in% input$inout_scenario_select, symbol],
       showlegend = TRUE
     )
   p <-
@@ -743,8 +742,8 @@ output$cep_p_ce <- renderPlotly({
 
   # [, sum_dt(.SD, c("mc", "friendly_name", "year"), character(0))]
   plot_ly(tt,
-          x = ~year, y = ~V2, type = "scatter", mode = "lines+markers", color = ~ friendly_name, colors = colours()[names %in% input$inout_scenario_select, colour],
-          symbol = ~ friendly_name, symbols = colours()[names %in% input$inout_scenario_select, symbol],
+          x = ~year, y = ~V2, type = "scatter", mode = "lines+markers", color = ~ friendly_name, colors = colsymb()[names %in% input$inout_scenario_select, colour],
+          symbol = ~ friendly_name, symbols = colsymb()[names %in% input$inout_scenario_select, symbol],
           line = list(shape = "spline", smoothing = 1.3)) %>%
 
     add_lines(x = ~year, y = 0.8, name = "Decision aid", color = NULL, symbol = NULL,
@@ -769,8 +768,8 @@ output$cep_p_cs <- renderPlotly({
   # [, sum_dt(.SD, c("mc", "friendly_name", "year"), character(0))]
 
   plot_ly(tt,
-          x = ~year, y = ~V2, type = "scatter", mode = "lines+markers", color = ~ friendly_name, colors = colours()[names %in% input$inout_scenario_select, colour],
-          symbol = ~ friendly_name, symbols = colours()[names %in% input$inout_scenario_select, symbol], line = list(shape = "spline", smoothing = 1.3)) %>%
+          x = ~year, y = ~V2, type = "scatter", mode = "lines+markers", color = ~ friendly_name, colors = colsymb()[names %in% input$inout_scenario_select, colour],
+          symbol = ~ friendly_name, symbols = colsymb()[names %in% input$inout_scenario_select, symbol], line = list(shape = "spline", smoothing = 1.3)) %>%
     add_lines(x = ~year, y = 0.8, name = "Decision aid", color = NULL, symbol = NULL,
               line = list(color = "black", dash = "dot")) %>%
     layout(
@@ -800,12 +799,12 @@ output$equ1_1 <- renderPlotly({
       x = ~ sei,
       y = ~ nmb_cml,
       color = ~ friendly_name,
-      colors = colours()[names %in% input$inout_scenario_select, colour],
+      colors = colsymb()[names %in% input$inout_scenario_select, colour],
       # frame = ~ year,
       type = "scatter",
       mode = "markers",
       symbol = ~ friendly_name,
-      symbols = colours()[names %in% input$inout_scenario_select, symbol],
+      symbols = colsymb()[names %in% input$inout_scenario_select, symbol],
       showlegend = TRUE
     )
   p <-
@@ -853,12 +852,12 @@ output$equ1 <- renderPlotly({
       x = ~ sei,
       y = ~ nmb_cml,
       color = ~ friendly_name,
-      colors = colours()[names %in% input$inout_scenario_select, colour],
+      colors = colsymb()[names %in% input$inout_scenario_select, colour],
       # frame = ~ year,
       type = "scatter",
       mode = "markers",
       symbol = ~ friendly_name,
-      symbols = colours()[names %in% input$inout_scenario_select, symbol],
+      symbols = colsymb()[names %in% input$inout_scenario_select, symbol],
       showlegend = TRUE
     )
   p <-
@@ -907,12 +906,12 @@ output$equ_rel <- renderPlotly({
       x = ~ rei,
       y = ~ nmb_cml,
       color = ~ friendly_name,
-      colors = colours()[names %in% input$inout_scenario_select, colour],
+      colors = colsymb()[names %in% input$inout_scenario_select, colour],
       # frame = ~ year,
       type = "scatter",
       mode = "markers",
       symbol = ~ friendly_name,
-      symbols = colours()[names %in% input$inout_scenario_select, symbol],
+      symbols = colsymb()[names %in% input$inout_scenario_select, symbol],
       showlegend = TRUE
     )
   p <-
@@ -959,12 +958,12 @@ output$equ_anim_abs <- renderPlotly({
       x = ~ sei,
       y = ~ nmb_cml,
       color = ~ friendly_name,
-      colors = colours()[names %in% input$inout_scenario_select, colour],
+      colors = colsymb()[names %in% input$inout_scenario_select, colour],
       frame = ~ year,
       type = "scatter",
       mode = "markers",
       symbol = ~ friendly_name,
-      symbols = colours()[names %in% input$inout_scenario_select, symbol],
+      symbols = colsymb()[names %in% input$inout_scenario_select, symbol],
       showlegend = TRUE
     )
   p <-
@@ -1009,12 +1008,12 @@ output$equ_anim_rel <- renderPlotly({
       x = ~ rei,
       y = ~ nmb_cml,
       color = ~ friendly_name,
-      colors = colours()[names %in% input$inout_scenario_select, colour],
+      colors = colsymb()[names %in% input$inout_scenario_select, colour],
       frame = ~ year,
       type = "scatter",
       mode = "markers",
       symbol = ~ friendly_name,
-      symbols = colours()[names %in% input$inout_scenario_select, symbol],
+      symbols = colsymb()[names %in% input$inout_scenario_select, symbol],
       showlegend = TRUE
     )
   p <-
@@ -1053,8 +1052,8 @@ output$equ_p_abs <- renderPlotly({
   ][, V2 := clamp(predict(loess(V1 ~ year, span = 0.5))), by = friendly_name]
 
   plot_ly(tt,
-          x = ~year, y = ~V2, type = "scatter", mode = "lines+markers", color = ~ friendly_name, colors = colours()[names %in% input$inout_scenario_select, colour],
-          symbol = ~ friendly_name, symbols = colours()[names %in% input$inout_scenario_select, symbol], line = list(shape = "spline", smoothing = 1.3)) %>%
+          x = ~year, y = ~V2, type = "scatter", mode = "lines+markers", color = ~ friendly_name, colors = colsymb()[names %in% input$inout_scenario_select, colour],
+          symbol = ~ friendly_name, symbols = colsymb()[names %in% input$inout_scenario_select, symbol], line = list(shape = "spline", smoothing = 1.3)) %>%
     add_lines(x = ~year, y = 0.8, name = "Decision aid", color = NULL, symbol = NULL,
               line = list(color = "black", dash = "dot")) %>%
     layout(
@@ -1077,8 +1076,8 @@ output$equ_p_rel <- renderPlotly({
   ][, V2 := clamp(predict(loess(V1 ~ year, span = 0.5))), by = friendly_name]
 
   plot_ly(tt,
-          x = ~year, y = ~V2, type = "scatter", mode = "lines+markers", color = ~ friendly_name, colors = colours()[names %in% input$inout_scenario_select, colour],
-          symbol = ~ friendly_name, symbols = colours()[names %in% input$inout_scenario_select, symbol], line = list(shape = "spline", smoothing = 1.3)) %>%
+          x = ~year, y = ~V2, type = "scatter", mode = "lines+markers", color = ~ friendly_name, colors = colsymb()[names %in% input$inout_scenario_select, colour],
+          symbol = ~ friendly_name, symbols = colsymb()[names %in% input$inout_scenario_select, symbol], line = list(shape = "spline", smoothing = 1.3)) %>%
     add_lines(x = ~year, y = 0.8, name = "Decision aid", color = NULL, symbol = NULL,
               line = list(color = "black", dash = "dot")) %>%
     layout(
@@ -1108,7 +1107,7 @@ output$cypp_1 <- renderPlotly({
   # [, sum_dt(.SD, c("mc", "friendly_name"), character(0))]
 
   p <- plot_ly(tt, x = ~ friendly_name, y = ~ cypp_chd_cml, name = '', text = 'CHD', textposition = 'auto', insidetextfont = list(size = 15, color = 'black', opacity = 1), type = 'bar', marker = list(opacity = 0.6, line = list(
-    color = colours()[names %in% input$inout_scenario_select, colour], width = 5))) %>%
+    color = colsymb()[names %in% input$inout_scenario_select, colour], width = 5))) %>%
     add_trace(y = ~cypp_stroke_cml, name = "", text = 'stroke', textposition = 'auto', insidetextfont = list(size=15, color = 'black')) %>%
     add_trace(y = ~cypp_poststroke_dementia_cml, name = "", text = 'poststroke dementia', textposition = 'auto', insidetextfont = list(size=15, color = 'black')) %>%
     # add_trace(y = ~cypp_af_cml, name = "", text = 'af', textposition = 'auto', insidetextfont = list(size=15, color = 'black')) %>%
@@ -1140,7 +1139,7 @@ output$cpp_1 <- renderPlotly({
 
   # [, sum_dt(.SD, c("mc", "friendly_name"), character(0))]
   p <- plot_ly(tt, x = ~ friendly_name, y = ~ cpp_chd_cml, name = '', text = 'CHD', textposition = 'auto', insidetextfont = list(size=15, color = 'black', opacity = 1), type = 'bar', marker = list(opacity = 0.6, line = list(
-    color = colours()[names %in% input$inout_scenario_select, colour], width = 5))) %>%
+    color = colsymb()[names %in% input$inout_scenario_select, colour], width = 5))) %>%
     add_trace(y = ~cpp_stroke_cml, name = "", text = 'stroke', textposition = 'auto', insidetextfont = list(size=15, color = 'black')) %>%
     add_trace(y = ~cpp_poststroke_dementia_cml, name = "", text = 'post-stroke dementia', textposition = 'auto', insidetextfont = list(size=15, color = 'black')) %>%
     # add_trace(y = ~cpp_af_cml, name = "", text = 'af', textposition = 'auto', insidetextfont = list(size=15, color = 'black')) %>%
@@ -1165,7 +1164,7 @@ output$dpp_1 <- renderPlotly({
     x = ~ friendly_name,
     y = ~ dpp_all_cause_cml,
     color = ~ friendly_name,
-    colors = colours()[names %in% input$inout_scenario_select, colour],
+    colors = colsymb()[names %in% input$inout_scenario_select, colour],
     text = 'DPP',
     textposition = 'auto',
     insidetextfont = list(
@@ -1199,9 +1198,9 @@ output$dppy_spline <- renderPlotly({
     type = "scatter",
     mode = "lines+markers",
     color = ~ friendly_name,
-    colors = colours()[names %in% input$inout_scenario_select, colour],
+    colors = colsymb()[names %in% input$inout_scenario_select, colour],
     symbol = ~ friendly_name,
-    symbols = colours()[names %in% input$inout_scenario_select, symbol],
+    symbols = colsymb()[names %in% input$inout_scenario_select, symbol],
     line = list(shape = "spline", smoothing = 1.3)
   ) %>%
 
@@ -1251,9 +1250,9 @@ output$cyppy_spline <- renderPlotly({
       type = "scatter",
       mode = "lines+markers",
       color = ~ friendly_name,
-      colors = colours()[names %in% input$inout_scenario_select, colour],
+      colors = colsymb()[names %in% input$inout_scenario_select, colour],
       symbol = ~ friendly_name,
-      symbols = colours()[names %in% input$inout_scenario_select, symbol],
+      symbols = colsymb()[names %in% input$inout_scenario_select, symbol],
       line = list(shape = "spline", smoothing = 1.3)
     ) %>%
 
@@ -1307,9 +1306,9 @@ output$cppy_spline <- renderPlotly({
       type = "scatter",
       mode = "lines+markers",
       color = ~ friendly_name,
-      colors = colours()[names %in% input$inout_scenario_select, colour],
+      colors = colsymb()[names %in% input$inout_scenario_select, colour],
       symbol = ~ friendly_name,
-      symbols = colours()[names %in% input$inout_scenario_select, symbol],
+      symbols = colsymb()[names %in% input$inout_scenario_select, symbol],
       line = list(shape = "spline", smoothing = 1.3)
     ) %>%
 
@@ -1402,8 +1401,8 @@ output$cyppy_stacked_area <- renderPlotly({
         mode = "lines+markers",
         color = ~ variable,
         colors = viridis_pal(option = "C")(unique(d$id)) #,
-        # colors = colours()[names %in% input$inout_scenario_select, colour],
-        # symbol = ~ friendly_name, symbols = colours()[names %in% input$inout_scenario_select, symbol]
+        # colors = colsymb()[names %in% input$inout_scenario_select, colour],
+        # symbol = ~ friendly_name, symbols = colsymb()[names %in% input$inout_scenario_select, symbol]
       ) %>%
         add_lines() %>% add_annotations(
           text = unique(d$variable),
@@ -1514,8 +1513,8 @@ output$cppy_stacked_area <- renderPlotly({
         mode = "lines+markers",
         color = ~ variable,
         colors = viridis_pal(option = "C")(unique(d$id)) #,
-        # colors = colours()[names %in% input$inout_scenario_select, colour],
-        # symbol = ~ friendly_name, symbols = colours()[names %in% input$inout_scenario_select, symbol]
+        # colors = colsymb()[names %in% input$inout_scenario_select, colour],
+        # symbol = ~ friendly_name, symbols = colsymb()[names %in% input$inout_scenario_select, symbol]
       ) %>%
         add_lines() %>% add_annotations(
           text = unique(d$variable),
