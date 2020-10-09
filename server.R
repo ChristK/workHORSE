@@ -20,6 +20,7 @@
 ## Boston, MA 02110-1301 USA.
 
 server = function(input, output, session) {
+  # enableBookmarking(store = "server")
 
   # restrict friendly names to 32 characters at max
   shinyjs::runjs("$('#friendly_name_sc1').attr('maxlength',32)")
@@ -46,7 +47,7 @@ server = function(input, output, session) {
 
 # Reactive function to choose scenario colours and shapes, and use their value according to their name
 
-  colours <- reactive({
+  colsymb <- reactive({
       setnames(transpose(as.data.table(lapply(seq_len(input$scenarios_number_slider), function(i) {
         c(input[[paste0("col_sc", i)]],
           input[[paste0("friendly_name_sc", i)]],
@@ -132,12 +133,12 @@ server = function(input, output, session) {
     eventReactive(input[[paste0("run_simulation_sc", input$scenarios_number_slider)]],
       {
         plan(multiprocess, workers = design$sim_prm$clusternumber)
+        qsave(reactiveValuesToList(input, all.names = TRUE), "./output/input.qs")
 
         parameters <- fromGUI_prune(reactiveValuesToList(input))
         design$update_fromGUI(parameters)
 
-        # qsave(parameters, "./DELETEme_parameters.qs") # TODO delete for production
-        # parameters <- qread("./DELETEme_parameters.qs") # TODO delete for production
+        qsave(parameters, "./output/parameters.qs")
 
         withProgress(message = 'Running workHORSE model.',
           detail = 'This may take a couple of minutes...',
@@ -159,7 +160,6 @@ server = function(input, output, session) {
 
   # Report button ----
   out_report <- eventReactive(input$produce_report, {
-    # qsave(reactiveValuesToList(input), "./DELETEme_input.qs") # TODO delete for production
     plan(multiprocess, workers = design$sim_prm$clusternumber)
 
     parameters <- fromGUI_prune(reactiveValuesToList(input))
@@ -173,10 +173,47 @@ server = function(input, output, session) {
         run_simulation(parameters, design, TRUE)
       })
   },
-    ignoreNULL = TRUE,
+    ignoreNULL = FALSE, # Otherwise require double-click
     ignoreInit = TRUE)
 
+  # Save archived analysis ----
+  # myBookmarks <- reactiveValues(urlDF = NULL)
+  # observeEvent(input$bookmarkBtn, {
+  #   session$doBookmark()
+  # })
+  #
+  # output$save_analysis <- downloadHandler(
+  #
+  #   filename = function() "Analysis.qs",
+  #
+  #   content = function(file) {
+  #     parameters <- fromGUI_prune(reactiveValuesToList(input))
+  #     input <- reactiveValuesToList(input, all.names = TRUE)
+  #     results <- out()
+  #     qsavem(input, parameters, results,
+  #       file = file, nthreads = design$sim_prm$clusternumber)
+  #   }
+  # )
 
+  # Load archived analysis ----
+  # observeEvent(input$load_analysis, {
+  #
+  #   inFile <- input$load_analysis
+  #
+  #   if (is.null(inFile)) return(NULL)
+  #   qload(inFile$datapath)
+  # })
+  #
+  # # View archived analysis ----
+  # out_archived <- eventReactive(input$view_analysis, {
+  #   lapply(names(input),
+  #     function(x) session$sendInputMessage(x, list(value = input[[x]]))
+  #   )
+  #   write_fst(results, "./output/results2.fst")
+  #   setDT(results)
+  #   },
+  #   ignoreNULL = FALSE, # Otherwise require double-click
+  #   ignoreInit = TRUE)
 
 # change to output panel
   observeEvent(input[[paste0("run_simulation_sc", input$scenarios_number_slider)]], {
