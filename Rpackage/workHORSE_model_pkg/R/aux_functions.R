@@ -2433,11 +2433,20 @@ run_simulation <- function(parameters, design, final = FALSE) {
   setkey(output, year, friendly_name)
 
   # calculate net cost/effect
-  baseline <-
+  tt <-
     output[scenario == fromGUI_baseline_scenario(parameters_dt)]
 
   strata <- setdiff(strata, c("scenario", "friendly_name"))
 
+  # ensure baseline has all combinations of strata observed in other scenarios.
+  # Otherwise NAs occur from the subtraction
+  baseline <- CJ(mc = output$mc, year = output$year, agegrp = output$agegrp,
+    sex = output$sex, qimd = output$qimd, ethnicity = output$ethnicity,
+    unique = TRUE)
+  absorb_dt(baseline, tt)
+  baseline[, c("scenario") := NULL]
+  setnafill(baseline, "const", 0, cols = names(baseline)[sapply(baseline, is.numeric)])
+  rm(tt)
 
   output[baseline, on = strata, `:=` (
     net_utility = eq5d - i.eq5d,
