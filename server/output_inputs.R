@@ -551,7 +551,7 @@ out_summary <- reactive({
   dt
 })
 
-# CE plane (TODO allow different perspectives) ----
+# CE plane ----
 output$cep1_1 <- renderPlotly({
 
   tt <-  out_proc()[year == max(year),
@@ -603,7 +603,11 @@ output$cep1_1 <- renderPlotly({
              fillcolor = "red", line = list(color = "red"), opacity = 0.2,
              layer = "below",
              x0 = 0, x1 = -max_x, xref = "x",
-             y0 = max_y, y1 = -max_y, yref = "y")
+             y0 = max_y, y1 = -max_y, yref = "y"),
+        list(type = "line",
+          line = list(color = "black", width = 1, dash = "dash"),
+          x0 = max_x, x1 = -max_x,
+          y0 = wtp_thres(), y1 = -wtp_thres())
       ))
 
   # p <- animation_opts(p, frame = 1000, redraw = FALSE)
@@ -663,7 +667,11 @@ output$cep1 <- renderPlotly({
              fillcolor = "red", line = list(color = "red"), opacity = 0.2,
              layer = "below",
              x0 = 0, x1 = -max_x, xref = "x",
-             y0 = max_y, y1 = -max_y, yref = "y")
+             y0 = max_y, y1 = -max_y, yref = "y"),
+        list(type = "line",
+          line = list(color = "black", width = 1, dash = "dash"),
+          x0 = max_x, x1 = -max_x,
+          y0 = wtp_thres(), y1 = -wtp_thres())
       ))
 
   # p <- animation_opts(p, frame = 1000, redraw = FALSE)
@@ -718,7 +726,11 @@ output$cep_anim <- renderPlotly({
              fillcolor = "red", line = list(color = "red"), opacity = 0.2,
              layer = "below",
              x0 = 0, x1 = -max_x, xref = "x",
-             y0 = max_y, y1 = -max_y, yref = "y")
+             y0 = max_y, y1 = -max_y, yref = "y"),
+        list(type = "line",
+          line = list(color = "black", width = 1, dash = "dash"),
+          x0 = max_x, x1 = -max_x,
+          y0 = wtp_thres(), y1 = -wtp_thres())
       ))
 
   # TODO the warning message concerns the colours and symbols that are not added on
