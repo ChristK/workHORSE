@@ -54,7 +54,10 @@ t2dm_model <-
       dt[, (c(colnam_prb_incd_nocvd, colnam_incd_cvd_mltp)) :=
           QDiabetes_vec_inputs(age, sex, cst_prvl,
             # fifelse(bpmed_px_sc == 1L | bpmed_curr_xps == 1L, 1L, 0L),
-            bpmed_curr_xps, # above disabled as produced disproportionally high diabetes cases. Instead I explicitly model the statin effect on diabetes, below
+            bpmed_curr_xps,
+            # above disabled as produced disproportionally high diabetes cases
+            # and it is not necesarily causally related. Instead I explicitly
+            # model the statin effect on diabetes, below
 
             bmi_sc, ethnicity, fam_t2dm, smoke_cat_sc, tds)]
 
