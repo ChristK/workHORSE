@@ -50,7 +50,7 @@ most_equitable <- function(dt) {
   ][, sum_dt(.SD, c("mc", "friendly_name", "qimd"), character(0))]
   calc_rigit_scores(tt, c("mc", "friendly_name"))
   calc_sei(tt, c("mc", "friendly_name"))
-  names(tt[, .(nmb_cml = sum(nmb_cml), sei = mean(sei)), by = c("mc", "friendly_name")][, friendly_name[which.max(sei)], by = mc][, head(sort(table(V1), decreasing = TRUE), 1L)])
+  names(tt[, .(nmb_cml = sum(nmb_cml), sei = first(sei)), by = c("mc", "friendly_name")][, friendly_name[which.max(sei)], by = mc][, head(sort(table(V1), decreasing = TRUE), 1L)])
 }
 
 #' @export
@@ -64,8 +64,8 @@ most_equitable_rel <- function(dt) {
   calc_rei(tt, c("mc", "friendly_name"))
   names(tt[, .(
     nmb_cml = sum(nmb_cml),
-    sei = mean(sei),
-    rei = mean(rei)
+    sei = first(sei),
+    rei = first(rei)
   ), by = c("mc", "friendly_name")
     ][, .(abs = friendly_name[which.max(sei)],
     rel = friendly_name[which.max(rei)]),
@@ -79,7 +79,7 @@ most_equitable_abs <- function(dt) {
   ][, sum_dt(.SD, c("mc", "friendly_name", "qimd"), character(0))]
   calc_rigit_scores(tt, c("mc", "friendly_name"))
   calc_sei(tt, c("mc", "friendly_name"))
-  names(tt[, .(nmb_cml = sum(nmb_cml), sei = mean(sei)), by = c("mc", "friendly_name")][, friendly_name[which.max(sei)], by = mc][, head(sort(table(V1), decreasing = TRUE), 1L)])
+  names(tt[, .(nmb_cml = sum(nmb_cml), sei = first(sei)), by = c("mc", "friendly_name")][, friendly_name[which.max(sei)], by = mc][, head(sort(table(V1), decreasing = TRUE), 1L)])
 }
 
 #' @export
@@ -327,12 +327,13 @@ calc_rigit_scores <- function(dt, by = c("mc", "year", "friendly_name")) {
 #' @export
 # Absolute equity slope index
 calc_sei <- function(dt, by = c("mc", "year", "friendly_name")) {
-  dt[, sei := lm(net_utility_cml~qimd2)$coefficients["qimd2"], by = by]
+  dt[, sei := -lm(net_utility_cml~qimd2)$coefficients["qimd2"], by = by]
+  # -lm(...)coefficients["qimd2"] because qimd 1 == most deprived
 }
 
 #' @export
 # Relative equity slope index
 calc_rei <- function(dt, by = c("mc", "year", "friendly_name")) {
   dt[, proport_utility_cml := net_utility_cml/eq5d_cml]
-  dt[, rei := lm(proport_utility_cml~qimd2)$coefficients["qimd2"], by = by]
+  dt[, rei := -lm(proport_utility_cml~qimd2)$coefficients["qimd2"], by = by]
 }
