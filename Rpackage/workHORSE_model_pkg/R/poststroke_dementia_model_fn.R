@@ -34,9 +34,10 @@ poststroke_dementia_model <-
     if (timing) ptm <- proc.time()
 
     # This is a special condition. It only depends on stroke and no other risk
-    # factors. To fit this in the existing C++ I modified C++ code to allow disease
-    # dependency only on incidence and not prevalence (incidence type 5).
-    # The multiplier is 1 for the incident stroke year and 0 for every other year.
+    # factors. To fit this in the existing C++ framework I modified C++ code to
+    # allow disease dependency only on incidence and not prevalence (incidence
+    # type 5). The multiplier is 1 for the incident stroke year and 0 for every
+    # other year.
 
     # The probability is based on Eithne's syst review
     if (!nzchar(scenario_nam)) { # first run for scenario ""
