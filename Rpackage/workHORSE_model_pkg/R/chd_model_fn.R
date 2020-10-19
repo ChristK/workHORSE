@@ -69,9 +69,9 @@ chd_model <-
       }
     }
 
-    # RR for tobacco from Ezzati M, Henley SJ, Thun MJ, Lopez AD. Role of Smoking in Global and Regional
-    # Cardiovascular Mortality. Circulation. 2005 Jul 26;112(4):489–97.
-    # Table 1 Model B
+    # RR for tobacco from Ezzati M, Henley SJ, Thun MJ, Lopez AD. Role of
+    # Smoking in Global and Regional Cardiovascular Mortality. Circulation. 2005
+    # Jul 26;112(4):489–97. Table 1 Model B
 
     # RR for ex-smokers from Huxley RR, Woodward M.
     # Cigarette smoking as a risk factor for coronary heart disease
