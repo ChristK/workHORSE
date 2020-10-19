@@ -1123,7 +1123,7 @@ set_eligible <- function(scenario_parms, dt, hlp, env = parent.frame()) {
            dead == FALSE &
            # statin_px_curr_xps == 0L &
            # af_dgn == 0L &
-           htn_dgn < fifelse(scenario_parms$sc_eligib_htn, Inf, 1) &
+           htn_dgn < fifelse(scenario_parms$sc_eligib_htn, Inf, 1L) &
            t2dm_dgn < fifelse(scenario_parms$sc_eligib_diab, Inf, 1L) &
            # ckd_prvl_curr_xps <= 3L &
            # ra_prvl == 0L &
@@ -1492,13 +1492,13 @@ set_px <- function(scenario_parms, dt) {
   # adherence <- rpert(1e6, 0.5, 0.8, 1, 8)
   # proportion of prescribed dose taken
   # or to avoid dependency for rpert
-  # adherence <- rBE(1e6, 0.8, 0.1) # proportion of prescribed dose taken
+  # adherence <- rBE(1e6, 0.9, 0.1) # proportion of prescribed dose taken
 
   if (!colnam_bio %in% names(dt)) dt[, (colnam_bio) := tchol_curr_xps]
   dt[statin_px_sc == 1L &
-       statin_px_curr_xps == 0L &
+       # statin_px_curr_xps == 0L & # Assume GP titrates treatment
        year + 2000L >= scenario_parms$sc_init_year,
-     (colnam_bio) := tchol_curr_xps * (1 - atorv_eff * rBE(.N, 0.8, 0.2))]
+     (colnam_bio) := tchol_curr_xps * (1 - atorv_eff * rBE(.N, 0.9, 0.2))]
 
   # for bpmed
   colnam     <- "bpmed_px_sc"
@@ -1534,10 +1534,10 @@ set_px <- function(scenario_parms, dt) {
   # Estimate sbp change
   if (!colnam_bio %in% names(dt)) dt[, (colnam_bio) := sbp_curr_xps]
   dt[bpmed_px_sc == 1L &
-       bpmed_curr_xps == 0L &
+       # bpmed_curr_xps == 0L & # Assume GP titrates treatment
        year + 2000L >= scenario_parms$sc_init_year,
      (colnam_bio) := sbp_curr_xps - clamp((sbp_curr_xps - 135) *
-                                            rBE(.N, 0.8, 0.2), 0, 1e3)]
+                                            rBE(.N, 0.9, 0.2), 0, 1e3)]
   # Assume that antihtn medication can potentially achieve sbp 135 for all. Not
   # 110 to account for residual risk
 
@@ -1859,7 +1859,7 @@ run_scenario <-
     for (sc in basic_sc_nam) {
       set_eligible(scenario_parms[[sc]], dt$pop, hlp)
       set_invitees(scenario_parms[[sc]], dt$pop, hlp)
-      set_attendees(scenario_parms[[sc]], dt$pop, scenario_nam,  parameters_dt, design, hlp)
+      set_attendees(scenario_parms[[sc]], dt$pop, scenario_nam, parameters_dt, design, hlp)
       set_px(scenario_parms[[sc]], dt$pop) # slow
       set_lifestyle(scenario_parms[[sc]], dt$pop, design)
       set_structural(scenario_parms[[sc]], dt$pop, design)
