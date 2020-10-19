@@ -43,6 +43,8 @@ dependencies(yaml::read_yaml("./dependencies.yaml"))
 design <- Design$new("./simulation/sim_design.yaml")
 
 options(future.fork.enable = TRUE) # TODO remove for production
+options(future.rng.onMisuse = "ignore") # Remove false warning
+
 registerDoFuture()
 
 
