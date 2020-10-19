@@ -23,7 +23,7 @@
 t2dm_model <-
   function(
     scenario_nam,
-    mc, # Not currently used. For consistency.
+    mc,
     dt,
     design,
     lags_mc,
@@ -53,8 +53,8 @@ t2dm_model <-
       # incidence
       dt[, (c(colnam_prb_incd_nocvd, colnam_incd_cvd_mltp)) :=
           QDiabetes_vec_inputs(age, sex, cst_prvl,
-            # fifelse(get(paste0("bpmed_px", scenario_nam)) == 1L | bpmed_curr_xps == 1L, 1L, 0L),
-            bpmed_curr_xps, # above disabled as produced disproportionally high diabetes cases. Instead I explicity model the statin effecr on diabetes
+            # fifelse(bpmed_px_sc == 1L | bpmed_curr_xps == 1L, 1L, 0L),
+            bpmed_curr_xps, # above disabled as produced disproportionally high diabetes cases. Instead I explicitly model the statin effect on diabetes, below
 
             bmi_sc, ethnicity, fam_t2dm, smoke_cat_sc, tds)]
 
@@ -63,7 +63,8 @@ t2dm_model <-
       # OR for statins on t2dm from Sattar N, Preiss D, Murray HM, Welsh P,
       # Buckley BM, de Craen AJ, et al. Statins and risk of incident diabetes: a
       # collaborative meta-analysis of randomised statin trials. The Lancet
-      # 2010;375:735–42.
+      # 2010;375:735–42. # They report OR, I assume RR is approximately equal.
+      # Mean observation time was 4 years so I lag for 4 years
       tt <- get_rr_mc(mc, "t2dm", "statins", design$stochastic)
 
       # Lagged exposures
@@ -71,12 +72,17 @@ t2dm_model <-
       exps_nam   <- paste0(exps_tolag, "_lagged")
       for (i in seq_along(exps_tolag)) {
         set(dt, NULL, exps_nam[i],
-            dt[, shift_bypid(get(exps_tolag[i]), lags_mc$cvd_lag, pid, 0L)])
+            dt[, shift_bypid(get(exps_tolag[i]), 4L, pid, 0L)])
       }
 
       dt[statin_px_sc_lagged == 1L & statin_px_curr_xps_lagged == 0L,
          (c("prb_t2dm_incd_nocvd_sc", "t2dm_incd_cvd_mltp_sc")) :=
            .(tt * prb_t2dm_incd_nocvd_sc, tt * t2dm_incd_cvd_mltp_sc)]
+      # no link to adherence because "Meta-regression showed that risk of
+      # development of diabetes with statins was highest in trials with older
+      # participants, but neither baseline body-mass index nor change in
+      # LDL-cholesterol concentrations accounted for residual variation in
+      # risk."
       dt[, (exps_nam) := NULL]
       dt[, (colnam_incd_cvd_mltp) := t2dm_incd_cvd_mltp_sc / prb_t2dm_incd_nocvd_sc]
 
