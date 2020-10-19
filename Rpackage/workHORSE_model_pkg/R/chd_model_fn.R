@@ -73,21 +73,20 @@ chd_model <-
     # Smoking in Global and Regional Cardiovascular Mortality. Circulation. 2005
     # Jul 26;112(4):489–97. Table 1 Model B
 
-    # RR for ex-smokers from Huxley RR, Woodward M.
-    # Cigarette smoking as a risk factor for coronary heart disease
-    # in women compared with men: a systematic review and meta-analysis of prospective cohort studies.
-    # The Lancet. 2011 Oct 14;378(9799):1297–305.
-    # Appendix webfigure 8
-    #cat("smoking RR\n")
+    #RR for ex-smokers from Huxley RR, Woodward M. Cigarette smoking as a risk
+    #factor for coronary heart disease in women compared with men: a systematic
+    #review and meta-analysis of prospective cohort studies. The Lancet. 2011
+    #Oct 14;378(9799):1297–305. Appendix webfigure 8 cat("smoking RR\n")
     tt <- get_rr_mc(mc, "chd", "tobacco", design$stochastic)
     setnames(tt, "smok_status", "smok_status_lagged")
     absorb_dt(dt, tt)
     setnafill(dt, "c", 1, cols = "tobacco_rr")
     # dt[, summary(tobacco_rr)]
 
-    # RR for ETS He J, Vupputuri S, Allen K, Prerost MR, Hughes J, Whelton PK. Passive Smoking and the Risk of
-    # Coronary Heart Disease — A Meta-Analysis of Epidemiologic Studies. New England Journal of Medicine. 1999;340(12):920–6.
-    # Table 3. Adjusted RR
+    # RR for ETS He J, Vupputuri S, Allen K, Prerost MR, Hughes J, Whelton PK.
+    # Passive Smoking and the Risk of Coronary Heart Disease — A Meta-Analysis
+    # of Epidemiologic Studies. New England Journal of Medicine.
+    # 1999;340(12):920–6. Table 3. Adjusted RR
     tt <-
       data.table(
         ets_lagged = 1L,
@@ -99,11 +98,10 @@ chd_model <-
     # dt[, prop_if(ets_rr > 1), keyby = smok_status_lagged]
     # dt[, summary(ets_rr)]
 
-    # RR for SBP from Optimal SBP level at 115mmHg and RR(HR) of dying from CHD was taken from "Age-specific relevance of
-    # usual blood pressure to vascular mortality:
-    # a meta-analysis of individual data for one million adults in 61 prospective studies.
-    # The Lancet. 2002 Dec 14;360(9349):1903–1913"
-    # Figure 5
+    # RR for SBP from Optimal SBP level at 115mmHg and RR(HR) of dying from CHD
+    # was taken from "Age-specific relevance of usual blood pressure to vascular
+    # mortality: a meta-analysis of individual data for one million adults in 61
+    # prospective studies. The Lancet. 2002 Dec 14;360(9349):1903–1913" Figure 5
     #cat("sbp RR\n")
     tt <- get_rr_mc(mc, "chd", "sbp", design$stochastic)
     absorb_dt(dt, tt)
@@ -114,10 +112,10 @@ chd_model <-
     # dt[, summary(sbp_rr)]
 
 
-    # RR for Chol from "Blood cholesterol and
-    # vascular mortality by age, sex, and blood pressure: a meta-analysis of individual data from 61 prospective studies
-    # with 55.000 vascular deaths. The Lancet. 2007 Dec 7;370(9602):1829–39.
-    # Appendix Webtable 6  fully adjusted
+    # RR for Chol from "Blood cholesterol and vascular mortality by age, sex,
+    # and blood pressure: a meta-analysis of individual data from 61 prospective
+    # studies with 55.000 vascular deaths. The Lancet. 2007 Dec
+    # 7;370(9602):1829–39. Appendix Webtable 6  fully adjusted
     #cat("chol RR\n")
     tt <- get_rr_mc(mc, "chd", "tchol", design$stochastic)
     absorb_dt(dt, tt)
@@ -126,12 +124,13 @@ chd_model <-
     # dt[, summary(tchol_rr)]
 
 
-    # RR for BMI from "The Emerging Risk Factors Collaboration.
-    # Separate and combined associations of body-mass index and abdominal adiposity with cardiovascular disease:
-    # collaborative analysis of 58 prospective studies.
-    # The Lancet 2011;377:1085–95. doi:10.1016/S0140-6736(11)60105-0
-    # Table 1 (Adjusted for age, sex, smoking status, systolic blood pressure, history of diabetes, and total and HDL cholesterol)
-    # and figure 2 for age specific gradient
+    # RR for BMI from "The Emerging Risk Factors Collaboration. Separate and
+    # combined associations of body-mass index and abdominal adiposity with
+    # cardiovascular disease: collaborative analysis of 58 prospective studies.
+    # The Lancet 2011;377:1085–95. doi:10.1016/S0140-6736(11)60105-0 Table 1
+    # (Adjusted for age, sex, smoking status, systolic blood pressure, history
+    # of diabetes, and total and HDL cholesterol) and figure 2 for age specific
+    # gradient
     #cat("bmi RR\n")
     tt <- get_rr_mc(mc, "chd", "bmi", design$stochastic)
     absorb_dt(dt, tt)
@@ -139,10 +138,12 @@ chd_model <-
     setnafill(dt, "c", 1, cols = "bmi_rr")
     # dt[, summary(bmi_rr)]
 
-    # RR for diab from The Emerging Risk Factors Collaboration. Diabetes mellitus, fasting blood glucose concentration,
-    # and risk of vascular disease: a collaborative
-    # meta-analysis of 102 prospective studies. The Lancet 2010;375:2215–22. doi:10.1016/S0140-6736(10)60484-9
-    # figure 2 (HRs were adjusted for age, smoking status, body-mass index, and  systolic blood pressure)
+    # RR for diab from The Emerging Risk Factors Collaboration. Diabetes
+    # mellitus, fasting blood glucose concentration, and risk of vascular
+    # disease: a collaborative meta-analysis of 102 prospective studies. The
+    # Lancet 2010;375:2215–22. doi:10.1016/S0140-6736(10)60484-9 figure 2 (HRs
+    # were adjusted for age, smoking status, body-mass index, and  systolic
+    # blood pressure)
     #cat("diab RR\n")
     tt <- get_rr_mc(mc, "chd", "t2dm", design$stochastic)
     tt[, i.t2dm_prvl_lagged := 1L]
@@ -154,10 +155,12 @@ chd_model <-
     dt[tt, on = .(age), chd_incd_t2dm_mltp := i.t2dm_rr]
     setnafill(dt, "c", 1, cols = "chd_incd_t2dm_mltp")
 
-    # RR for F&V from From Dauchet L, Amouyel P, Hercberg S, Dallongeville J. Fruit and Vegetable Consumption and Risk of Coronary Heart Disease:
-    # A Meta-Analysis of Cohort Studies. J Nutr. 2006 Oct 1;136(10):2588–93.
-    # To avoid negative PAF an optimal level of F&V has to be set arbitrarily. I set it to 10
-    # when convert porftvg from categorical to numeric I create bias. eg 1=less than 1 portion
+    # RR for F&V from From Dauchet L, Amouyel P, Hercberg S, Dallongeville J.
+    # Fruit and Vegetable Consumption and Risk of Coronary Heart Disease: A
+    # Meta-Analysis of Cohort Studies. J Nutr. 2006 Oct 1;136(10):2588–93. To
+    # avoid negative PAF an optimal level of F&V has to be set arbitrarily. I
+    # set it to 10 when convert porftvg from categorical to numeric I create
+    # bias. eg 1=less than 1 portion
     #cat("fv RR\n")
     dt[, fv_rr := clamp(get_rr_mc(mc, "chd", "fv", design$stochastic) ^
         ((fruit_lagged + veg_lagged - 80 * 7) / 80),
@@ -177,10 +180,10 @@ chd_model <-
     # dt[, summary(pa_rr)]
 
     # RR for ethnicity 1. George J, Mathur R, Shah AD, Pujades-Rodriguez M,
-    # Denaxas S, Smeeth L, et al. Ethnicity and the first diagnosis of a wide range
-    # of cardiovascular diseases: Associations in a linked electronic health record
-    # cohort of 1 million patients. PLOS ONE. 2017 Jun 9;12(6):e0178945.
-    # Fig 3
+    # Denaxas S, Smeeth L, et al. Ethnicity and the first diagnosis of a wide
+    # range of cardiovascular diseases: Associations in a linked electronic
+    # health record cohort of 1 million patients. PLOS ONE. 2017 Jun
+    # 9;12(6):e0178945. Fig 3
     #cat("ethnicity RR\n")
     tt <- get_rr_mc(mc, "chd", "ethnicity", design$stochastic)
     absorb_dt(dt, tt)
@@ -246,7 +249,8 @@ chd_model <-
     dt[, (grep("_rr$", names(dt), value = TRUE)) := NULL]
 
     # Assume a probability of diagnosis ----
-    # hist(rnbinom(1e4, 1, diagnosis_prb), 100) # the distribution of the number of years until diagnosis
+    # hist(rnbinom(1e4, 1, diagnosis_prb), 100) # the distribution of the number
+    # of years until diagnosis
     set(dt, NULL, "prb_chd_dgn", diagnosis_prb)
 
     set(dt, NULL, "chd_dgn", 0L)
