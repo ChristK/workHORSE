@@ -1485,10 +1485,9 @@ set_px <- function(scenario_parms, dt) {
   # dose-specific meta-analysis of lipid changes in randomised, double blind
   # trials. BMC Family Practice 2003;4:18.
 
-  atorv_eff <- 0.27 * 0.43 / 0.36 # TODO need to be in the MC parameters
-  # atorv_eff <- rnorm(
-  #       0.27*0.43/0.36,
-  #       (0.27*0.46875/0.36 - 0.27*0.3958/0.36)/(2*1.96))
+  # atorv_eff <- get_rr_mc(mc, "tchol", "statins", design$stochastic)
+  atorv_eff <- 0.27 * 0.43 / 0.36 # TODO need to be in the MC parameters as above
+
   # adherence <- rpert(1e6, 0.5, 0.8, 1, 8)
   # proportion of prescribed dose taken
   # or to avoid dependency for rpert
