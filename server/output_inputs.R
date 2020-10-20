@@ -567,7 +567,7 @@ output$cep1_1 <- renderPlotly({
   # TODO separate this code from this specific graph because it is universal. Move it somewhere it is obviously universal
   # TODO synchronise colours and graphs with the scenario selection on the left side bar
 
-  if (input$res_display_cep1_1) tt <- median_dt(tt, "friendly_name", "mc")
+  if (input$res_display_cep1_1) tt <- median_dt(tt, "friendly_name", "mc", digits = 1)
 
   p <-
     plot_ly(
@@ -630,7 +630,7 @@ output$cep1 <- renderPlotly({
 
   # TODO separate this code from this specific graph because it is universal. Move it somewhere it is obviously universal
   # TODO synchronise colours and graphs with the scenario selection on the left side bar
-  if (input$res_display_cep1) tt <- median_dt(tt, "friendly_name", "mc")
+  if (input$res_display_cep1) tt <- median_dt(tt, "friendly_name", "mc", digits = 1)
 
 
   p <-
@@ -791,7 +791,7 @@ output$cep_p_cs <- renderPlotly({
     )
 })
 
-# EQU plane
+# EQU plane ----
 output$equ1_1 <- renderPlotly({
   tt <- out_proc_qimd()[year == max(year), .(net_utility_cml, nmb_cml, eq5d_cml, pops_cml, mc, friendly_name, qimd)
   ]
@@ -803,7 +803,7 @@ output$equ1_1 <- renderPlotly({
   max_x <- tt[, max(abs(sei))] * 1.2
   max_y <- tt[, max(abs(nmb_cml))] * 1.2
 
-  if (input$res_display_equ1_1) tt <- median_dt(tt, "friendly_name", "mc")
+  if (input$res_display_equ1_1) tt <- median_dt(tt, "friendly_name", "mc", digits = 1)
 
   p <-
     plot_ly(
@@ -856,7 +856,7 @@ output$equ1 <- renderPlotly({
   max_x <- tt[, max(abs(sei))] * 1.2
   max_y <- tt[, max(abs(nmb_cml))] * 1.2
 
-  if (input$res_display_equ1) tt <- median_dt(tt, "friendly_name", "mc")
+  if (input$res_display_equ1) tt <- median_dt(tt, "friendly_name", "mc", digits = 1)
 
   p <-
     plot_ly(
@@ -909,7 +909,7 @@ output$equ_rel <- renderPlotly({
   max_x <- tt[, max(abs(rei))] * 1.2
   max_y <- tt[, max(abs(nmb_cml))] * 1.2
 
-  if (input$res_display_equ_rel) tt <- median_dt(tt, "friendly_name", "mc")
+  if (input$res_display_equ_rel) tt <- median_dt(tt, "friendly_name", "mc", digits = 6)
 
 
   p <-
