@@ -1423,7 +1423,7 @@ set_attendees <- function(scenario_parms, dt, scenario_nam, parameters_dt,
 }
 
 #' @export
-set_px <- function(scenario_parms, dt) {
+set_px <- function(scenario_parms, dt, mc, design) {
   dt[, "Qrisk2_cat" := Qrisk2(.SD, FALSE, FALSE, FALSE)$Qrisk2_cat]
   atte_colnam <- "attendees_sc"
 
@@ -1462,7 +1462,8 @@ set_px <- function(scenario_parms, dt) {
        (colnam) := rbinom(.N, 1L, px_statins_wt)]
   }
   setnafill(dt, "c", 0, cols = colnam)
-  dt[year + 2000L >= scenario_parms$sc_init_year, (colnam) := hc_effect(statin_px_sc, 0.9749866, pid_mrk)]
+  dt[, (colnam) := hc_effect(statin_px_sc, 0.9749866, pid_mrk)]
+
   # 0.9749866 comes from the following study in Wales.
   # King W, Lacey A, White J, Farewell D, Dunstan F, Fone D. Socioeconomic
   # inequality in medication persistence in primary and secondary prevention of
@@ -1485,8 +1486,8 @@ set_px <- function(scenario_parms, dt) {
   # dose-specific meta-analysis of lipid changes in randomised, double blind
   # trials. BMC Family Practice 2003;4:18.
 
-  # atorv_eff <- get_rr_mc(mc, "tchol", "statins", design$stochastic)
-  atorv_eff <- 0.27 * 0.43 / 0.36 # TODO need to be in the MC parameters as above
+  atorv_eff <- get_rr_mc(mc, "tchol", "statins", design$stochastic)
+  # atorv_eff <- 0.27 * 0.43 / 0.36 # TODO need to be in the MC parameters as above
 
   # adherence <- rpert(1e6, 0.5, 0.8, 1, 8)
   # proportion of prescribed dose taken
@@ -1527,7 +1528,7 @@ set_px <- function(scenario_parms, dt) {
        (colnam) := rbinom(.N, 1L, px_antihtn_wt)]
   }
   setnafill(dt, "c", 0, cols = colnam)
-  dt[year + 2000L >= scenario_parms$sc_init_year, (colnam) := hc_effect(bpmed_px_sc, 0.9749866, pid_mrk)]
+  dt[, (colnam) := hc_effect(bpmed_px_sc, 0.9749866, pid_mrk)]
   # assume same prb as statins
 
   # Estimate sbp change
@@ -1560,8 +1561,8 @@ set_lifestyle <-
     dt[hc_eff_pa == 1L & year + 2000L >= scenario_parms$sc_init_year,
        (colnam_cost) := scenario_parms$sc_ls_pa_cost_ind]
     # Cost only the year of referral
-    dt[year + 2000L >= scenario_parms$sc_init_year,
-       hc_eff_pa := hc_effect(hc_eff_pa, (1 - scenario_parms$sc_ls_attrition), pid_mrk)]
+    dt[,
+      hc_eff_pa := hc_effect(hc_eff_pa, (1 - scenario_parms$sc_ls_attrition), pid_mrk)]
     dt[hc_eff_pa == 1L, (colnam) :=
          as.integer(round(clamp(active_days_sc + scenario_parms$sc_ls_papincr, 0, 7)))]
 
@@ -1591,7 +1592,7 @@ set_lifestyle <-
     dt[hc_eff_al == 1L & year + 2000L >= scenario_parms$sc_init_year,
        (colnam_cost) := scenario_parms$sc_ls_alcoholreduc_cost_ind]
     # Cost only the year of referral
-    dt[year + 2000L >= scenario_parms$sc_init_year,
+    dt[,
        hc_eff_al := hc_effect(hc_eff_al, (1 - scenario_parms$sc_ls_attrition), pid_mrk)]
     dt[hc_eff_al == 1L, (colnam) :=
          as.integer(round(alcohol_sc * (1 - scenario_parms$sc_ls_alcoholreduc)))]
@@ -1810,6 +1811,7 @@ set_structural <-
 #' @export
 run_scenario <-
   function(scenario_nam, # This is true_scenario names
+           mc, # need to be mc_aggr
            dt,
            parameters_dt,
            design,
@@ -1859,7 +1861,7 @@ run_scenario <-
       set_eligible(scenario_parms[[sc]], dt$pop, hlp)
       set_invitees(scenario_parms[[sc]], dt$pop, hlp)
       set_attendees(scenario_parms[[sc]], dt$pop, scenario_nam, parameters_dt, design, hlp)
-      set_px(scenario_parms[[sc]], dt$pop) # slow
+      set_px(scenario_parms[[sc]], dt$pop, mc, design$sim_prm) # slow
       set_lifestyle(scenario_parms[[sc]], dt$pop, design)
       set_structural(scenario_parms[[sc]], dt$pop, design)
     }
@@ -1872,17 +1874,17 @@ run_scenario <-
     # efficiency No need to recalculate disease probability for everyone only
     # apply disease impact on attendees (works only with kismet == TRUE)
 
-    af_model(                 scenario_nam, dt$mc, dt$pop, design$sim_prm, timing = timing[[2]])
-    htn_model(                scenario_nam, dt$mc, dt$pop, design$sim_prm, timing = timing[[2]])
-    t2dm_model(               scenario_nam, dt$mc, dt$pop, design$sim_prm, design$lags_mc, timing = timing[[2]])
-    chd_model(                scenario_nam, dt$mc, dt$pop, design$sim_prm, design$lags_mc, timing = timing[[2]])
-    stroke_model(             scenario_nam, dt$mc, dt$pop, design$sim_prm, design$lags_mc, timing = timing[[2]])
-    poststroke_dementia_model(scenario_nam, dt$mc, dt$pop, design$sim_prm, design$lags_mc, timing = timing[[2]])
-    copd_model(               scenario_nam, dt$mc, dt$pop, design$sim_prm, design$lags_mc, timing = timing[[2]])
-    lung_ca_model(            scenario_nam, dt$mc, dt$pop, design$sim_prm, design$lags_mc, timing = timing[[2]])
-    colon_ca_model(           scenario_nam, dt$mc, dt$pop, design$sim_prm, design$lags_mc, timing = timing[[2]])
-    breast_ca_model(          scenario_nam, dt$mc, dt$pop, design$sim_prm, design$lags_mc, timing = timing[[2]])
-    nonmodelled_model(        scenario_nam, dt$mc, dt$pop, design$sim_prm, design$lags_mc, timing = timing[[2]])
+    af_model(                 scenario_nam, mc, dt$pop, design$sim_prm, timing = timing[[2]])
+    htn_model(                scenario_nam, mc, dt$pop, design$sim_prm, timing = timing[[2]])
+    t2dm_model(               scenario_nam, mc, dt$pop, design$sim_prm, design$lags_mc, timing = timing[[2]])
+    chd_model(                scenario_nam, mc, dt$pop, design$sim_prm, design$lags_mc, timing = timing[[2]])
+    stroke_model(             scenario_nam, mc, dt$pop, design$sim_prm, design$lags_mc, timing = timing[[2]])
+    poststroke_dementia_model(scenario_nam, mc, dt$pop, design$sim_prm, design$lags_mc, timing = timing[[2]])
+    copd_model(               scenario_nam, mc, dt$pop, design$sim_prm, design$lags_mc, timing = timing[[2]])
+    lung_ca_model(            scenario_nam, mc, dt$pop, design$sim_prm, design$lags_mc, timing = timing[[2]])
+    colon_ca_model(           scenario_nam, mc, dt$pop, design$sim_prm, design$lags_mc, timing = timing[[2]])
+    breast_ca_model(          scenario_nam, mc, dt$pop, design$sim_prm, design$lags_mc, timing = timing[[2]])
+    nonmodelled_model(        scenario_nam, mc, dt$pop, design$sim_prm, design$lags_mc, timing = timing[[2]])
 
     output <- gen_output(scenario_nam, design$sim_prm, design$lags_mc, dt$pop, output)
 
@@ -2265,8 +2267,9 @@ run_simulation <- function(parameters, design, final = FALSE) {
         split = FALSE
       )
     }
-    # mc_iter = 1L
-    design$get_lags(mc_iter)
+    mc_aggr <- ceiling(mc_iter / design$sim_prm$n_synthpop_aggregation)
+    design$get_lags(mc_aggr)
+
     POP <- SynthPop$new(mc_iter, design)
     if (!parameters$national_qimd_checkbox) {
       setnames(POP$pop, c("qimd", "lqimd"), c("nqimd", "qimd"))
@@ -2280,6 +2283,7 @@ run_simulation <- function(parameters, design, final = FALSE) {
       sort(fromGUI_scenario_names(parameters_dt)$true_scenario),
       # parameters_dt[grepl("^sc[1-9]", scenario), sort(unique(scenario))],
       run_scenario,
+      mc_aggr,
       POP,
       parameters_dt,
       design,
@@ -2308,8 +2312,7 @@ run_simulation <- function(parameters, design, final = FALSE) {
                      !identify_longdead(all_cause_mrtl, pid_mrk), ]
     output_chunk[, pid_mrk  := mk_new_simulant_markers(pid)]
     output_chunk[, scenario := factor(scenario)]
-    generate_health_econ(output_chunk, ceiling(mc_iter /
-        design$sim_prm$n_synthpop_aggregation))
+    generate_health_econ(output_chunk, mc_aggr)
     output_chunk[, c("ncc", "pid", "income", "education") := NULL]
 
     # gen incd
@@ -2348,8 +2351,7 @@ run_simulation <- function(parameters, design, final = FALSE) {
       output_chunk[, lapply(.SD, sum),
                    keyby = eval(design$sim_prm$strata_for_output)]
     setnames(output_chunk, "wt", "pops")
-    output_chunk[, mc := ceiling(mc_iter /
-                                   design$sim_prm$n_synthpop_aggregation)]
+    output_chunk[, mc := mc_aggr]
 
 
     fwrite_safe(output_chunk, output_dir("intermediate_out.csv"))
