@@ -1655,9 +1655,9 @@ SynthPop <-
           # Include diseases ----
           message("Include diseases")
           setkey(dt, pid, year)
-          design_$get_lags(mc_)
-          primer_colnames <- copy(names(dt))
           mc_aggr <- ceiling(mc_ / design_$sim_prm$n_synthpop_aggregation)
+          design_$get_lags(mc_aggr)
+          primer_colnames <- copy(names(dt))
           # I need to delete rows here so the RN with the file are
           # reproducible and don't need to save them
           dt <-
@@ -1810,6 +1810,7 @@ SynthPop <-
                  filename_,
                  design_,
                  exclude_cols = c()) {
+          mc_aggr <- ceiling(mc_ / design_$sim_prm$n_synthpop_aggregation)
 
           mm_primer <- metadata_fst(filename_$primer)
           mm_primer <- setdiff(mm_primer$columnNames,
@@ -1835,7 +1836,7 @@ SynthPop <-
           # regenerate RN (need to be before any deletion of rows)
           # TODO Kismet = F
           generate_rns(
-            mc_,
+            mc_, # Not mc_aggr
             dt,
             c(
               "rn_t2dm_incd",
@@ -1889,7 +1890,7 @@ SynthPop <-
           # Above necessary because of pruning  and potential merging above
 
           # simulate disease epidemiology
-          design_$get_lags(mc_)
+          design_$get_lags(mc_aggr)
 
           output <- list()
           output <-
