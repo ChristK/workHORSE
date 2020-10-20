@@ -122,8 +122,7 @@ Generates the lag per disease for a given Monte
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{mc_}}{An integer for the Monte Carlo iteration. It takes into
-account the `n_synthpop_aggregation`.}
+\item{\code{mc_}}{An integer for the Monte Carlo iteration.}
 }
 \if{html}{\out{</div>}}
 }
