@@ -43,7 +43,7 @@ htn_model <-
     set(dt, NULL, "htn_prvl", 0L)
     dt[year == design$init_year &
         (sbp_curr_xps > 140 | bpmed_curr_xps > 0),
-      htn_prvl := 1L + rnbinom(.N, age, 0.8)] # Duration of disease is set arbtitrarily (not used elsewhere)
+      htn_prvl := 1L + rnbinom(.N, age, 0.8)] # Duration of disease is set arbitrarily (not used elsewhere)
     dt[htn_prvl > 0L & htn_prvl > (age - 20L), htn_prvl := age - 20L]
 
     # Diagnosis
