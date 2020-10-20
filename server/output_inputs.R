@@ -1367,9 +1367,14 @@ output$out_scenario_disease_select_cpp <- renderUI({
 
 
 output$cyppy_stacked_area <- renderPlotly({
-  scn_sel <- reactive({ifelse(length(input$inout_scenario_diseases_select_cypp) == 0,
-                              first(out_proc()[, as.character(unique(friendly_name))]),
-                              input$inout_scenario_diseases_select_cypp)})
+  scn_sel <-
+    reactive({
+      ifelse(
+        length(input$inout_scenario_diseases_select_cypp) == 0,
+        first(out_proc()[, as.character(unique(friendly_name))]),
+        input$inout_scenario_diseases_select_cypp
+      )
+    })
   tt <- out_proc()[, .(
     cypp_chd_cml,
     cypp_stroke_cml,
@@ -1479,9 +1484,14 @@ output$cyppy_stacked_area <- renderPlotly({
 
 
 output$cppy_stacked_area <- renderPlotly({
-  scn_sel <- reactive({ifelse(length(input$inout_scenario_diseases_select_cpp) == 0,
-                              first(out_proc()[, as.character(unique(friendly_name))]),
-                              input$inout_scenario_diseases_select_cpp)})
+  scn_sel <-
+    reactive({
+      ifelse(
+        length(input$inout_scenario_diseases_select_cpp) == 0,
+        first(out_proc()[, as.character(unique(friendly_name))]),
+        input$inout_scenario_diseases_select_cpp
+      )
+    })
   tt <- out_proc()[, .(
     cpp_chd_cml,
     cpp_stroke_cml,
