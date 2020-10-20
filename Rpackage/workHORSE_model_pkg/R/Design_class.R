@@ -103,7 +103,7 @@ Design <-
           any(sim_prm$clusternumber == 1L, sim_prm$n_cpus == 1L),
           sapply(sim_prm, function(x)
             if (is.numeric(x))
-              x >= 1
+              x >= 0
             else
               TRUE)
         )
