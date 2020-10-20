@@ -566,6 +566,8 @@ future({
   generate_scalar_rr_l("sbp_nonmodelled", 1.29, 1.38, mc_max)
   generate_scalar_rr_l("sbp_nonmodelled", 1.29, 1.38, mc_max)
   generate_scalar_rr_l("statins_t2dm", 1.09, 1.17, mc_max)
+  generate_scalar_rr_l("statins_tchol", 0.27 * 0.43 / 0.36,
+    0.27 * 0.3958 / 0.36, mc_max, "norm")
 
 
   #	Inflate all_cause (proxy to non_cvd) mortality for hypertensives
