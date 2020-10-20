@@ -19,6 +19,9 @@ maxlag: 10
 cancer_cure: 10 # need to be >2 & <= 10
 jumpiness: 1.0 # increase for more erratic jumps in trajectories
 smoking_relapse_limit: 3
+statin_adherence: 0.9
+bpmed_adherence: 0.9
+decision_aid: 0.8
 stochastic: yes
 kismet: yes
 simsmok_calibration: yes

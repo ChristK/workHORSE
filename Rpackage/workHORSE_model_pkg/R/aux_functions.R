@@ -1347,7 +1347,8 @@ set_invitees <- function(scenario_parms, dt, hlp, env = parent.frame()) {
 
   absorb_dt(dt, tt)
   setnafill(dt, "c", 0, cols = c("mu", "freq"))
-  dt[, (colnam) := identify_invitees(eligible_sc, hlp$previous_invitees, mu, freq, pid_mrk)]
+  dt[, (colnam) :=
+      identify_invitees(eligible_sc, hlp$previous_invitees, mu, freq, pid_mrk)]
   dt[, c("mu", "freq") := NULL]
   absorb_dt(dt, ttcost, on = setdiff(names(ttcost), colnam_cost))
   setnafill(dt, "c", 0, cols = colnam_cost)
@@ -1487,9 +1488,8 @@ set_px <- function(scenario_parms, dt, mc, design) {
   # trials. BMC Family Practice 2003;4:18.
 
   atorv_eff <- get_rr_mc(mc, "tchol", "statins", design$stochastic)
-  # atorv_eff <- 0.27 * 0.43 / 0.36 # TODO need to be in the MC parameters as above
 
-  # adherence <- rpert(1e6, 0.5, 0.8, 1, 8)
+  # adherence <- rpert(1e6, 0.5, 0.9, 1, 8)
   # proportion of prescribed dose taken
   # or to avoid dependency for rpert
   # adherence <- rBE(1e6, 0.9, 0.1) # proportion of prescribed dose taken
@@ -1498,7 +1498,7 @@ set_px <- function(scenario_parms, dt, mc, design) {
   dt[statin_px_sc == 1L &
        # statin_px_curr_xps == 0L & # Assume GP titrates treatment
        year + 2000L >= scenario_parms$sc_init_year,
-     (colnam_bio) := tchol_curr_xps * (1 - atorv_eff * rBE(.N, 0.9, 0.2))]
+     (colnam_bio) := tchol_curr_xps * (1 - atorv_eff * statin_adherence)]
 
   # for bpmed
   colnam     <- "bpmed_px_sc"
@@ -1537,7 +1537,7 @@ set_px <- function(scenario_parms, dt, mc, design) {
        # bpmed_curr_xps == 0L & # Assume GP titrates treatment
        year + 2000L >= scenario_parms$sc_init_year,
      (colnam_bio) := sbp_curr_xps - clamp((sbp_curr_xps - 135) *
-                                            rBE(.N, 0.9, 0.2), 0, 1e3)]
+         bpmed_adherence, 0, 1e3)]
   # Assume that antihtn medication can potentially achieve sbp 135 for all. Not
   # 110 to account for residual risk
 
@@ -1577,8 +1577,9 @@ set_lifestyle <-
     dt[hc_eff_wm == 1L  & year + 2000L >= scenario_parms$sc_init_year,
        (colnam_cost) := scenario_parms$sc_ls_wghtloss_cost_ind]
     # Cost only the year of referral
-    dt[year + 2000L >= scenario_parms$sc_init_year,
-       hc_eff_wm := hc_effect(hc_eff_wm, (1 - scenario_parms$sc_ls_attrition), pid_mrk)]
+    dt[,
+      hc_eff_wm := hc_effect(hc_eff_wm,
+        (1 - scenario_parms$sc_ls_attrition), pid_mrk)]
     dt[hc_eff_wm == 1L, (colnam) := bmi_sc * (1 - scenario_parms$sc_ls_wghtreduc)]
 
     # Alcohol
@@ -1624,7 +1625,7 @@ set_lifestyle <-
     nam <- tbl[, paste0(sex, " ", qimd)]
     tbl <- as.matrix(tbl[, mget(paste0(1:15))], rownames = nam)
 
-    dt[year + 2000L >= scenario_parms$sc_init_year,
+    dt[,
        (c(colnam_status, colnam_quit_yrs, colnam_dur)) :=
          simsmok_cessation(
            smok_status_sc,

@@ -156,6 +156,34 @@ tabPanel("Advanced settings",
              0.1,
              10,
              0.1
+           ),
+
+           numericInput(
+             "statin_adherence_gui",
+             "Statin adherence. The mean of e beta distribution with shape2 = 0.2",
+             design$sim_prm$statin_adherence,
+             0.1,
+             1,
+             0.01
+           ),
+
+           numericInput(
+             "bpmed_adherence_gui",
+             "BP medication adherence. The mean of e beta distribution with shape2 = 0.2",
+             design$sim_prm$bpmed_adherence,
+             0.1,
+             1,
+             0.05
+           ),
+
+           numericInput(
+             "decision_aid_gui",
+             "BP medication adherence. The mean of e beta distribution with shape2 = 0.2",
+             design$sim_prm$decision_aid,
+             0,
+             1,
+             0.05
            )
+
          ) # wellPanel
 )
