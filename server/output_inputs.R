@@ -758,7 +758,7 @@ output$cep_p_ce <- renderPlotly({
           symbol = ~ friendly_name, symbols = colsymb()[names %in% input$inout_scenario_select, symbol],
           line = list(shape = "spline", smoothing = 1.3)) %>%
 
-    add_lines(x = ~year, y = 0.8, name = "Decision aid", color = NULL, symbol = NULL,
+    add_lines(x = ~year, y = input$decision_aid_gui, name = "Decision aid", color = NULL, symbol = NULL,
               line = list(color = "black", dash = "dot")) %>%
     layout(
       yaxis = list(title = "Probability of cost-effective policy", range = c(-0.05, 1.05),
@@ -782,7 +782,7 @@ output$cep_p_cs <- renderPlotly({
   plot_ly(tt,
           x = ~year, y = ~V2, type = "scatter", mode = "lines+markers", color = ~ friendly_name, colors = colsymb()[names %in% input$inout_scenario_select, colour],
           symbol = ~ friendly_name, symbols = colsymb()[names %in% input$inout_scenario_select, symbol], line = list(shape = "spline", smoothing = 1.3)) %>%
-    add_lines(x = ~year, y = 0.8, name = "Decision aid", color = NULL, symbol = NULL,
+    add_lines(x = ~year, y = input$decision_aid_gui, name = "Decision aid", color = NULL, symbol = NULL,
               line = list(color = "black", dash = "dot")) %>%
     layout(
       yaxis = list(title = "Probability of cost-effective policy", range = c(-0.05, 1.05),
@@ -1066,7 +1066,7 @@ output$equ_p_abs <- renderPlotly({
   plot_ly(tt,
           x = ~year, y = ~V2, type = "scatter", mode = "lines+markers", color = ~ friendly_name, colors = colsymb()[names %in% input$inout_scenario_select, colour],
           symbol = ~ friendly_name, symbols = colsymb()[names %in% input$inout_scenario_select, symbol], line = list(shape = "spline", smoothing = 1.3)) %>%
-    add_lines(x = ~year, y = 0.8, name = "Decision aid", color = NULL, symbol = NULL,
+    add_lines(x = ~year, y = input$decision_aid_gui, name = "Decision aid", color = NULL, symbol = NULL,
               line = list(color = "black", dash = "dot")) %>%
     layout(
       yaxis = list(title = "Probability of equitable policy", range = c(-0.05, 1.05),
@@ -1090,7 +1090,7 @@ output$equ_p_rel <- renderPlotly({
   plot_ly(tt,
           x = ~year, y = ~V2, type = "scatter", mode = "lines+markers", color = ~ friendly_name, colors = colsymb()[names %in% input$inout_scenario_select, colour],
           symbol = ~ friendly_name, symbols = colsymb()[names %in% input$inout_scenario_select, symbol], line = list(shape = "spline", smoothing = 1.3)) %>%
-    add_lines(x = ~year, y = 0.8, name = "Decision aid", color = NULL, symbol = NULL,
+    add_lines(x = ~year, y = input$decision_aid_gui, name = "Decision aid", color = NULL, symbol = NULL,
               line = list(color = "black", dash = "dot")) %>%
     layout(
       yaxis = list(title = "Probability of equitable policy", range = c(-0.05, 1.05),

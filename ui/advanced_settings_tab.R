@@ -160,7 +160,7 @@ tabPanel("Advanced settings",
 
            numericInput(
              "statin_adherence_gui",
-             "Statin adherence. The mean of e beta distribution with shape2 = 0.2",
+             "Statin adherence. The mean of a beta distribution with shape2 = 0.2",
              design$sim_prm$statin_adherence,
              0.1,
              1,
@@ -169,7 +169,7 @@ tabPanel("Advanced settings",
 
            numericInput(
              "bpmed_adherence_gui",
-             "BP medication adherence. The mean of e beta distribution with shape2 = 0.2",
+             "BP medication adherence. The mean of a beta distribution with shape2 = 0.2",
              design$sim_prm$bpmed_adherence,
              0.1,
              1,
@@ -178,7 +178,7 @@ tabPanel("Advanced settings",
 
            numericInput(
              "decision_aid_gui",
-             "BP medication adherence. The mean of e beta distribution with shape2 = 0.2",
+             "Adjust the decision aid line used in some of the graphs",
              design$sim_prm$decision_aid,
              0,
              1,
