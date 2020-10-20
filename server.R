@@ -164,6 +164,8 @@ server = function(input, output, session) {
 
     parameters <- fromGUI_prune(reactiveValuesToList(input))
     design$update_fromGUI(parameters)
+    qsave(reactiveValuesToList(input, all.names = TRUE), "./output/input.qs")
+    qsave(parameters, "./output/parameters.qs")
 
     # progress$inc(1/n, detail = paste("Doing part", i))
     withProgress(message = 'Running workHORSE model.',
