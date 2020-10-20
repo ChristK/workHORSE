@@ -86,6 +86,9 @@ Design <-
             "stochastic"            ,
             "kismet"                ,
             "jumpiness"             ,
+            "statin_adherence"      ,
+            "bpmed_adherence"       ,
+            "decision_aid"          ,
             "export_xps"            ,
             "simsmok_calibration"   ,
             "output_dir"            ,
@@ -177,6 +180,9 @@ Design <-
         self$sim_prm$nonmodelled_lag        <- GUI_prm$nonmodelled_lag_gui
         self$sim_prm$cancer_cure            <- GUI_prm$cancer_cure_gui
         self$sim_prm$jumpiness              <- GUI_prm$jumpiness_gui
+        self$sim_prm$statin_adherence       <- GUI_prm$statin_adherence_gui
+        self$sim_prm$bpmed_adherence        <- GUI_prm$bpmed_adherence_gui
+        self$sim_prm$decision_aid           <- GUI_prm$decision_aid_gui
 
         # Gen new lags enum after deleting existing ones
         self$sim_prm[grepl("_enum$", names(self$sim_prm))] <- NULL
