@@ -75,7 +75,7 @@ t2dm_model <-
       exps_nam   <- paste0(exps_tolag, "_lagged")
       for (i in seq_along(exps_tolag)) {
         set(dt, NULL, exps_nam[i],
-            dt[, shift_bypid(get(exps_tolag[i]), 4L, pid, 0L)])
+            dt[, shift_bypid(get(exps_tolag[i]), lags_mc$statin_t2dm_lag, pid, 0L)])
       }
 
       dt[statin_px_sc_lagged == 1L & statin_px_curr_xps_lagged == 0L,
