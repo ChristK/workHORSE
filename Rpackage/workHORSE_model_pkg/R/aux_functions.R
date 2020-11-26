@@ -1797,7 +1797,7 @@ set_structural <-
     }
 
     # tchol
-    if (scenario_parms$sc_str_tcholchange != 0) {
+    if (scenario_parms$sc_str_tchol_change != 0) {
       if (!"tchol_sc" %in% names(dt))
         set(dt, NULL, "tchol_sc", dt$tchol_curr_xps)
       dt[row_sel,
