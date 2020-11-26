@@ -43,3 +43,5 @@ preparatory_work/plots_trends/
 # git rm -r --cached .
 # git add -A
 # git commit -am 'Removing ignored files'
+workHORSE methods.docx
+scenarios
