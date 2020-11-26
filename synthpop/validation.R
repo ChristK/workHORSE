@@ -20,8 +20,8 @@
 ## Boston, MA 02110-1301 USA.
 
 cat("Validating workHORSE model...\n\n")
-setwd("~/My Models/workHORSE/")
-XPS <- FALSE
+# setwd("~/My Models/workHORSE/")
+XPS <- TRUE
 delete_previous_results <- FALSE # any change to workHORSEmisc deletes output
 
 # necessary for Rscript
@@ -72,8 +72,8 @@ library(workHORSEmisc)
 
 dependencies(
   c(
-    # "gamlss", # only necesary when fitting the models
-    # "gamlss.tr", # only necesary when fitting the models
+    # "gamlss", # only necessary when fitting the models
+    # "gamlss.tr", # only necessary when fitting the models
     # "mc2d", # only necessary for generating fixed_mc
     "doParallel",
     "doRNG",
@@ -82,7 +82,7 @@ dependencies(
     "gamlss.dist",
     # For distr in prevalence.R
     "dqrng",
-    # "qs",
+    "qs",
     "fst",
     "wrswoR",
     "ggplot2",
@@ -99,6 +99,9 @@ options(datatable.showProgress = FALSE)
 
 design <-
   Design$new("./validation/sim_design_for_trends_validation.yaml")
+parameters <- qread("./validation/parameters.qs")
+parameters <- fromGUI_prune(parameters) # TODO delete for production
+design$update_fromGUI(parameters)
 
 options(future.fork.enable = TRUE) # enable fork in Rstudio TODO remove for production
 plan(multiprocess, workers = design$sim_prm$clusternumber)
@@ -260,11 +263,6 @@ cowplot::ggsave2(
 # IMPACT NCD workHORSE
 # ******************************************************************
 
-# parameters <- qread("./parameters_test.qs")
-#
-# parameters_dt <- workHORSEmisc::fromGUI_to_dt(parameters)
-#
-# update_design_fromGUI(design, parameters)
 filenames <- c("val_incd_output.csv", "val_mrtl_output.csv")
 if (XPS)
   filenames <- c(filenames, "val_xps_output_post.csv")
@@ -294,7 +292,8 @@ if (all(file.exists(output_dir(filenames)))) {
   }
 
   out <- foreach(
-    mc_iter = 1:design$sim_prm$iteration_n,
+    mc_iter =  1:(design$sim_prm$iteration_n_final *
+        design$sim_prm$n_synthpop_aggregation),
     # .combine = rbind,
     .inorder = FALSE,
     .verbose = TRUE,
@@ -732,3 +731,4 @@ for (i in seq_along(nam)) {
               "validation_prvl_all", mltp_factor = 1e5)
   })
 }
+
