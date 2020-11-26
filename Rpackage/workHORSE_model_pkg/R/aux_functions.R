@@ -1756,7 +1756,7 @@ set_structural <-
     }
 
     # alcohol
-    if (scenario_parms$sc_str_fv_change != 0) {
+    if (scenario_parms$sc_str_alcohol_change != 0) {
       if (!"alcohol_sc" %in% names(dt))
         set(dt, NULL, "alcohol_sc", dt$alcohol_curr_xps)
       dt[row_sel,
@@ -1768,7 +1768,7 @@ set_structural <-
     }
 
     # active_days
-    if (scenario_parms$sc_str_fv_change != 0) {
+    if (scenario_parms$sc_str_pa_change != 0) {
       if (!"active_days_sc" %in% names(dt))
         set(dt, NULL, "active_days_sc", dt$active_days_curr_xps)
       dt[row_sel,
@@ -1777,7 +1777,7 @@ set_structural <-
     }
 
     # bmi
-    if (scenario_parms$sc_str_fv_change != 0) {
+    if (scenario_parms$sc_str_bmi_change != 0) {
       if (!"bmi_sc" %in% names(dt))
         set(dt, NULL, "bmi_sc", dt$bmi_curr_xps)
       dt[row_sel,
@@ -1787,7 +1787,7 @@ set_structural <-
     }
 
     # sbp
-    if (scenario_parms$sc_str_fv_change != 0) {
+    if (scenario_parms$sc_str_sbp_change != 0) {
       if (!"sbp_sc" %in% names(dt))
         set(dt, NULL, "sbp_sc", dt$sbp_curr_xps)
       dt[row_sel,
@@ -1797,7 +1797,7 @@ set_structural <-
     }
 
     # tchol
-    if (scenario_parms$sc_str_fv_change != 0) {
+    if (scenario_parms$sc_str_tcholchange != 0) {
       if (!"tchol_sc" %in% names(dt))
         set(dt, NULL, "tchol_sc", dt$tchol_curr_xps)
       dt[row_sel,
