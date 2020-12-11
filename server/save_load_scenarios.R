@@ -45,9 +45,12 @@ output$save_sc1 <- downloadHandler(
       tt_sc1$collapse_panels_button_sc1 <- NULL
       tt_sc1$collapse_panel_sc1 <- NULL
       tt_sc1$run_simulation_sc1 <- NULL
+      tt_sc1$next_sc1 <- NULL
+      tt_sc1$previous_sc1 <- NULL
+      tt_sc1$baseline_sc1 <- NULL #TODO crashes if two loaded scenarios have baseline = TRUE
 
     tt_sc1 <- setNames(tt_sc1, gsub("_sc1$", "", names(tt_sc1)))
-    write_yaml(tt_sc1, file = file)
+    write_yaml(tt_sc1[sort(names(tt_sc1))], file = file)
   }
 )
 
@@ -75,9 +78,15 @@ output$save_sc1 <- downloadHandler(
  }
 
 # delay necessary so all elements are expanded on screen before load
-    delay(1000, lapply(names(savedInputs),
+    delay(500, lapply(sort(names(savedInputs)),
            function(x) session$sendInputMessage(x, list(value = savedInputs[[x]]))
     ))
+# TODO When age eligibility changes between scenarios the loading of the
+# detailed uptake table does not work the first time. As a workaround until
+# better, fix I load each scenario twice
+    lapply(sort(names(savedInputs)),
+      function(x) session$sendInputMessage(x, list(value = savedInputs[[x]]))
+    )
   })
 
 # Ensure uptake & px is open and close once, otherwise the tables are not produced and they cannot be saved or load
