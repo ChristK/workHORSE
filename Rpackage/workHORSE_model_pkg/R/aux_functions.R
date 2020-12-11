@@ -1369,7 +1369,7 @@ set_attendees <- function(scenario_parms, dt, scenario_nam, parameters_dt,
   if (scenario_parms$sc_ens_is && colnam %in% names(dt)) {
     env$hlp$previous_attendees <- clamp(hlp$previous_attendees + dt$attendees_sc)
   }
-  set(dt, NULL, colnam_cost, 0L)
+  set(dt, NULL, colnam_cost, 0)
 
 
   if (scenario_parms$sc_uptake_detailed) {
