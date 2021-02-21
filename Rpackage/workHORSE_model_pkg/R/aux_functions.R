@@ -2336,7 +2336,7 @@ run_simulation <- function(parameters, design, final = FALSE) {
     }
 
     output_chunk[, year := year + 2000L]
-    to_agegrp(output_chunk, 20L, 89L, "age", "agegrp", TRUE, 30L)
+    to_agegrp(output_chunk, 20L, 89L, "age", "agegrp", TRUE, 30L) # TODO use case_when
 
     # Scale-up to ONS population projections
     # output_chunk[, sum(wt), keyby = .(year, scenario)]
@@ -2344,7 +2344,7 @@ run_simulation <- function(parameters, design, final = FALSE) {
                      names(output_chunk),
                      value = TRUE)) {
       set(output_chunk, NULL, nam, output_chunk[[nam]] * output_chunk$wt)
-    }
+    } # TODO loop over numeric indices rather than col names
 
     # summarise by strata
     output_chunk[, c("age", "pid_mrk") := NULL]
