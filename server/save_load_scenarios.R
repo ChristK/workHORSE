@@ -78,7 +78,7 @@ output$save_sc1 <- downloadHandler(
  }
 
 # delay necessary so all elements are expanded on screen before load
-    delay(500, lapply(sort(names(savedInputs)),
+    delay(2000, lapply(sort(names(savedInputs)),
            function(x) session$sendInputMessage(x, list(value = savedInputs[[x]]))
     ))
 # TODO When age eligibility changes between scenarios the loading of the
