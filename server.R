@@ -45,14 +45,16 @@ server = function(input, output, session) {
   })
 
 
-# Reactive function to choose scenario colours and shapes, and use their value according to their name
+# Reactive function to choose scenario colours and shapes, and use their value
+# according to their name
 
   colsymb <- reactive({
       setnames(transpose(as.data.table(lapply(seq_len(input$scenarios_number_slider), function(i) {
         c(input[[paste0("col_sc", i)]],
           input[[paste0("friendly_name_sc", i)]],
           input[[paste0("symbol_sc", i)]])
-      }))), c("colour", "names", "symbol"))
+      }))), c("colour", "names", "symbol")
+        )[names %in% input$inout_scenario_select, ]
   })
 
 
@@ -146,10 +148,10 @@ server = function(input, output, session) {
           {
             # TODO remove before release
             if (file.exists("./output/results.fst")) {
-              # out <- read_fst("./output/results.fst", as.data.table = TRUE)
-              # out
-              file.remove("./output/results.fst")
-              run_simulation(parameters, design, FALSE)
+              out <- read_fst("./output/results.fst", as.data.table = TRUE)
+              out
+              # file.remove("./output/results.fst")
+              # run_simulation(parameters, design, FALSE)
             } else {
               run_simulation(parameters, design, FALSE)
             }
@@ -336,87 +338,138 @@ server = function(input, output, session) {
 
 # Automated graph explanation text  ------------------------------------------------------
 
+
   output$automated_text_descr <- renderUI({
+
+    order_bcr_sc_nam <- # bcr = benefit:cost ratio
+      reactive({
+        most_benefit_cost_ratio(out_proc(),
+          input$health_econ_perspective_checkbox,
+          input$out_wtp_box,
+          10L
+        )})
+
+    most_bcr_sc_val <-
+      reactive({
+        round(benefit_cost_ratio_value(
+          out_proc(),
+          input$health_econ_perspective_checkbox,
+          input$out_wtp_box,
+          order_bcr_sc_nam()[1L]
+        ), 2L)
+      })
+
+    most_nmb_sc_val <-
+      reactive({
+        net_monetary_benefit_value(
+          out_proc(),
+          input$health_econ_perspective_checkbox,
+          input$out_wtp_box,
+          order_bcr_sc_nam()[1L]
+        )
+      })
+
+    icer_1st_vs_2nd <-
+      reactive({
+        round(
+          scn_icer_cml(
+            out_proc(),
+            order_bcr_sc_nam()[1],
+            input$health_econ_perspective_checkbox
+          ) -
+            ifelse(is.na(scn_icer_cml(
+              out_proc(),
+              order_bcr_sc_nam()[2],
+              input$health_econ_perspective_checkbox
+            )), 0, scn_icer_cml(
+              out_proc(),
+              order_bcr_sc_nam()[2],
+              input$health_econ_perspective_checkbox
+            ))
+        )
+      })
+
     HTML(
       paste0(
         "With time horizon of ",
         diff_year(),
         " years, starting in year ",
         input$simulation_period_slider[1],
-        ", the most cost effective scenario was ",
-      most_benefit_cost_ratio(
-        out_proc(),
-        input$health_econ_perspective_checkbox,
-        input$out_wtp_box
-      ),
+        ", the most cost-effective scenario was ",
+        order_bcr_sc_nam()[1L],
       " scenario. ",
       "It had a benefit:cost ratio (including the value of health gains) of £",
-      most_benefit_cost_ratio_value(out_proc(),
-                                    input$health_econ_perspective_checkbox,
-                                    input$out_wtp_box),
+        most_bcr_sc_val(),
       " for every £1 spent.",
     br(), br(),
 
 
-        "This scenario had a societal incremental cost effectiveness ratio of ",
-        round(
-          scn_icer_cml(
-            out_proc(),
-            first(
-              most_benefit_cost_ratio(
-                out_proc(),
-                input$health_econ_perspective_checkbox,
-                input$out_wtp_box,
-                2
-              )
-            ),
-            input$health_econ_perspective_checkbox
-          ) -
-            ifelse(is.na(scn_icer_cml(
-              out_proc(),
-              last(
-                most_benefit_cost_ratio(
-                  out_proc(),
-                  input$health_econ_perspective_checkbox,
-                  input$out_wtp_box,
-                  2
-                )
-              ),
-              input$health_econ_perspective_checkbox
-            )), 0, scn_icer_cml(
-              out_proc(),
-              last(
-                most_benefit_cost_ratio(
-                  out_proc(),
-                  input$health_econ_perspective_checkbox,
-                  input$out_wtp_box,
-                  2
-                )
-              ),
-              input$health_econ_perspective_checkbox
-            ))
-        ),
+        "This scenario had a ", tolower(input$health_econ_perspective_checkbox),
+        " incremental cost-effectiveness ratio of £",
+        icer_1st_vs_2nd(),
         " per QALY when compared to the next best scenario. ", br(), br(),
 
 
-       "The order of the scenarios, starting from the most cost effective was ",
-       head(most_benefit_cost_ratio(
-         out_proc(),
-         input$health_econ_perspective_checkbox,
-         input$out_wtp_box, 10L
-       ), -1),
+       "The order of the scenarios, starting from the most cost-effective was ",
+       head(order_bcr_sc_nam(), -1),
       " and finally, ",
-      last(most_benefit_cost_ratio(
-        out_proc(),
-        input$health_econ_perspective_checkbox,
-        input$out_wtp_box, 10L
-      )),
+      last(order_bcr_sc_nam()),
       "."
       ))
   })
 
 
   output$note_cost_eff <- renderUI({
+    # TODO find a way to avoid repeating these function as they are also used in
+    # output$automated_text_descr
+    order_bcr_sc_nam <- # bcr = benefit:cost ratio
+      reactive({
+        most_benefit_cost_ratio(out_proc(),
+          input$health_econ_perspective_checkbox,
+          input$out_wtp_box,
+          10L
+        )})
+
+    most_bcr_sc_val <-
+      reactive({
+        round(benefit_cost_ratio_value(
+          out_proc(),
+          input$health_econ_perspective_checkbox,
+          input$out_wtp_box,
+          order_bcr_sc_nam()[1L]
+        ), 2L)
+      })
+
+    most_nmb_sc_val <-
+      reactive({
+        net_monetary_benefit_value(
+          out_proc(),
+          input$health_econ_perspective_checkbox,
+          input$out_wtp_box,
+          order_bcr_sc_nam()[1L]
+        )
+      })
+
+    icer_1st_vs_2nd <-
+      reactive({
+        round(
+          scn_icer_cml(
+            out_proc(),
+            order_bcr_sc_nam()[1],
+            input$health_econ_perspective_checkbox
+          ) -
+            ifelse(is.na(scn_icer_cml(
+              out_proc(),
+              order_bcr_sc_nam()[2],
+              input$health_econ_perspective_checkbox
+            )), 0, scn_icer_cml(
+              out_proc(),
+              order_bcr_sc_nam()[2],
+              input$health_econ_perspective_checkbox
+            ))
+        )
+      })
+
     HTML(
       paste0(
         "With time horizon of ",
@@ -425,60 +478,28 @@ server = function(input, output, session) {
         input$simulation_period_slider[1],
         ": and based on valuing QALYs at ",
         input$out_wtp_box,
-        ", the scenario with the greatest societal benefit:cost ratio was ",
-        most_benefit_cost_ratio(
-          out_proc(),
-          input$health_econ_perspective_checkbox,
-          input$out_wtp_box
-        ),
-        " scenario which had a benefit: cost ratio of ",
-        most_benefit_cost_ratio_value(
-          out_proc(),
-          input$health_econ_perspective_checkbox,
-          input$out_wtp_box
-        ),
-        " for every £1 spent and a total net monetary benefit of £",
-        most_benefit_cost_ratio_value(
-          out_proc(),
-          input$health_econ_perspective_checkbox,
-          input$out_wtp_box
-        ),
-        " from a societal perspective.",
+        ", the scenario with the greatest ",
+        tolower(input$health_econ_perspective_checkbox),
+        " benefit:cost ratio was ",
+        order_bcr_sc_nam()[1L],
+        " scenario which had a benefit:cost ratio of ",
+        most_bcr_sc_val(),
+        " for every £1 spent, and a total net monetary benefit of £",
+        most_nmb_sc_val(),
+        " from a ", tolower(input$health_econ_perspective_checkbox), ".",
         br(),
         br(),
-        "This scenario had a societal incremental cost effectiveness ratio of ",
-        round(scn_icer_cml(out_proc(), first(most_benefit_cost_ratio(out_proc(),
-                                                                     input$health_econ_perspective_checkbox,
-                                                                     input$out_wtp_box, 2)),
-                           input$health_econ_perspective_checkbox) -
-                scn_icer_cml(out_proc(), last(most_benefit_cost_ratio(out_proc(),
-                                                                      input$health_econ_perspective_checkbox,
-                                                                      input$out_wtp_box, 2)),
-                             input$health_econ_perspective_checkbox)),
-        " per QALY when compared to the next best scenario ",
-        last(most_benefit_cost_ratio(out_proc(),
-                                     input$health_econ_perspective_checkbox,
-                                     input$out_wtp_box, 2)),
-        " scenario.",
+        "This scenario had a ", tolower(input$health_econ_perspective_checkbox),
+        " incremental cost-effectiveness ratio of £",
+        icer_1st_vs_2nd(),
+        " per QALY when compared to the next best scenario (",
+        order_bcr_sc_nam()[2],
+        " ).",
         br(),
         br(),
-        # "The most cost effective scenario from a healthcare cost perspective was ",
-        # most_cost_effective(out_proc()),
-        # " scenario which had an incremental cost effectiveness ratio of ",
-        # incr_cost_effect_ratio(),
-        # " per QALY gained.",
-        # br(),
-        "Ranking the scenarios from most to least cost effective, the order was:",
-        br(),
-        br(),
-        most_benefit_cost_ratio(
-          out_proc(),
-          input$health_econ_perspective_checkbox,
-          input$out_wtp_box, 10L
-        )
-        # paste(head(rank_cost_effective(out_proc(
-        # )), -1), collapse = ", "),
-        # last_rank()
+        "Ranking the scenarios from most to least cost-effective, the order was: ",
+        paste0(paste(head(order_bcr_sc_nam(), -1), collapse = ", "), " and ",
+          tail(order_bcr_sc_nam(), 1), ".")
       )
     )
   })
