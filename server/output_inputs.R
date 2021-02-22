@@ -554,8 +554,10 @@ out_summary <- reactive({
 # CE plane ----
 output$cep1_1 <- renderPlotly({
 
-  tt <-  out_proc()[year == max(year),
-                    .(net_utility_cml, societal_cost_cml, mc, friendly_name)]
+  tt <- out_proc()[year == max(year),
+                    .(net_utility_cml, societal_cost_cml, mc,
+                      friendly_name = factor(friendly_name))]
+  # factor(friendly_name) otherwise levels include baseline scenario
   # [, sum_dt(.SD, c("mc", "friendly_name"), character(0))]
 
   max_x <- tt[, max(abs(net_utility_cml))] * 1.2
@@ -568,19 +570,18 @@ output$cep1_1 <- renderPlotly({
   # TODO synchronise colours and graphs with the scenario selection on the left side bar
 
   if (input$res_display_cep1_1) tt <- median_dt(tt, "friendly_name", "mc", digits = 1)
-
+print(unique(tt$friendly_name))
   p <-
     plot_ly(
       tt,
       x = ~ net_utility_cml,
       y = ~ societal_cost_cml,
       color = ~ friendly_name,
-      colors =  colsymb()[names %in% input$inout_scenario_select, colour],
-      # frame = ~ year,
+      colors =  colsymb()$colour,
       type = "scatter",
       mode = "markers",
       symbol = ~ friendly_name,
-      symbols = colsymb()[names %in% input$inout_scenario_select, symbol],
+      symbols = colsymb()$symbol,
       showlegend = TRUE
     )
 
@@ -620,7 +621,8 @@ output$cep1_1 <- renderPlotly({
 output$cep1 <- renderPlotly({
 
   tt <-
-    out_proc()[year == max(year), .(net_utility_cml, societal_cost_cml, mc, friendly_name)]
+    out_proc()[year == max(year), .(net_utility_cml, societal_cost_cml, mc,
+      friendly_name = factor(friendly_name))]
   # [, sum_dt(.SD, c("mc", "friendly_name"), character(0))]
   max_x <- tt[, max(abs(net_utility_cml))] * 1.2
   wtp_thres <- reactive(max_x * input$out_wtp_box)
@@ -639,12 +641,12 @@ output$cep1 <- renderPlotly({
       x = ~ net_utility_cml,
       y = ~ societal_cost_cml,
       color = ~ friendly_name,
-      colors =  colsymb()[names %in% input$inout_scenario_select, colour],
+      colors =  colsymb()$colour,
       # frame = ~ year,
       type = "scatter",
       mode = "markers",
       symbol = ~ friendly_name,
-      symbols = colsymb()[names %in% input$inout_scenario_select, symbol],
+      symbols = colsymb()$symbol,
       showlegend = TRUE
     )
 
@@ -682,8 +684,10 @@ output$cep1 <- renderPlotly({
 })
 
 output$cep_anim <- renderPlotly({
+
   tt <-
-    out_proc()[, .(net_utility_cml, societal_cost_cml, mc, friendly_name, year)]
+    out_proc()[, .(net_utility_cml, societal_cost_cml, mc,
+      friendly_name = factor(friendly_name), year)]
   # [, sum_dt(.SD, c("mc", "friendly_name", "year"), character(0))]
 
   max_x <- tt[, max(abs(net_utility_cml))] * 1.2
@@ -699,12 +703,12 @@ output$cep_anim <- renderPlotly({
       x = ~ net_utility_cml,
       y = ~ societal_cost_cml,
       color = ~ friendly_name,
-      colors = colsymb()[names %in% input$inout_scenario_select, colour],
+      colors = colsymb()$colour,
       frame = ~ year,
       type = "scatter",
       mode = "markers",
       symbol = ~ friendly_name,
-      symbols = colsymb()[names %in% input$inout_scenario_select, symbol],
+      symbols = colsymb()$symbol,
       showlegend = TRUE
     )
   p <-
@@ -733,6 +737,9 @@ output$cep_anim <- renderPlotly({
           y0 = wtp_thres(), y1 = -wtp_thres())
       ))
 
+  # NOTE gives warning when colours and symbols are defined. Known bug
+  # https://github.com/ropensci/plotly/issues/1696
+
   # TODO the warning message concerns the colours and symbols that are not added on
   # every frames of the animation as they should be, they are only added on the first.
   # This needs to be done 3 times, for the 3 graphs with animations
@@ -744,66 +751,105 @@ output$cep_anim <- renderPlotly({
 
 output$cep_p_ce <- renderPlotly({
   tt <-
-    out_proc()[, .(
-      nmb_cml,
+    out_proc()[, .(nmb_cml,
       mc,
-      friendly_name,
-      year
-    )][, .(prop_if(nmb_cml > 0)), by = .(friendly_name, year)
-       ][, V2 := clamp(predict(loess(V1 ~ year, span = 0.5))), by = friendly_name]
+      friendly_name = factor(friendly_name),
+      year)][, .(prop_if(nmb_cml > 0)), by = .(friendly_name, year)][, V2 := clamp(predict(loess(V1 ~ year, span = 0.5))), by = friendly_name]
 
   # [, sum_dt(.SD, c("mc", "friendly_name", "year"), character(0))]
-  plot_ly(tt,
-          x = ~year, y = ~V2, type = "scatter", mode = "lines+markers", color = ~ friendly_name, colors = colsymb()[names %in% input$inout_scenario_select, colour],
-          symbol = ~ friendly_name, symbols = colsymb()[names %in% input$inout_scenario_select, symbol],
-          line = list(shape = "spline", smoothing = 1.3)) %>%
+  plot_ly(
+    tt,
+    x = ~ year,
+    y = ~ V2,
+    type = "scatter",
+    mode = "lines+markers",
+    color = ~ friendly_name,
+    colors = colsymb()$colour,
+    symbol = ~ friendly_name,
+    symbols = colsymb()$symbol,
+    line = list(shape = "spline", smoothing = 1.3)
+  ) %>%
 
-    add_lines(x = ~year, y = input$decision_aid_gui, name = "Decision aid", color = NULL, symbol = NULL,
-              line = list(color = "black", dash = "dot")) %>%
+    add_lines(
+      x = ~ year,
+      y = input$decision_aid_gui,
+      name = "Decision aid",
+      color = NULL,
+      symbol = NULL,
+      line = list(color = "black", dash = "dot")
+    ) %>%
     layout(
-      yaxis = list(title = "Probability of cost-effective policy", range = c(-0.05, 1.05),
-                   tickformat = ",.0%"),
+      yaxis = list(
+        title = "Probability of cost-effective policy",
+        range = c(-0.05, 1.05),
+        tickformat = ",.0%"
+      ),
       xaxis = list(title = "Year")
     )
 })
 
 output$cep_p_cs <- renderPlotly({
   tt <-
-    out_proc()[, .(
-      societal_cost_cml,
+    out_proc()[, .(societal_cost_cml,
       mc,
-      friendly_name,
-      year
-    )][, .(prop_if(societal_cost_cml <= 0)), by = .(friendly_name, year)
-    ][, V2 := clamp(predict(loess(V1 ~ year, span = 0.5))), by = friendly_name]
+      friendly_name = factor(friendly_name),
+      year)][, .(prop_if(societal_cost_cml <= 0)), by = .(friendly_name, year)][, V2 := clamp(predict(loess(V1 ~ year, span = 0.5))), by = friendly_name]
 
   # [, sum_dt(.SD, c("mc", "friendly_name", "year"), character(0))]
 
-  plot_ly(tt,
-          x = ~year, y = ~V2, type = "scatter", mode = "lines+markers", color = ~ friendly_name, colors = colsymb()[names %in% input$inout_scenario_select, colour],
-          symbol = ~ friendly_name, symbols = colsymb()[names %in% input$inout_scenario_select, symbol], line = list(shape = "spline", smoothing = 1.3)) %>%
-    add_lines(x = ~year, y = input$decision_aid_gui, name = "Decision aid", color = NULL, symbol = NULL,
-              line = list(color = "black", dash = "dot")) %>%
+  plot_ly(
+    tt,
+    x = ~ year,
+    y = ~ V2,
+    type = "scatter",
+    mode = "lines+markers",
+    color = ~ friendly_name,
+    colors = colsymb()$colour,
+    symbol = ~ friendly_name,
+    symbols = colsymb()$symbol,
+    line = list(shape = "spline", smoothing = 1.3)
+  ) %>%
+    add_lines(
+      x = ~ year,
+      y = input$decision_aid_gui,
+      name = "Decision aid",
+      color = NULL,
+      symbol = NULL,
+      line = list(color = "black", dash = "dot")
+    ) %>%
     layout(
-      yaxis = list(title = "Probability of cost-effective policy", range = c(-0.05, 1.05),
-                   tickformat = ",.0%"),
+      yaxis = list(
+        title = "Probability of cost-effective policy",
+        range = c(-0.05, 1.05),
+        tickformat = ",.0%"
+      ),
       xaxis = list(title = "Year")
     )
 })
 
 # EQU plane ----
 output$equ1_1 <- renderPlotly({
-  tt <- out_proc_qimd()[year == max(year), .(net_utility_cml, nmb_cml, eq5d_cml, pops_cml, mc, friendly_name, qimd)
-  ]
+  tt <-
+    out_proc_qimd()[year == max(year), .(
+      net_utility_cml,
+      nmb_cml,
+      eq5d_cml,
+      pops_cml,
+      mc,
+      friendly_name = factor(friendly_name),
+      qimd
+    )]
   # [, sum_dt(.SD, c("mc", "friendly_name", "qimd"), character(0))]
   calc_rigit_scores(tt, c("mc", "friendly_name"))
   calc_sei(tt, c("mc", "friendly_name"))
-  tt <- tt[, .(nmb_cml = sum(nmb_cml), sei = mean(sei)), by = c("mc", "friendly_name")]
+  tt <-
+    tt[, .(nmb_cml = sum(nmb_cml), sei = mean(sei)), by = c("mc", "friendly_name")]
 
   max_x <- tt[, max(abs(sei))] * 1.2
   max_y <- tt[, max(abs(nmb_cml))] * 1.2
 
-  if (input$res_display_equ1_1) tt <- median_dt(tt, "friendly_name", "mc", digits = 1)
+  if (input$res_display_equ1_1)
+    tt <- median_dt(tt, "friendly_name", "mc", digits = 1)
 
   p <-
     plot_ly(
@@ -811,12 +857,12 @@ output$equ1_1 <- renderPlotly({
       x = ~ sei,
       y = ~ nmb_cml,
       color = ~ friendly_name,
-      colors = colsymb()[names %in% input$inout_scenario_select, colour],
+      colors = colsymb()$colour,
       # frame = ~ year,
       type = "scatter",
       mode = "markers",
       symbol = ~ friendly_name,
-      symbols = colsymb()[names %in% input$inout_scenario_select, symbol],
+      symbols = colsymb()$symbol,
       showlegend = TRUE
     )
   p <-
@@ -825,19 +871,34 @@ output$equ1_1 <- renderPlotly({
       yaxis = list(title = "Net monetary benefit (£)"),
       xaxis = list(title = "Absolute inequality reduction (SII)"),
       shapes = list(
-        list(type = "rect",
-             fillcolor = "green", line = list(color = "green"), opacity = 0.3,
-             layer = "below",
-             x0 = 0, x1 = max_x, xref = "x",
-             y0 = 0, y1 = max_y, yref = "y"),
-        list(type = "rect",
-             fillcolor = "red", line = list(color = "red"), opacity = 0.3,
-             layer = "below",
-             x0 = 0, x1 = -max_x, xref = "x",
-             y0 = 0, y1 = -max_y, yref = "y")
+        list(
+          type = "rect",
+          fillcolor = "green",
+          line = list(color = "green"),
+          opacity = 0.3,
+          layer = "below",
+          x0 = 0,
+          x1 = max_x,
+          xref = "x",
+          y0 = 0,
+          y1 = max_y,
+          yref = "y"
+        ),
+        list(
+          type = "rect",
+          fillcolor = "red",
+          line = list(color = "red"),
+          opacity = 0.3,
+          layer = "below",
+          x0 = 0,
+          x1 = -max_x,
+          xref = "x",
+          y0 = 0,
+          y1 = -max_y,
+          yref = "y"
+        )
       )
     )
-
 
   # p <- animation_opts(p, frame = 1000, redraw = FALSE)
   # p <- animation_slider(p,
@@ -846,7 +907,8 @@ output$equ1_1 <- renderPlotly({
 })
 
 output$equ1 <- renderPlotly({
-  tt <- out_proc_qimd()[year == max(year), .(net_utility_cml, nmb_cml, eq5d_cml, pops_cml, mc, friendly_name, qimd)
+  tt <- out_proc_qimd()[year == max(year), .(net_utility_cml, nmb_cml, eq5d_cml,
+    pops_cml, mc, friendly_name = factor(friendly_name), qimd)
   ]
   # [, sum_dt(.SD, c("mc", "friendly_name", "qimd"), character(0))]
   calc_rigit_scores(tt, c("mc", "friendly_name"))
@@ -864,12 +926,12 @@ output$equ1 <- renderPlotly({
       x = ~ sei,
       y = ~ nmb_cml,
       color = ~ friendly_name,
-      colors = colsymb()[names %in% input$inout_scenario_select, colour],
+      colors = colsymb()$colour,
       # frame = ~ year,
       type = "scatter",
       mode = "markers",
       symbol = ~ friendly_name,
-      symbols = colsymb()[names %in% input$inout_scenario_select, symbol],
+      symbols = colsymb()$symbol,
       showlegend = TRUE
     )
   p <-
@@ -899,7 +961,8 @@ output$equ1 <- renderPlotly({
 })
 
 output$equ_rel <- renderPlotly({
-  tt <- out_proc_qimd()[year == max(year), .(net_utility_cml, nmb_cml, eq5d_cml, pops_cml, mc, friendly_name, qimd)
+  tt <- out_proc_qimd()[year == max(year), .(net_utility_cml, nmb_cml, eq5d_cml,
+    pops_cml, mc, friendly_name = factor(friendly_name), qimd)
   ]
   # [, sum_dt(.SD, c("mc", "friendly_name", "qimd"), character(0))]
   calc_rigit_scores(tt, c("mc", "friendly_name"))
@@ -918,12 +981,12 @@ output$equ_rel <- renderPlotly({
       x = ~ rei,
       y = ~ nmb_cml,
       color = ~ friendly_name,
-      colors = colsymb()[names %in% input$inout_scenario_select, colour],
+      colors = colsymb()$colour,
       # frame = ~ year,
       type = "scatter",
       mode = "markers",
       symbol = ~ friendly_name,
-      symbols = colsymb()[names %in% input$inout_scenario_select, symbol],
+      symbols = colsymb()$symbol,
       showlegend = TRUE
     )
   p <-
@@ -953,7 +1016,8 @@ output$equ_rel <- renderPlotly({
 })
 
 output$equ_anim_abs <- renderPlotly({
-  tt <- out_proc_qimd()[, .(net_utility_cml, nmb_cml, eq5d_cml, pops_cml, mc, friendly_name, qimd, year)
+  tt <- out_proc_qimd()[, .(net_utility_cml, nmb_cml, eq5d_cml, pops_cml, mc,
+    friendly_name = factor(friendly_name), qimd, year)
   ]
   # [, sum_dt(.SD, c("mc", "friendly_name", "qimd", "year"), character(0))]
   calc_rigit_scores(tt, c("mc", "friendly_name", "year"))
@@ -970,12 +1034,12 @@ output$equ_anim_abs <- renderPlotly({
       x = ~ sei,
       y = ~ nmb_cml,
       color = ~ friendly_name,
-      colors = colsymb()[names %in% input$inout_scenario_select, colour],
+      colors = colsymb()$colour,
       frame = ~ year,
       type = "scatter",
       mode = "markers",
       symbol = ~ friendly_name,
-      symbols = colsymb()[names %in% input$inout_scenario_select, symbol],
+      symbols = colsymb()$symbol,
       showlegend = TRUE
     )
   p <-
@@ -1004,7 +1068,8 @@ output$equ_anim_abs <- renderPlotly({
 })
 
 output$equ_anim_rel <- renderPlotly({
-  tt <- out_proc_qimd()[, .(net_utility_cml, nmb_cml, eq5d_cml, pops_cml, mc, friendly_name, qimd, year)
+  tt <- out_proc_qimd()[, .(net_utility_cml, nmb_cml, eq5d_cml, pops_cml, mc,
+    friendly_name = factor(friendly_name), qimd, year)
   ]
   # [, sum_dt(.SD, c("mc", "friendly_name", "qimd", "year"), character(0))]
   calc_rigit_scores(tt, c("mc", "friendly_name", "year"))
@@ -1020,12 +1085,12 @@ output$equ_anim_rel <- renderPlotly({
       x = ~ rei,
       y = ~ nmb_cml,
       color = ~ friendly_name,
-      colors = colsymb()[names %in% input$inout_scenario_select, colour],
+      colors = colsymb()$colour,
       frame = ~ year,
       type = "scatter",
       mode = "markers",
       symbol = ~ friendly_name,
-      symbols = colsymb()[names %in% input$inout_scenario_select, symbol],
+      symbols = colsymb()$symbol,
       showlegend = TRUE
     )
   p <-
@@ -1054,7 +1119,8 @@ output$equ_anim_rel <- renderPlotly({
 })
 
 output$equ_p_abs <- renderPlotly({
-  tt <- out_proc_qimd()[, .(net_utility_cml, nmb_cml, eq5d_cml, pops_cml, mc, friendly_name, qimd, year)
+  tt <- out_proc_qimd()[, .(net_utility_cml, nmb_cml, eq5d_cml, pops_cml, mc,
+    friendly_name = factor(friendly_name), qimd, year)
   ]
   # [, sum_dt(.SD, c("mc", "friendly_name", "qimd", "year"), character(0))]
   calc_rigit_scores(tt, c("mc", "friendly_name", "year"))
@@ -1063,21 +1129,41 @@ output$equ_p_abs <- renderPlotly({
   ][, (prop_if(sei > 0)), by = .(friendly_name, year)
   ][, V2 := clamp(predict(loess(V1 ~ year, span = 0.5))), by = friendly_name]
 
-  plot_ly(tt,
-          x = ~year, y = ~V2, type = "scatter", mode = "lines+markers", color = ~ friendly_name, colors = colsymb()[names %in% input$inout_scenario_select, colour],
-          symbol = ~ friendly_name, symbols = colsymb()[names %in% input$inout_scenario_select, symbol], line = list(shape = "spline", smoothing = 1.3)) %>%
-    add_lines(x = ~year, y = input$decision_aid_gui, name = "Decision aid", color = NULL, symbol = NULL,
-              line = list(color = "black", dash = "dot")) %>%
+
+  plot_ly(
+    tt,
+    x = ~ year,
+    y = ~ V2,
+    type = "scatter",
+    mode = "lines+markers",
+    color = ~ friendly_name,
+    colors = colsymb()$colour,
+    symbol = ~ friendly_name,
+    symbols = colsymb()$symbol,
+    line = list(shape = "spline", smoothing = 1.3)
+  ) %>%
+    add_lines(
+      x = ~ year,
+      y = input$decision_aid_gui,
+      name = "Decision aid",
+      color = NULL,
+      symbol = NULL,
+      line = list(color = "black", dash = "dot")
+    ) %>%
     layout(
-      yaxis = list(title = "Probability of equitable policy", range = c(-0.05, 1.05),
-                   tickformat = ",.0%"),
+      yaxis = list(
+        title = "Probability of equitable policy",
+        range = c(-0.05, 1.05),
+        tickformat = ",.0%"
+      ),
       xaxis = list(title = "Year")
     )
 
 })
 
 output$equ_p_rel <- renderPlotly({
-  tt <- out_proc_qimd()[, .(net_utility_cml, nmb_cml, eq5d_cml, pops_cml, mc, friendly_name, qimd, year)
+  tt <- out_proc_qimd()[, .(net_utility_cml, nmb_cml, eq5d_cml, pops_cml, mc,
+    friendly_name = factor(friendly_name), qimd, year)
   ]
   # [, sum_dt(.SD, c("mc", "friendly_name", "qimd", "year"), character(0))]
   calc_rigit_scores(tt, c("mc", "friendly_name", "year"))
@@ -1087,14 +1173,32 @@ output$equ_p_rel <- renderPlotly({
   ][, (prop_if(rei > 0 & sei > 0)), by = .(friendly_name, year)
   ][, V2 := clamp(predict(loess(V1 ~ year, span = 0.5))), by = friendly_name]
 
-  plot_ly(tt,
-          x = ~year, y = ~V2, type = "scatter", mode = "lines+markers", color = ~ friendly_name, colors = colsymb()[names %in% input$inout_scenario_select, colour],
-          symbol = ~ friendly_name, symbols = colsymb()[names %in% input$inout_scenario_select, symbol], line = list(shape = "spline", smoothing = 1.3)) %>%
-    add_lines(x = ~year, y = input$decision_aid_gui, name = "Decision aid", color = NULL, symbol = NULL,
-              line = list(color = "black", dash = "dot")) %>%
+  plot_ly(
+    tt,
+    x = ~ year,
+    y = ~ V2,
+    type = "scatter",
+    mode = "lines+markers",
+    color = ~ friendly_name,
+    colors = colsymb()$colour,
+    symbol = ~ friendly_name,
+    symbols = colsymb()$symbol,
+    line = list(shape = "spline", smoothing = 1.3)
+  ) %>%
+    add_lines(
+      x = ~ year,
+      y = input$decision_aid_gui,
+      name = "Decision aid",
+      color = NULL,
+      symbol = NULL,
+      line = list(color = "black", dash = "dot")
+    ) %>%
     layout(
-      yaxis = list(title = "Probability of equitable policy", range = c(-0.05, 1.05),
-                   tickformat = ",.0%"),
+      yaxis = list(
+        title = "Probability of equitable policy",
+        range = c(-0.05, 1.05),
+        tickformat = ",.0%"
+      ),
       xaxis = list(title = "Year")
     )
 })
@@ -1113,24 +1217,87 @@ output$cypp_1 <- renderPlotly({
                                         cypp_colon_ca_cml,
                                         cypp_breast_ca_cml,
                                         mc,
-                                        friendly_name)
+                                        friendly_name = factor(friendly_name))
   ][, median_dt(.SD, c("friendly_name"), "mc")]
 
   # [, sum_dt(.SD, c("mc", "friendly_name"), character(0))]
 
-  p <- plot_ly(tt, x = ~ friendly_name, y = ~ cypp_chd_cml, name = '', text = 'CHD', textposition = 'auto', insidetextfont = list(size = 15, color = 'black', opacity = 1), type = 'bar', marker = list(opacity = 0.6, line = list(
-    color = colsymb()[names %in% input$inout_scenario_select, colour], width = 5))) %>%
-    add_trace(y = ~cypp_stroke_cml, name = "", text = 'stroke', textposition = 'auto', insidetextfont = list(size=15, color = 'black')) %>%
-    add_trace(y = ~cypp_poststroke_dementia_cml, name = "", text = 'poststroke dementia', textposition = 'auto', insidetextfont = list(size=15, color = 'black')) %>%
+  p <-
+    plot_ly(
+      tt,
+      x = ~ friendly_name,
+      y = ~ cypp_chd_cml,
+      name = '',
+      text = 'CHD',
+      textposition = 'auto',
+      insidetextfont = list(
+        size = 15,
+        color = 'black',
+        opacity = 1
+      ),
+      type = 'bar',
+      marker = list(
+        opacity = 0.6,
+        line = list(color = colsymb()$colour, width = 5)
+      )
+    ) %>%
+    add_trace(
+      y = ~ cypp_stroke_cml,
+      name = "",
+      text = 'stroke',
+      textposition = 'auto',
+      insidetextfont = list(size = 15, color = 'black')
+    ) %>%
+    add_trace(
+      y = ~ cypp_poststroke_dementia_cml,
+      name = "",
+      text = 'poststroke dementia',
+      textposition = 'auto',
+      insidetextfont = list(size = 15, color = 'black')
+    ) %>%
     # add_trace(y = ~cypp_af_cml, name = "", text = 'af', textposition = 'auto', insidetextfont = list(size=15, color = 'black')) %>%
     # add_trace(y = ~cypp_htn_cml, name = "", text = 'HTN', textposition = 'auto', insidetextfont = list(size=15, color = 'black')) %>%
-    add_trace(y = ~cypp_t2dm_cml, name = "", text = 'T2DM', textposition = 'auto', insidetextfont = list(size=15, color = 'black')) %>%
-    add_trace(y = ~cypp_copd_cml, name = "", text = 'COPD', textposition = 'auto', insidetextfont = list(size=15, color = 'black')) %>%
-    add_trace(y = ~cypp_lung_ca_cml, name = "", text = 'lung cancer', textposition = 'auto', insidetextfont = list(size=15, color = 'black')) %>%
-    add_trace(y = ~cypp_colon_ca_cml, name = "", text = 'colon cancer', textposition = 'auto', insidetextfont = list(size=15, color = 'black')) %>%
-    add_trace(y = ~cypp_breast_ca_cml, name = "", text = 'breast cancer', textposition = 'auto', insidetextfont = list(size=15, color = 'black')) %>%
+    add_trace(
+      y = ~ cypp_t2dm_cml,
+      name = "",
+      text = 'T2DM',
+      textposition = 'auto',
+      insidetextfont = list(size = 15, color = 'black')
+    ) %>%
+    add_trace(
+      y = ~ cypp_copd_cml,
+      name = "",
+      text = 'COPD',
+      textposition = 'auto',
+      insidetextfont = list(size = 15, color = 'black')
+    ) %>%
+    add_trace(
+      y = ~ cypp_lung_ca_cml,
+      name = "",
+      text = 'lung cancer',
+      textposition = 'auto',
+      insidetextfont = list(size = 15, color = 'black')
+    ) %>%
+    add_trace(
+      y = ~ cypp_colon_ca_cml,
+      name = "",
+      text = 'colon cancer',
+      textposition = 'auto',
+      insidetextfont = list(size = 15, color = 'black')
+    ) %>%
+    add_trace(
+      y = ~ cypp_breast_ca_cml,
+      name = "",
+      text = 'breast cancer',
+      textposition = 'auto',
+      insidetextfont = list(size = 15, color = 'black')
+    ) %>%
 
-    layout(yaxis = list(title = 'Cases'), showlegend=FALSE, barmode = 'relative')
+    layout(
+      yaxis = list(title = 'Cases'),
+      showlegend = FALSE,
+      barmode = 'relative'
+    )
 
 })
 
@@ -1146,29 +1313,93 @@ output$cpp_1 <- renderPlotly({
                                         cpp_colon_ca_cml,
                                         cpp_breast_ca_cml,
                                         mc,
-                                        friendly_name)
+                                        friendly_name = factor(friendly_name))
   ][, median_dt(.SD, c("friendly_name"), "mc")]
 
   # [, sum_dt(.SD, c("mc", "friendly_name"), character(0))]
-  p <- plot_ly(tt, x = ~ friendly_name, y = ~ cpp_chd_cml, name = '', text = 'CHD', textposition = 'auto', insidetextfont = list(size=15, color = 'black', opacity = 1), type = 'bar', marker = list(opacity = 0.6, line = list(
-    color = colsymb()[names %in% input$inout_scenario_select, colour], width = 5))) %>%
-    add_trace(y = ~cpp_stroke_cml, name = "", text = 'stroke', textposition = 'auto', insidetextfont = list(size=15, color = 'black')) %>%
-    add_trace(y = ~cpp_poststroke_dementia_cml, name = "", text = 'post-stroke dementia', textposition = 'auto', insidetextfont = list(size=15, color = 'black')) %>%
+  p <-
+    plot_ly(
+      tt,
+      x = ~ friendly_name,
+      y = ~ cpp_chd_cml,
+      name = '',
+      text = 'CHD',
+      textposition = 'auto',
+      insidetextfont = list(
+        size = 15,
+        color = 'black',
+        opacity = 1
+      ),
+      type = 'bar',
+      marker = list(
+        opacity = 0.6,
+        line = list(color = colsymb()$colour, width = 5)
+      )
+    ) %>%
+    add_trace(
+      y = ~ cpp_stroke_cml,
+      name = "",
+      text = 'stroke',
+      textposition = 'auto',
+      insidetextfont = list(size = 15, color = 'black')
+    ) %>%
+    add_trace(
+      y = ~ cpp_poststroke_dementia_cml,
+      name = "",
+      text = 'post-stroke dementia',
+      textposition = 'auto',
+      insidetextfont = list(size = 15, color = 'black')
+    ) %>%
     # add_trace(y = ~cpp_af_cml, name = "", text = 'af', textposition = 'auto', insidetextfont = list(size=15, color = 'black')) %>%
     # add_trace(y = ~cpp_htn_cml, name = "", text = 'HTN', textposition = 'auto', insidetextfont = list(size=15, color = 'black')) %>%
-    add_trace(y = ~cpp_t2dm_cml, name = "", text = 'T2DM', textposition = 'auto', insidetextfont = list(size=15, color = 'black')) %>%
-    add_trace(y = ~cpp_copd_cml, name = "", text = 'COPD', textposition = 'auto', insidetextfont = list(size=15, color = 'black')) %>%
-    add_trace(y = ~cpp_lung_ca_cml, name = "", text = 'lung cancer', textposition = 'auto', insidetextfont = list(size=15, color = 'black')) %>%
-    add_trace(y = ~cpp_colon_ca_cml, name = "", text = 'colon cancer', textposition = 'auto', insidetextfont = list(size=15, color = 'black')) %>%
-    add_trace(y = ~cpp_breast_ca_cml, name = "", text = 'breast cancer', textposition = 'auto', insidetextfont = list(size=15, color = 'black')) %>%
+    add_trace(
+      y = ~ cpp_t2dm_cml,
+      name = "",
+      text = 'T2DM',
+      textposition = 'auto',
+      insidetextfont = list(size = 15, color = 'black')
+    ) %>%
+    add_trace(
+      y = ~ cpp_copd_cml,
+      name = "",
+      text = 'COPD',
+      textposition = 'auto',
+      insidetextfont = list(size = 15, color = 'black')
+    ) %>%
+    add_trace(
+      y = ~ cpp_lung_ca_cml,
+      name = "",
+      text = 'lung cancer',
+      textposition = 'auto',
+      insidetextfont = list(size = 15, color = 'black')
+    ) %>%
+    add_trace(
+      y = ~ cpp_colon_ca_cml,
+      name = "",
+      text = 'colon cancer',
+      textposition = 'auto',
+      insidetextfont = list(size = 15, color = 'black')
+    ) %>%
+    add_trace(
+      y = ~ cpp_breast_ca_cml,
+      name = "",
+      text = 'breast cancer',
+      textposition = 'auto',
+      insidetextfont = list(size = 15, color = 'black')
+    ) %>%
 
-    layout(yaxis = list(title = 'Cases'), showlegend=FALSE, barmode = 'relative')
+    layout(
+      yaxis = list(title = 'Cases'),
+      showlegend = FALSE,
+      barmode = 'relative'
+    )
 
 })
 
 output$dpp_1 <- renderPlotly({
   tt <-
-    out_proc()[year == max(year), .(dpp_all_cause_cml, mc, friendly_name)
+    out_proc()[year == max(year), .(dpp_all_cause_cml, mc,
+      friendly_name = factor(friendly_name))
     ][, median_dt(.SD, c("friendly_name"), "mc")]
   # [, sum_dt(.SD, c("mc", "friendly_name"), character(0))]
   plot_ly(
@@ -1176,7 +1407,7 @@ output$dpp_1 <- renderPlotly({
     x = ~ friendly_name,
     y = ~ dpp_all_cause_cml,
     color = ~ friendly_name,
-    colors = colsymb()[names %in% input$inout_scenario_select, colour],
+    colors = colsymb()$colour,
     text = 'DPP',
     textposition = 'auto',
     insidetextfont = list(
@@ -1210,9 +1441,9 @@ output$dppy_spline <- renderPlotly({
     type = "scatter",
     mode = "lines+markers",
     color = ~ friendly_name,
-    colors = colsymb()[names %in% input$inout_scenario_select, colour],
+    colors = colsymb()$colour,
     symbol = ~ friendly_name,
-    symbols = colsymb()[names %in% input$inout_scenario_select, symbol],
+    symbols = colsymb()$symbol,
     line = list(shape = "spline", smoothing = 1.3)
   ) %>%
 
@@ -1249,7 +1480,7 @@ output$cyppy_spline <- renderPlotly({
       cypp_breast_ca_cml,
       mc,
       year,
-      friendly_name
+      friendly_name = factor(friendly_name)
     )][, median_dt(.SD, c("friendly_name", "year"), "mc")
     ][, cpp_all := Reduce("+", mget(input$out_diseases_select_cyppy))
     ][, V2 := round(predict(loess(cpp_all ~ year, span = 0.5))),
@@ -1262,9 +1493,9 @@ output$cyppy_spline <- renderPlotly({
       type = "scatter",
       mode = "lines+markers",
       color = ~ friendly_name,
-      colors = colsymb()[names %in% input$inout_scenario_select, colour],
+      colors = colsymb()$colour,
       symbol = ~ friendly_name,
-      symbols = colsymb()[names %in% input$inout_scenario_select, symbol],
+      symbols = colsymb()$symbol,
       line = list(shape = "spline", smoothing = 1.3)
     ) %>%
 
@@ -1303,7 +1534,7 @@ output$cppy_spline <- renderPlotly({
       cpp_breast_ca_cml,
       mc,
       year,
-      friendly_name
+      friendly_name = factor(friendly_name)
     )][, median_dt(.SD, c("friendly_name", "year"), "mc")
     ][, cpp_all := Reduce("+", mget(input$out_diseases_select_cppy))
     ][, V2 := round(predict(loess(cpp_all ~ year, span = 0.5))),
@@ -1318,9 +1549,9 @@ output$cppy_spline <- renderPlotly({
       type = "scatter",
       mode = "lines+markers",
       color = ~ friendly_name,
-      colors = colsymb()[names %in% input$inout_scenario_select, colour],
+      colors = colsymb()$colour,
       symbol = ~ friendly_name,
-      symbols = colsymb()[names %in% input$inout_scenario_select, symbol],
+      symbols = colsymb()$symbol,
       line = list(shape = "spline", smoothing = 1.3)
     ) %>%
 
@@ -1388,7 +1619,7 @@ output$cyppy_stacked_area <- renderPlotly({
     cypp_breast_ca_cml,
     mc,
     year,
-    friendly_name
+    friendly_name = factor(friendly_name)
   )][, median_dt(.SD, c("friendly_name", "year"), "mc")
   ][friendly_name == scn_sel(),
     c("CHD", "Stroke", "Post-stroke dementia",
@@ -1418,8 +1649,8 @@ output$cyppy_stacked_area <- renderPlotly({
         mode = "lines+markers",
         color = ~ variable,
         colors = viridis_pal(option = "C")(unique(d$id)) #,
-        # colors = colsymb()[names %in% input$inout_scenario_select, colour],
-        # symbol = ~ friendly_name, symbols = colsymb()[names %in% input$inout_scenario_select, symbol]
+        # colors = colsymb()$colour,
+        # symbol = ~ friendly_name, symbols = colsymb()$symbol
       ) %>%
         add_lines() %>% add_annotations(
           text = unique(d$variable),
@@ -1505,7 +1736,7 @@ output$cppy_stacked_area <- renderPlotly({
     cpp_breast_ca_cml,
     mc,
     year,
-    friendly_name
+    friendly_name = factor(friendly_name)
   )][, median_dt(.SD, c("friendly_name", "year"), "mc")
   ][friendly_name == scn_sel(),
     c("CHD", "Stroke", "Post-stroke dementia",
@@ -1535,8 +1766,8 @@ output$cppy_stacked_area <- renderPlotly({
         mode = "lines+markers",
         color = ~ variable,
         colors = viridis_pal(option = "C")(unique(d$id)) #,
-        # colors = colsymb()[names %in% input$inout_scenario_select, colour],
-        # symbol = ~ friendly_name, symbols = colsymb()[names %in% input$inout_scenario_select, symbol]
+        # colors = colsymb()$colour,
+        # symbol = ~ friendly_name, symbols = colsymb()$symbol
       ) %>%
         add_lines() %>% add_annotations(
           text = unique(d$variable),
