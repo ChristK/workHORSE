@@ -354,8 +354,8 @@ server = function(input, output, session) {
       most_benefit_cost_ratio_value(out_proc(),
                                     input$health_econ_perspective_checkbox,
                                     input$out_wtp_box),
-      " for every £1 spent."
-    , br(), br(),
+      " for every £1 spent.",
+    br(), br(),
 
 
         "This scenario had a societal incremental cost effectiveness ratio of ",
