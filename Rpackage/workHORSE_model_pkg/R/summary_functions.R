@@ -153,7 +153,8 @@ most_benefit_cost_ratio <- function(dt,
   perspective = c("Societal perspective",
     "Health and social care perspective",
     "Healthcare perspective"),
-  wtp = input$out_wtp_box, how_many = 1L) {
+  wtp = input$out_wtp_box,
+  how_many = 1L) {
 
   names(dt[year == max(year), .(net_healthcare_cost_cml, net_socialcare_cost_cml,
     net_informal_care_cost_cml, net_productivity_cost_cml,
@@ -166,11 +167,12 @@ most_benefit_cost_ratio <- function(dt,
 }
 
 #' @export
-most_benefit_cost_ratio_value <- function(dt,
+benefit_cost_ratio_value <- function(dt,
   perspective = c("Societal perspective",
     "Health and social care perspective",
     "Healthcare perspective"),
-  wtp = input$out_wtp_box) {
+  wtp = input$out_wtp_box,
+  friendly_nam) {
 
   dt[year == max(year), .(net_healthcare_cost_cml, net_socialcare_cost_cml,
     net_informal_care_cost_cml, net_productivity_cost_cml,
@@ -178,9 +180,8 @@ most_benefit_cost_ratio_value <- function(dt,
     mc, friendly_name)
   ][, sum_dt(.SD, c("mc", "friendly_name"), character(0))
   ][, bcr_cml := benefit_cost_ratio_cml(.SD, perspective = perspective, wtp = wtp)
-  ][, friendly_name[which.max(bcr_cml)], by = mc
-  ][, head(sort(table(V1), decreasing = TRUE), 1)]
-
+  ][, median(bcr_cml), by = friendly_name
+  ][, setorder(na.omit(.SD), -V1)][friendly_name %in% friendly_nam, V1]
 }
 
 #' @export
@@ -262,11 +263,30 @@ net_monetary_benefit_cml <-
   }
 
 #' @export
-most_benefit_cost_ratio_value <- function(dt,
+most_net_monetary_benefit_value <- function(dt,
   perspective = c("Societal perspective",
     "Health and social care perspective",
     "Healthcare perspective"),
-  wtp = input$out_wtp_box) {
+  wtp = input$out_wtp_box,
+  how_many = 1L) {
+
+  names(dt[year == max(year), .(net_healthcare_cost_cml, net_socialcare_cost_cml,
+    net_informal_care_cost_cml, net_productivity_cost_cml,
+    net_utility_cml, net_policy_cost_cml,
+    mc, friendly_name)
+  ][, sum_dt(.SD, c("mc", "friendly_name"), character(0))
+  ][, nmb_cml := net_monetary_benefit_cml(.SD, perspective = perspective, wtp = wtp)
+  ][, friendly_name[which.max(nmb_cml)], by = mc
+  ][, head(sort(table(V1), decreasing = TRUE), how_many)])
+}
+
+#' @export
+net_monetary_benefit_value <- function(dt,
+  perspective = c("Societal perspective",
+    "Health and social care perspective",
+    "Healthcare perspective"),
+  wtp = input$out_wtp_box,
+  friendly_nam) {
 
   dt[year == max(year), .(net_healthcare_cost_cml, net_socialcare_cost_cml,
     net_informal_care_cost_cml, net_productivity_cost_cml,
@@ -274,10 +294,10 @@ most_benefit_cost_ratio_value <- function(dt,
     mc, friendly_name)
   ][, sum_dt(.SD, c("mc", "friendly_name"), character(0))
   ][, nmb_cml := net_monetary_benefit_cml(.SD, perspective = perspective, wtp = wtp)
-  ][, friendly_name[which.max(nmb_cml)], by = mc
-  ][, head(sort(table(V1), decreasing = TRUE), 1)]
-
+  ][, median(nmb_cml), by = friendly_name
+  ][, setorder(na.omit(.SD), -V1)][friendly_name %in% friendly_nam, V1]
 }
+
 
 #' @export
 sum_dt <- function(dt, by = c("year", "friendly_name", "mc"), cols_to_exclude = c("scenario", "agegrp", "sex" , "qimd", "ethnicity")) {
