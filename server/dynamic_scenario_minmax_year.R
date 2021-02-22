@@ -24,7 +24,8 @@ output$init_year_slider_sc1 <- renderUI({
     sliderInput(
       "ininit_year_slider_sc1",
       "First year of implementation",
-      input$simulation_period_slider[[1]], input$simulation_period_slider[[2]], 2014, 1,
+      input$simulation_period_slider[[1]], input$simulation_period_slider[[2]],
+      input$simulation_period_slider[[1]], 1,
       sep = "",
       ticks = FALSE
     ) %>%
