@@ -570,7 +570,7 @@ output$cep1_1 <- renderPlotly({
   # TODO synchronise colours and graphs with the scenario selection on the left side bar
 
   if (input$res_display_cep1_1) tt <- median_dt(tt, "friendly_name", "mc", digits = 1)
-print(unique(tt$friendly_name))
+
   p <-
     plot_ly(
       tt,
@@ -1429,7 +1429,7 @@ output$dpp_1 <- renderPlotly({
 output$dppy_spline <- renderPlotly({
   tt <- out_proc()[, .(dpp_all_cause_cml,
                        mc,
-                       friendly_name, year)
+                       friendly_name = factor(friendly_name), year)
   ][, median_dt(.SD, c("friendly_name", "year"), "mc")
   ][, V2 := round(predict(loess(dpp_all_cause_cml ~ year))), by = .(friendly_name)]
   # [, sum_dt(.SD, c("mc", "friendly_name", "year"), character(0))]
@@ -1565,12 +1565,14 @@ output$cppy_spline <- renderPlotly({
 
 })
 
+scn_nams <- reactive(out_proc()[, as.character(unique(friendly_name))])
+
 output$out_scenario_disease_select_cypp <- renderUI({
   tagList(
     pickerInput(inputId = "inout_scenario_diseases_select_cypp",
                 label = "Scenario",
-                choices = out_proc()[, as.character(unique(friendly_name))],
-                selected = first(out_proc()[, as.character(unique(friendly_name))]),
+                choices = scn_nams(),
+                selected = first(scn_nams()),
                 options = list(`actions-box` = TRUE, `live-search` = FALSE),
                 multiple = FALSE)    %>%
       shinyInput_label_embed(
@@ -1584,8 +1586,8 @@ output$out_scenario_disease_select_cpp <- renderUI({
   tagList(
     pickerInput(inputId = "inout_scenario_diseases_select_cpp",
                 label = "Scenario",
-                choices = out_proc()[, as.character(unique(friendly_name))],
-                selected = first(out_proc()[, as.character(unique(friendly_name))]),
+                choices = scn_nams(),
+                selected = first(scn_nams()),
                 options = list(`actions-box` = TRUE, `live-search` = FALSE),
                 multiple = FALSE)    %>%
       shinyInput_label_embed(
@@ -1602,7 +1604,7 @@ output$cyppy_stacked_area <- renderPlotly({
     reactive({
       ifelse(
         length(input$inout_scenario_diseases_select_cypp) == 0,
-        first(out_proc()[, as.character(unique(friendly_name))]),
+        first(scn_nams()),
         input$inout_scenario_diseases_select_cypp
       )
     })
@@ -1719,7 +1721,7 @@ output$cppy_stacked_area <- renderPlotly({
     reactive({
       ifelse(
         length(input$inout_scenario_diseases_select_cpp) == 0,
-        first(out_proc()[, as.character(unique(friendly_name))]),
+        first(scn_nams()),
         input$inout_scenario_diseases_select_cpp
       )
     })
