@@ -148,10 +148,10 @@ server = function(input, output, session) {
           {
             # TODO remove before release
             if (file.exists("./output/results.fst")) {
-              out <- read_fst("./output/results.fst", as.data.table = TRUE)
-              out
-              # file.remove("./output/results.fst")
-              # run_simulation(parameters, design, FALSE)
+              # out <- read_fst("./output/results.fst", as.data.table = TRUE)
+              # out
+              file.remove("./output/results.fst")
+              run_simulation(parameters, design, FALSE)
             } else {
               run_simulation(parameters, design, FALSE)
             }
