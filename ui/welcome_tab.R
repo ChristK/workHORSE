@@ -33,7 +33,7 @@ tabPanel(
   ),
   br(),
   p(
-    "At the core of workHORSE there is a microsimulation model that tracks the health outcomes of synthetic individuals under different implementation scenarios of NHS Health Check Programme, locally and nationally. The synthetic individuals are coming from a validated 'close-to-reality' synthetic population primed from the Health Survey for England series that closely resemples the health behaviours and exposures of the English population.",
+    "At the core of workHORSE there is a microsimulation model that tracks the health outcomes of synthetic individuals under different implementation scenarios of NHS Health Check Programme, locally and nationally. The synthetic individuals are coming from a validated 'close-to-reality' synthetic population primed from the Health Survey for England series that closely resembles the health behaviours and exposures of the English population.",
     style = "font-size:16px"
   ),
   br(),
