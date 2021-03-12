@@ -198,7 +198,7 @@ bsCollapsePanel("Eligibility Criteria",
                       "frequency_eligibility_slider_sc5",
                       "Minimum allowed years between two Health Checks",
                       1,
-                      15,
+                      25,
                       5,
                       1,
                       sep = "",
@@ -736,7 +736,7 @@ bsCollapsePanel(
       4,
       sliderInput(
         "wghtpct_slider_sc5",
-        "Percentage of overweight and obese participants losing weight",
+        "Percentage of obese participants losing weight",
         0,
         100,
         0,
@@ -747,7 +747,7 @@ bsCollapsePanel(
       )  %>%
         shinyInput_label_embed(
           icon("info") %>%
-            bs_embed_popover(title = "Please enter the percentage of overweight and obese participants losing weigth")
+            bs_embed_popover(title = "Please enter the percentage of obese participants losing weigth")
       ),
       sliderInput(
         "wghtreduc_slider_sc5",
