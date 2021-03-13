@@ -17,3 +17,10 @@ knitr::opts_chunk$set(echo = TRUE)
 # Improve epi engine
 - Consider smoothing PARF and fatality rates
 
+# Outputs
+- Export costs for each disease separately
+
+# GUI
+- scenario selection in effectiveness tab is occassionally stops working
+
+
