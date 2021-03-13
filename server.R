@@ -174,6 +174,8 @@ server = function(input, output, session) {
       detail = 'This may take a couple of hours...',
       value = 0,
       {
+        if (file.exists("./output/results.fst"))
+          file.remove("./output/results.fst")
         run_simulation(parameters, design, TRUE)
       })
   },
