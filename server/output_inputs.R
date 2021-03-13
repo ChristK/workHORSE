@@ -1833,12 +1833,12 @@ output$cppy_stacked_area <- renderPlotly({
 })
 
 
-myModal <- function() {
-  div(id = "test",
-      modalDialog(downloadButton("download","Download the tab as csv"),
-                  easyClose = TRUE, title = "Download Table")
-  )
-}
+# myModal <- function() {
+#   div(id = "test",
+#       modalDialog(downloadButton("download","Download the tab as csv"),
+#                   easyClose = TRUE, title = "Download Table")
+#   )
+# }
 
 
 # output$tbl_raw <- DT::renderDT(
