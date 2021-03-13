@@ -358,11 +358,11 @@ if (XPS) {
   out_xps[, variable := gsub("_curr_xps$", "", variable)]
   out_xps[, type := "workHORSE"]
 
-  if (file.exists("../workHORSE_WS4/preparatory_work/HSE_ts.fst")) {
+  if (file.exists("../workHORSE/preparatory_work/HSE_ts.fst")) {
     HSE_ts <-
-      read_fst("../workHORSE_WS4/preparatory_work/HSE_ts.fst", as.data.table = TRUE)
+      read_fst("../workHORSE/preparatory_work/HSE_ts.fst", as.data.table = TRUE)
   } else {
-    source("../workHORSE_WS4/preparatory_work/preprocess_HSE.R", local = TRUE)
+    source("../workHORSE/preparatory_work/preprocess_HSE.R", local = TRUE)
   }
   HSE <-
     HSE_ts[!is.na(age) &

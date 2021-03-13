@@ -20,7 +20,7 @@
 ## Boston, MA 02110-1301 USA.
 
 
-setwd("/home/ckyprid/My Models/workHORSE_WS4")
+setwd("/home/ckyprid/My Models/workHORSE")
 # For ages 20 to 90
 univariate_analysis <- FALSE
 diagnostics         <- FALSE

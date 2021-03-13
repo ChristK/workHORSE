@@ -20,7 +20,7 @@
 ## Boston, MA 02110-1301 USA.
 
 
-setwd("/home/ckyprid/My Models/workHORSE_WS4/")
+setwd("/home/ckyprid/My Models/workHORSE/")
 univariate_analysis <- FALSE
 diagnostics         <- FALSE
 plots               <- TRUE
@@ -208,7 +208,7 @@ if (plots) {
       3840,
       2160,
       pointsize = 48
-      
+
     )
     reldist_diagnostics(zz[type == "Observed", dm_dur],
                         zz[type == "Modelled", dm_dur],

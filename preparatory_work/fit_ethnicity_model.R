@@ -21,7 +21,7 @@
 
 
 
-setwd("/home/ckyprid/My Models/workHORSE_WS4")
+setwd("/home/ckyprid/My Models/workHORSE")
 
 # For ages 20 to 90
 # Only used to impute HSE_ts during HSE_ts correlation structure extraction
