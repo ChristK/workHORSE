@@ -1905,9 +1905,9 @@ observe({
 output$tbl_summary <- DT::renderDT(
   out_summary(),
   style = "default", # others mess up download buttons
-  callback = JS("$('div.dwnld').append($('#download_summary'));"),
+  # callback = JS("$('div.dwnld').append($('#download_summary'));"),
   extensions = "Buttons",
-  options = list(scrollX = TRUE, scrollY = "300px",
+  options = list(scrollX = TRUE, scrollY = TRUE,
                  stateSave = FALSE,
                  dom = 'B<"dwnld">frtip',
                  buttons = list(
