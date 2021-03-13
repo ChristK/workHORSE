@@ -24,7 +24,7 @@ ui = tagList(
   use_bs_tooltip(),
   use_bs_popover(),
   useShinyjs(), # for conditional deactivating inputs
-  chooseSliderSkin("Flat", color = "#337ab7"),
+  # chooseSliderSkin("Flat", color = "#337ab7"),
   # 'Nice' is also good
 
   navbarPage(
