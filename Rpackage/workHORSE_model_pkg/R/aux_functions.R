@@ -1492,7 +1492,7 @@ set_px <- function(scenario_parms, dt, mc, design) {
   # adherence <- rpert(1e6, 0.5, 0.9, 1, 8)
   # proportion of prescribed dose taken
   # or to avoid dependency for rpert
-  # adherence <- rBE(1e6, 0.9, 0.1) # proportion of prescribed dose taken
+  # adherence <- rBE(1e6, 0.9, 0.2) # proportion of prescribed dose taken
 
   if (!colnam_bio %in% names(dt)) dt[, (colnam_bio) := tchol_curr_xps]
   dt[statin_px_sc == 1L &
