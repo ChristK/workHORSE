@@ -20,7 +20,7 @@
 ## Boston, MA 02110-1301 USA.
 
 
-setwd("/home/ckyprid/My Models/workHORSE_WS4/")
+setwd("/home/ckyprid/My Models/workHORSE/")
 if (!require(CKutils)) {
   if (!require(remotes))
     install.packages("remotes")
