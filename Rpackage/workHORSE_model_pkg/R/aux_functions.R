@@ -1700,6 +1700,11 @@ set_structural <-
              dead == FALSE, .("ex"   = sum(smok_status_sc == "3"),
                               "curr" = sum(smok_status_sc == "4")), keyby = year]
         tt[, impacted := round(curr * scenario_parms$sc_str_smk_change)]
+
+        # Make change to add up every year (for Vincy's SCC abstract)
+        # tt[, impacted := round(curr * scenario_parms$sc_str_smk_change *
+        #     (year - min(year) + 1L))]
+
         dt[tt, `:=`(impacted = i.impacted,
                     ex = i.ex), on = "year"]
         dt[between(year + 2000L, scenario_parms$sc_init_year,
