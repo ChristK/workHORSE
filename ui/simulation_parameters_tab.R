@@ -89,15 +89,14 @@ tabPanel(
     ),
     column(
       5,
-      checkboxGroupInput(
+      radioButtons(
         "health_econ_perspective_checkbox",
         "Health economic analysis perspective",
         choices = c("Societal perspective",
-                    "Health and social care perspective",
-                    "Healthcare perspective"
-                    ),
-        selected = c("Societal perspective")
-      )
+          "Health and social care perspective",
+          "Healthcare perspective"
+        ),
+        selected = c("Societal perspective"))
     ),
     column( # This only needed for the icon of the tooltip
       1, align = 'right',
