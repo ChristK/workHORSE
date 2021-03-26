@@ -554,15 +554,26 @@ out_summary <- reactive({
 # CE plane ----
 output$cep1_1 <- renderPlotly({
 
-  tt <- out_proc()[year == max(year),
-                    .(net_utility_cml, societal_cost_cml, mc,
-                      friendly_name = factor(friendly_name))]
+  if (input$health_econ_perspective_checkbox == "Societal perspective") {
+    tt <- out_proc()[year == max(year),
+      .(net_utility_cml, cost_cml = societal_cost_cml, mc,
+        friendly_name = factor(friendly_name))]
+  } else if (input$health_econ_perspective_checkbox == "Health and social care perspective") {
+    tt <- out_proc()[year == max(year),
+      .(net_utility_cml, cost_cml = total_hscp_cost_cml, mc,
+        friendly_name = factor(friendly_name))]
+  } else if (input$health_econ_perspective_checkbox == "Healthcare perspective") {
+    tt <- out_proc()[year == max(year),
+      .(net_utility_cml, cost_cml = total_hcp_cost_cml, mc,
+        friendly_name = factor(friendly_name))]
+  }
+
   # factor(friendly_name) otherwise levels include baseline scenario
   # [, sum_dt(.SD, c("mc", "friendly_name"), character(0))]
 
   max_x <- tt[, max(abs(net_utility_cml))] * 1.2
   wtp_thres <- reactive(max_x * input$out_wtp_box)
-  max_y <-  max(tt[, max(abs(societal_cost_cml))] * 1.2, wtp_thres())
+  max_y <-  max(tt[, max(abs(cost_cml))] * 1.2, wtp_thres())
   trng_path <- paste0("M 0 0 L ",  max_x, " ", wtp_thres(), " L ", max_x, " 0 Z")
 
 
@@ -575,7 +586,7 @@ output$cep1_1 <- renderPlotly({
     plot_ly(
       tt,
       x = ~ net_utility_cml,
-      y = ~ societal_cost_cml,
+      y = ~ cost_cml,
       color = ~ friendly_name,
       colors =  colsymb()$colour,
       type = "scatter",
@@ -620,18 +631,30 @@ output$cep1_1 <- renderPlotly({
 
 output$cep1 <- renderPlotly({
 
-  tt <-
-    out_proc()[year == max(year), .(net_utility_cml, societal_cost_cml, mc,
-      friendly_name = factor(friendly_name))]
+  if (input$health_econ_perspective_checkbox == "Societal perspective") {
+    tt <- out_proc()[year == max(year),
+      .(net_utility_cml, cost_cml = societal_cost_cml, mc,
+        friendly_name = factor(friendly_name))]
+  } else if (input$health_econ_perspective_checkbox == "Health and social care perspective") {
+    tt <- out_proc()[year == max(year),
+      .(net_utility_cml, cost_cml = total_hscp_cost_cml, mc,
+        friendly_name = factor(friendly_name))]
+  } else if (input$health_econ_perspective_checkbox == "Healthcare perspective") {
+    tt <- out_proc()[year == max(year),
+      .(net_utility_cml, cost_cml = total_hcp_cost_cml, mc,
+        friendly_name = factor(friendly_name))]
+  }
   # [, sum_dt(.SD, c("mc", "friendly_name"), character(0))]
   max_x <- tt[, max(abs(net_utility_cml))] * 1.2
   wtp_thres <- reactive(max_x * input$out_wtp_box)
-  max_y <-  max(tt[, max(abs(societal_cost_cml))] * 1.2, wtp_thres())
+  max_y <-  max(tt[, max(abs(cost_cml))] * 1.2, wtp_thres())
   trng_path <- paste0("M 0 0 L ",  max_x, " ", wtp_thres(), " L ", max_x, " 0 Z")
 
 
-  # TODO separate this code from this specific graph because it is universal. Move it somewhere it is obviously universal
-  # TODO synchronise colours and graphs with the scenario selection on the left side bar
+  # TODO separate this code from this specific graph because it is universal.
+  # Move it somewhere it is obviously universal
+  # TODO synchronise colours and graphs with the scenario selection on the left
+  # side bar
   if (input$res_display_cep1) tt <- median_dt(tt, "friendly_name", "mc", digits = 1)
 
 
@@ -639,7 +662,7 @@ output$cep1 <- renderPlotly({
     plot_ly(
       tt,
       x = ~ net_utility_cml,
-      y = ~ societal_cost_cml,
+      y = ~ cost_cml,
       color = ~ friendly_name,
       colors =  colsymb()$colour,
       # frame = ~ year,
@@ -685,14 +708,23 @@ output$cep1 <- renderPlotly({
 
 output$cep_anim <- renderPlotly({
 
-  tt <-
-    out_proc()[, .(net_utility_cml, societal_cost_cml, mc,
-      friendly_name = factor(friendly_name), year)]
-  # [, sum_dt(.SD, c("mc", "friendly_name", "year"), character(0))]
+  if (input$health_econ_perspective_checkbox == "Societal perspective") {
+    tt <- out_proc()[year == max(year),
+      .(net_utility_cml, cost_cml = societal_cost_cml, mc,
+        friendly_name = factor(friendly_name))]
+  } else if (input$health_econ_perspective_checkbox == "Health and social care perspective") {
+    tt <- out_proc()[year == max(year),
+      .(net_utility_cml, cost_cml = total_hscp_cost_cml, mc,
+        friendly_name = factor(friendly_name))]
+  } else if (input$health_econ_perspective_checkbox == "Healthcare perspective") {
+    tt <- out_proc()[year == max(year),
+      .(net_utility_cml, cost_cml = total_hcp_cost_cml, mc,
+        friendly_name = factor(friendly_name))]
+  }
 
   max_x <- tt[, max(abs(net_utility_cml))] * 1.2
   wtp_thres <- reactive(max_x * input$out_wtp_box)
-  max_y <-  max(tt[, max(abs(societal_cost_cml))] * 1.2, wtp_thres())
+  max_y <-  max(tt[, max(abs(cost_cml))] * 1.2, wtp_thres())
   trng_path <- paste0("M 0 0 L ",  max_x, " ", wtp_thres(), " L ", max_x, " 0 Z")
 
 
@@ -701,7 +733,7 @@ output$cep_anim <- renderPlotly({
     plot_ly(
       tt,
       x = ~ net_utility_cml,
-      y = ~ societal_cost_cml,
+      y = ~ cost_cml,
       color = ~ friendly_name,
       colors = colsymb()$colour,
       frame = ~ year,
@@ -751,7 +783,7 @@ output$cep_anim <- renderPlotly({
 
 output$cep_p_ce <- renderPlotly({
   tt <-
-    out_proc()[, .(nmb_cml,
+    out_proc()[, .(nmb_cml, # nmb updates with healthecon perspective
       mc,
       friendly_name = factor(friendly_name),
       year)][, .(prop_if(nmb_cml > 0)), by = .(friendly_name, year)][, V2 := clamp(predict(loess(V1 ~ year, span = 0.5))), by = friendly_name]
@@ -789,13 +821,25 @@ output$cep_p_ce <- renderPlotly({
 })
 
 output$cep_p_cs <- renderPlotly({
-  tt <-
-    out_proc()[, .(societal_cost_cml,
-      mc,
-      friendly_name = factor(friendly_name),
-      year)][, .(prop_if(societal_cost_cml <= 0)), by = .(friendly_name, year)][, V2 := clamp(predict(loess(V1 ~ year, span = 0.5))), by = friendly_name]
-
-  # [, sum_dt(.SD, c("mc", "friendly_name", "year"), character(0))]
+  if (input$health_econ_perspective_checkbox == "Societal perspective") {
+    tt <-
+      out_proc()[, .(societal_cost_cml,
+        mc,
+        friendly_name = factor(friendly_name),
+        year)][, .(prop_if(societal_cost_cml <= 0)), by = .(friendly_name, year)][, V2 := clamp(predict(loess(V1 ~ year, span = 0.5))), by = friendly_name]
+  } else if (input$health_econ_perspective_checkbox == "Health and social care perspective") {
+    tt <-
+      out_proc()[, .(total_hscp_cost_cml,
+        mc,
+        friendly_name = factor(friendly_name),
+        year)][, .(prop_if(total_hscp_cost_cml <= 0)), by = .(friendly_name, year)][, V2 := clamp(predict(loess(V1 ~ year, span = 0.5))), by = friendly_name]
+  } else if (input$health_econ_perspective_checkbox == "Healthcare perspective") {
+    tt <-
+      out_proc()[, .(total_hcp_cost_cml,
+        mc,
+        friendly_name = factor(friendly_name),
+        year)][, .(prop_if(total_hcp_cost_cml <= 0)), by = .(friendly_name, year)][, V2 := clamp(predict(loess(V1 ~ year, span = 0.5))), by = friendly_name]
+  }
 
   plot_ly(
     tt,
