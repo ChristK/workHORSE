@@ -135,22 +135,23 @@ server = function(input, output, session) {
     eventReactive(input[[paste0("run_simulation_sc", input$scenarios_number_slider)]],
       {
         plan(multiprocess, workers = design$sim_prm$clusternumber)
-        qsave(reactiveValuesToList(input, all.names = TRUE), "./output/input.qs")
-
         parameters <- fromGUI_prune(reactiveValuesToList(input))
         design$update_fromGUI(parameters)
 
-        qsave(parameters, "./output/parameters.qs")
+        qsave(reactiveValuesToList(input, all.names = TRUE),
+          file.path(design$sim_prm$output_dir, "input.qs"))
+        qsave(parameters, file.path(design$sim_prm$output_dir, "input.qs"))
 
         withProgress(message = 'Running workHORSE model.',
           detail = 'This may take a couple of minutes...',
           value = 0,
           {
             # TODO remove before release
-            if (file.exists("./output/results.fst")) {
-              # out <- read_fst("./output/results.fst", as.data.table = TRUE)
+
+            if (file.exists(file.path(design$sim_prm$output_dir, "results.fst"))) {
+              # out <- read_fst(file.path(design$sim_prm$output_dir, "results.fst"), as.data.table = TRUE)
               # out
-              file.remove("./output/results.fst")
+              file.remove(file.path(design$sim_prm$output_dir, "results.fst"))
               run_simulation(parameters, design, FALSE)
             } else {
               run_simulation(parameters, design, FALSE)
@@ -166,21 +167,58 @@ server = function(input, output, session) {
 
     parameters <- fromGUI_prune(reactiveValuesToList(input))
     design$update_fromGUI(parameters)
-    qsave(reactiveValuesToList(input, all.names = TRUE), "./output/input.qs")
-    qsave(parameters, "./output/parameters.qs")
+
+    qsave(reactiveValuesToList(input, all.names = TRUE),
+      file.path(design$sim_prm$output_dir, "input.qs"))
+    qsave(parameters, file.path(design$sim_prm$output_dir, "input.qs"))
 
     # progress$inc(1/n, detail = paste("Doing part", i))
     withProgress(message = 'Running workHORSE model.',
       detail = 'This may take a couple of hours...',
       value = 0,
       {
-        if (file.exists("./output/results.fst"))
-          file.remove("./output/results.fst")
+        if (file.exists(file.path(design$sim_prm$output_dir, "results.fst")))
+          file.remove(file.path(design$sim_prm$output_dir, "results.fst"))
         run_simulation(parameters, design, TRUE)
       })
   },
     ignoreNULL = FALSE, # Otherwise require double-click
     ignoreInit = TRUE)
+
+  # Export logs ----
+  output$download_logs_gui <- downloadHandler(
+
+
+    filename = "logs.yaml",
+
+    content = function(file) {
+
+      log_files <- list.files(file.path(design$sim_prm$output_dir, "logs"), full.names = TRUE)
+      logs <- lapply(log_files, readLines)
+      names(logs) <-
+        gsub(
+          paste0(file.path(design$sim_prm$output_dir, "logs/"), "|.txt$"),
+          "", log_files)
+      if (file.exists(file.path(design$sim_prm$output_dir, "input.qs"))) {
+        logs$input <-
+          qread(file.path(design$sim_prm$output_dir, "input.qs"))
+      }
+      if (file.exists(file.path(design$sim_prm$output_dir, "parameters.qs"))) {
+        logs$parameters <-
+          qread(file.path(design$sim_prm$output_dir, "parameters.qs"))
+      }
+
+
+      write_yaml(logs, file = file)
+    }
+  )
+
+  # Delete logs
+  observeEvent(input$delete_logs_gui, {
+    session$sendCustomMessage(type = 'testmessage',
+      message = 'Log files will be permanently deleted!')
+    unlink(file.path(design$sim_prm$output_dir, "logs"), recursive = TRUE)
+  })
 
   # Save archived analysis ----
   # myBookmarks <- reactiveValues(urlDF = NULL)

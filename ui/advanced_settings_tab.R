@@ -20,14 +20,14 @@
 ## Boston, MA 02110-1301 USA.
 
 tabPanel("Advanced settings",
-         # Theme selector
+         # Theme selector ----
          wellPanel(
          h5("Theme selector"),
          p("Changes the colour theme of the interface. The default is 'paper'"),
          mythemeSelector()
          ),
 
-         # sim parameters
+         # sim parameters ----
          wellPanel(
            h5("Simulation parameters"),
            p("Please do not alter unless you know what you are doing!"),
@@ -185,5 +185,43 @@ tabPanel("Advanced settings",
              0.05
            )
 
-         ) # wellPanel
+         ), # wellPanel
+
+  # Logging ----
+  wellPanel(
+    h5("Enable or disable logging"),
+    p("Enable logging to save R warning and errors in text files"),
+
+    switchInput(
+      "logs_gui",
+      "Enable logging",
+      design$sim_prm$logs,
+      onLabel = "Yes",
+      offLabel = "No",
+      labelWidth = "100%"
+      # size = "large",
+    ),
+
+    downloadBttn(
+      "download_logs_gui",
+      "Download logs",
+      "simple",
+      color = "primary",
+      size = "sm",
+      block = TRUE
+      # icon = icon("cloud-download-alt")
+    ),
+
+    br(),
+
+    tags$head(tags$script(src = "message-handler.js")),
+    actionButton(
+      "delete_logs_gui",
+      "Delete logs",
+      icon = icon("trash-alt"),
+      class = "btn-danger",
+      width = "100%"
+    )
+
+  ) # wellPanel
 )
