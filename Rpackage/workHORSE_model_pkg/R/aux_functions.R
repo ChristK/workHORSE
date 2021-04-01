@@ -2226,7 +2226,7 @@ simulate_init_prvl <-
 #' @export
 run_simulation <- function(parameters, design, final = FALSE) {
   # NOTE final = F for the exploratory runs
-  output_dir <- function(x = "") {
+  output_dir <<- function(x = "") {
     file.path(design$sim_prm$output_dir, x)
   }
 

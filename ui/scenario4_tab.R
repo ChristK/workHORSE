@@ -120,7 +120,7 @@ bsCollapsePanel(
       div(downloadButton(
         "save_sc4",
         "Save scenario         ",
-        icon("save"),
+        icon = icon("save"),
         # class = "btn-info",
         labelWidth = "100%"
       ), style='vertical-align:center;'),

@@ -2,7 +2,7 @@ iteration_n: 15
 iteration_n_final: 100
 clusternumber: 15 # explicit parallelisation
 n_cpus: 1 # implicit parallelisation
-logs: no
+logs: yes
 export_xps: no
 'n': 100000
 n_synthpop_aggregation: 2 # number of synthpops to aggregate together
