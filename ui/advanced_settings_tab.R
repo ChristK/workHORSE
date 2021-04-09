@@ -223,5 +223,20 @@ tabPanel("Advanced settings",
       width = "100%"
     )
 
+  ), # wellPanel
+
+  # Synthpop files ----
+  wellPanel(
+    h5("Manage synthpop files"),
+    p("Actions to manipulate synthpop files"),
+
+    actionButton(
+      "delete_synthpops_gui",
+      "Delete synthpop files",
+      icon = icon("trash-alt"),
+      class = "btn-danger",
+      width = "100%"
+    )
+
   ) # wellPanel
 )

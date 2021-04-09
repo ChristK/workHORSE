@@ -220,6 +220,16 @@ server = function(input, output, session) {
     unlink(file.path(design$sim_prm$output_dir, "logs"), recursive = TRUE)
   })
 
+  # Delete synthpops
+  observeEvent(input$delete_synthpops_gui, {
+    file.remove(list.files(
+      design$sim_prm$synthpop_dir,
+      pattern = "^synthpop",
+      full.names = TRUE
+    ))
+  })
+
+
   # Save archived analysis ----
   # myBookmarks <- reactiveValues(urlDF = NULL)
   # observeEvent(input$bookmarkBtn, {
