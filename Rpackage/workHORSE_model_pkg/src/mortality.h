@@ -6,7 +6,7 @@
  authors and not necessarily those of the NHS, the NIHR or the Department of
  Health.
 
- Copyright (C) 2018-2020 University of Liverpool, Chris Kypridemos
+ Copyright (C) 2018-2021 University of Liverpool, Chris Kypridemos
 
  workHORSE is free software; you can redistribute it and/or modify it under
  the terms of the GNU General Public License as published by the Free Software
@@ -151,9 +151,7 @@ private:
   IntegerVector &_prevalence;
   const int _code;
 
-  const Disease *_influencer;
-  int _influencer_lag;
-  NumericVector _influencer_multiplier;
+  vector<Influencer> _influencers; // Set on a second pass once all the Diseases are populated, so can't be const.
 public:
   MortalityType3(const NumericVector &prob, const NumericVector &rn, IntegerVector &prevalence, const int cod)
     : Mortality(prevalence.size())
@@ -164,20 +162,18 @@ public:
   {
   }
 
-  void set_influencer(const Disease &influencer, const NumericVector &multiplier, const int lag)
+  void set_influencers(vector<Influencer> &influencers)
   {
-    _influencer = &influencer;
-    _influencer_multiplier = multiplier;
-    _influencer_lag = lag;
+    _influencers = influencers;
   }
 
   void process(unsigned int simulant_year_index, bool is_new_simulant)
   {
     if (is_new_simulant)
     {
-      double used_multiplier = _influencer->incidence().out_prevalence()[simulant_year_index] < _influencer_lag
-      ? 1.0
-      : _influencer_multiplier[simulant_year_index];
+      double used_multiplier = 1.0;
+      for (std::vector<Influencer>::size_type i = 0; i < _influencers.size(); i++)
+        used_multiplier *= _influencers[i].multiplier_for(simulant_year_index);
       if (_prevalence[simulant_year_index] > 0 && (_prob[simulant_year_index] * used_multiplier) > _rn[simulant_year_index])
         _out_mortality[simulant_year_index] = _code;
     }
@@ -187,9 +183,9 @@ public:
         _out_mortality[simulant_year_index] = _code;
       else
       {
-        double used_multiplier = _influencer->incidence().out_prevalence()[simulant_year_index] < _influencer_lag
-        ? 1.0
-        : _influencer_multiplier[simulant_year_index];
+        double used_multiplier = 1.0;
+        for (std::vector<Influencer>::size_type i = 0; i < _influencers.size(); i++)
+          used_multiplier *= _influencers[i].multiplier_for(simulant_year_index);
         if (_prevalence[simulant_year_index] > 0 && (_prob[simulant_year_index] * used_multiplier) > _rn[simulant_year_index])
           _out_mortality[simulant_year_index] = _code;
       }
