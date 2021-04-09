@@ -135,6 +135,7 @@ server = function(input, output, session) {
     eventReactive(input[[paste0("run_simulation_sc", input$scenarios_number_slider)]],
       {
         plan(multiprocess, workers = design$sim_prm$clusternumber)
+
         parameters <- fromGUI_prune(reactiveValuesToList(input))
         design$update_fromGUI(parameters)
 
@@ -142,20 +143,20 @@ server = function(input, output, session) {
           file.path(design$sim_prm$output_dir, "input.qs"))
         qsave(parameters, file.path(design$sim_prm$output_dir, "input.qs"))
 
+
         withProgress(message = 'Running workHORSE model.',
-          detail = 'This may take a couple of minutes...',
+          detail = 'This may take a few of minutes...',
           value = 0,
           {
-            # TODO remove before release
 
-            if (file.exists(file.path(design$sim_prm$output_dir, "results.fst"))) {
-              # out <- read_fst(file.path(design$sim_prm$output_dir, "results.fst"), as.data.table = TRUE)
-              # out
-              file.remove(file.path(design$sim_prm$output_dir, "results.fst"))
-              run_simulation(parameters, design, FALSE)
-            } else {
-              run_simulation(parameters, design, FALSE)
-            }
+              if (file.exists(file.path(design$sim_prm$output_dir, "results.fst"))) {
+                # out <- read_fst(file.path(design$sim_prm$output_dir, "results.fst"), as.data.table = TRUE)
+                # out
+                file.remove(file.path(design$sim_prm$output_dir, "results.fst"))
+                run_simulation(parameters, design, FALSE)
+              } else {
+                run_simulation(parameters, design, FALSE)
+              }
           })
       },
       ignoreNULL = TRUE,
@@ -172,7 +173,6 @@ server = function(input, output, session) {
       file.path(design$sim_prm$output_dir, "input.qs"))
     qsave(parameters, file.path(design$sim_prm$output_dir, "input.qs"))
 
-    # progress$inc(1/n, detail = paste("Doing part", i))
     withProgress(message = 'Running workHORSE model.',
       detail = 'This may take a couple of hours...',
       value = 0,
@@ -640,6 +640,14 @@ output$info_equ_anim_abs_plane <- renderText({
 #   lr <- rank_cost_effective(out_proc())[length(rank_cost_effective(out_proc()))]
 #   lr <- paste0(" and ", last(rank_cost_effective(out_proc())))
 # }
+
+# Add sysload info -----
+output$sysload <- renderPrint({
+  # Re-execute this reactive expression after 2000 milliseconds
+  invalidateLater(2000)
+  isolate(sysLoad())
+})
+
 
 }
 
