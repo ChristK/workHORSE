@@ -2560,3 +2560,43 @@ mythemeSelector <- function() {
     )
   )
 }
+
+#' Get the Recent System Load
+#'
+#' @return A named numeric vector with five non-negativeelements `1min`,
+#'   `5min`, and `15min` average CPU utilisation, used RAM, and available RAM.
+#' The first values represent estimates of the CPU load during the last
+#' minute, the last five minutes, and the last fifteen minutes \[1\]. An idle
+#' system have values close to zero, and a heavily loaded system have values
+#' near one`. If they are unknown, missing values are returned. Only works for
+#' Linux systems.
+#'
+#' @details
+#' This function works only Unix-like system with \file{/proc/loadavg}. It is
+#' heavily based on parallely::cpuLoad
+#' (\url{https://github.com/HenrikBengtsson/parallelly})
+#'
+#' @references
+#' 1. Linux Load Averages: Solving the Mystery,
+#'    Brendan Gregg's Blog, 2017-08-08,
+#'    \url{http://www.brendangregg.com/blog/2017-08-08/linux-load-averages.html}
+#'
+#' @keywords internal
+#' @export
+sysLoad <- function() {
+  if (file.exists("/proc/loadavg")) {
+    res <- readLines("/proc/loadavg", n = 1L)
+    res <- strsplit(res, split=" ", fixed = TRUE)[[1]]
+    res <- as.numeric(res[1:3])
+    res <- signif(100 * res/parallel::detectCores(), 2)
+    x <- system2('free', args = '-m', stdout = TRUE) # only for linux
+    x <- strsplit(x[2], " +")[[1]][3:4]
+    x <- round(as.numeric(x)/1024, 2)
+    res <- as.numeric(c(res, x))
+  } else {
+    res <- rep(NA_real_, times = 5L)
+  }
+  names(res) <- c("1minAvgCPU(%)", "5minAvgCPU(%)", "15minAvgCPU(%)", "UsedRAM(Gb)", "FreeRAM(Gb)")
+  res
+}
+
