@@ -6,7 +6,7 @@
  authors and not necessarily those of the NHS, the NIHR or the Department of
  Health.
 
- Copyright (C) 2018-2021 University of Liverpool, Chris Kypridemos
+ Copyright (C) 2018-2020 University of Liverpool, Chris Kypridemos
 
  workHORSE is free software; you can redistribute it and/or modify it under
  the terms of the GNU General Public License as published by the Free Software
@@ -167,7 +167,9 @@ class IncidenceType3: public Incidence
     const NumericVector _rn;
     const IntegerVector _prevalence;
 
-    vector<Influencer> _influencers; // Set on a second pass once all the Diseases are populated, so can't be const.
+    const Disease *_influencer;
+    int _influencer_lag;
+    NumericVector _influencer_multiplier;
   public:
     IncidenceType3(const NumericVector &prob, const NumericVector &rn, const IntegerVector &prevalence)
       : Incidence(clone(prevalence), true)
@@ -182,9 +184,12 @@ class IncidenceType3: public Incidence
       _out_prevalence[simulant_year_index] = 0;
     }
 
-    void set_influencers(vector<Influencer> &influencers)
+
+    void set_influencer(const Disease &influencer, const NumericVector &multiplier, const int lag)
     {
-      _influencers = influencers;
+      _influencer = &influencer;
+      _influencer_multiplier = multiplier;
+      _influencer_lag = lag;
     }
 
     void preprocess(unsigned int simulant_year_index, bool is_new_simulant)
@@ -198,9 +203,9 @@ class IncidenceType3: public Incidence
       // Carry forward has already happened
       if (0 == _out_prevalence[simulant_year_index])
       {
-        double used_multiplier = 1.0;
-        for (std::vector<Influencer>::size_type i = 0; i < _influencers.size(); i++)
-          used_multiplier *= _influencers[i].multiplier_for(simulant_year_index);
+        double used_multiplier = _influencer->incidence().out_prevalence()[simulant_year_index] < _influencer_lag
+          ? 1.0
+          : _influencer_multiplier[simulant_year_index];
         if ((_prob[simulant_year_index] * used_multiplier) > _rn[simulant_year_index])
           _out_prevalence[simulant_year_index] = 1;
       }
@@ -270,7 +275,9 @@ private:
   const NumericVector _rn;
   const IntegerVector _prevalence;
 
-    vector<Influencer> _influencers; // Set on a second pass once all the Diseases are populated, so can't be const.
+  const Disease *_influencer;
+  int _influencer_lag;
+  NumericVector _influencer_multiplier;
 public:
   IncidenceType5(const NumericVector &prob, const NumericVector &rn, const IntegerVector &prevalence)
     : Incidence(clone(prevalence), true)
@@ -280,9 +287,11 @@ public:
   {
   }
 
-  void set_influencers(vector<Influencer> &influencers)
+  void set_influencer(const Disease &influencer, const NumericVector &multiplier, const int lag)
   {
-    _influencers = influencers;
+    _influencer = &influencer;
+    _influencer_multiplier = multiplier;
+    _influencer_lag = lag;
   }
 
   void preprocess(unsigned int simulant_year_index, bool is_new_simulant)
@@ -296,9 +305,9 @@ public:
     // Carry forward has already happened
     if (0 == _out_prevalence[simulant_year_index])
     {
-      double used_multiplier = 1.0;
-      for (std::vector<Influencer>::size_type i = 0; i < _influencers.size(); i++)
-        used_multiplier *= _influencers[i].multiplier_for(simulant_year_index);
+      double used_multiplier = _influencer->incidence().out_prevalence()[simulant_year_index] == _influencer_lag
+      ? _influencer_multiplier[simulant_year_index]
+      : 0.0;
       if ((_prob[simulant_year_index] * used_multiplier) > _rn[simulant_year_index])
         _out_prevalence[simulant_year_index] = 1;
     }
