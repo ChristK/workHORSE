@@ -1,5 +1,5 @@
 /* IMPACTncd: A decision support tool for primary prevention of NCDs
- Copyright (c) 2015-2021 Chris Kypridemos
+ Copyright (c) 2015-2019 Chris Kypridemos
 
  IMPACTncd is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
@@ -27,7 +27,6 @@ using namespace std;
  * - the notion of a Processable, with different phases of processing;
  * - the different high-level types of Processable;
  * - the notion of a Disease, with incidence, diagnosis, and mortality;
- * - the notion of an Influencer, with the influencing Disease, a lag (in years), and multipliers;
  * - the notion of a simulation of multiple diseases.
  */
 
@@ -231,44 +230,6 @@ class Disease
     inline Mortality& mortality() const
     {
       return *_mortality;
-    }
-};
-
-class Influencer
-{
-  private:
-    const Disease *_disease;
-    int _lag;
-    NumericVector _multiplier;
-  public:
-
-    Influencer(const Disease &disease, const NumericVector &multiplier, const int lag)
-    {
-      _disease = &disease;
-      _multiplier = multiplier;
-      _lag = lag;
-    }
-
-    inline const Disease &disease() const
-    {
-      return *_disease;
-    }
-
-    inline const int &lag() const
-    {
-      return _lag;
-    }
-
-    inline const NumericVector &multiplier() const
-    {
-      return _multiplier;
-    }
-
-    const double multiplier_for(const int simulant_year_index) const
-    {
-      return _disease->incidence().out_prevalence()[simulant_year_index] < _lag
-        ? 1.0
-        : _multiplier[simulant_year_index];
     }
 };
 

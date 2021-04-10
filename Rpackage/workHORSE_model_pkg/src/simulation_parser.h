@@ -6,7 +6,7 @@
  authors and not necessarily those of the NHS, the NIHR or the Department of
  Health.
 
- Copyright (C) 2018-2021 University of Liverpool, Chris Kypridemos
+ Copyright (C) 2018-2020 University of Liverpool, Chris Kypridemos
 
  workHORSE is free software; you can redistribute it and/or modify it under
  the terms of the GNU General Public License as published by the Free Software
@@ -178,27 +178,6 @@ private:
     return list[elementName];
   }
 
-  Influencer parse_influencer_or_error(const string &influenced_by_disease_name, const List &influenced_by_parameter_list, const char*const disease_name)
-  {
-    const Disease &influenced_by_disease = *(_simulation.diseases->at(influenced_by_disease_name));
-    const NumericVector multiplier = parse_numeric_column_or_error(influenced_by_parameter_list, "multiplier", disease_name);
-    const int lag = parse_int_or_error(influenced_by_parameter_list, "lag");
-    return Influencer(influenced_by_disease, multiplier, lag);
-  }
-
-  const vector<Influencer> parse_influencers_or_error(const List &influenced_by_list, const char*const disease_name)
-  {
-    const StringVector &influenced_by_disease_names = influenced_by_list.names();
-    vector<Influencer> influencers;
-    for (int i = 0; i < influenced_by_disease_names.size(); i++)
-    {
-      const string influenced_by_disease_name = as<string>(influenced_by_disease_names[i]);
-      const List &influenced_by_parameter_list = influenced_by_list[i];
-      influencers.push_back(parse_influencer_or_error(influenced_by_disease_name, influenced_by_parameter_list, disease_name));
-    }
-    return influencers;
-  }
-
   unique_ptr<Incidence> parse_incidence_null_or_error(const List &incidence_list, const char*const disease_name)
   {
     return unique_ptr<Incidence>(new NullIncidence(_simulation.simulant_year_count()));
@@ -257,9 +236,20 @@ private:
       friendly_error(ss.str());
     }
     const List &influenced_by_list = incidence_list["influenced_by"];
-    vector<Influencer> influencers = parse_influencers_or_error(influenced_by_list, disease_name);
+    if (influenced_by_list.length() != 1)
+    {
+      ostringstream ss;
+      ss << "Expecting one disease in the influenced_by incidence list for " << disease_name;
+      friendly_error(ss.str());
+    }
+    const StringVector &influenced_by_disease_names = influenced_by_list.names();
+    const string influenced_by_disease_name = as<string>(influenced_by_disease_names[0]);
     Disease &me_disease = *(_simulation.diseases->at(disease_name));
-    ((IncidenceType3&)me_disease.incidence()).set_influencers(influencers);
+    const Disease &influenced_by_disease = *(_simulation.diseases->at(influenced_by_disease_name));
+    const List &influenced_by_parameter_list = influenced_by_list[0];
+    const NumericVector multiplier = parse_numeric_column_or_error(influenced_by_parameter_list, "multiplier", disease_name);
+    const int lag = parse_int_or_error(influenced_by_parameter_list, "lag");
+    ((IncidenceType3&)me_disease.incidence()).set_influencer(influenced_by_disease, multiplier, lag);
   }
 
   void parse_incidence_type_4_phase_2(const List &incidence_list, const char*const disease_name)
@@ -285,9 +275,20 @@ private:
       friendly_error(ss.str());
     }
     const List &influenced_by_list = incidence_list["influenced_by"];
-    vector<Influencer> influencers = parse_influencers_or_error(influenced_by_list, disease_name);
+    if (influenced_by_list.length() != 1)
+    {
+      ostringstream ss;
+      ss << "Expecting one disease in the influenced_by incidence list for " << disease_name;
+      friendly_error(ss.str());
+    }
+    const StringVector &influenced_by_disease_names = influenced_by_list.names();
+    const string influenced_by_disease_name = as<string>(influenced_by_disease_names[0]);
     Disease &me_disease = *(_simulation.diseases->at(disease_name));
-    ((IncidenceType5&)me_disease.incidence()).set_influencers(influencers);
+    const Disease &influenced_by_disease = *(_simulation.diseases->at(influenced_by_disease_name));
+    const List &influenced_by_parameter_list = influenced_by_list[0];
+    const NumericVector multiplier = parse_numeric_column_or_error(influenced_by_parameter_list, "multiplier", disease_name);
+    const int lag = parse_int_or_error(influenced_by_parameter_list, "lag");
+    ((IncidenceType5&)me_disease.incidence()).set_influencer(influenced_by_disease, multiplier, lag);
   }
 
 
@@ -344,9 +345,20 @@ private:
       friendly_error(ss.str());
     }
     const List &influenced_by_list = mortality_list["influenced_by"];
-    vector<Influencer> influencers = parse_influencers_or_error(influenced_by_list, disease_name);
+    if (influenced_by_list.length() != 1)
+    {
+      ostringstream ss;
+      ss << "Expecting one disease in the influenced_by mortality list for " << disease_name;
+      friendly_error(ss.str());
+    }
+    const StringVector &influenced_by_disease_names = influenced_by_list.names();
+    const string influenced_by_disease_name = as<string>(influenced_by_disease_names[0]);
     Disease &me_disease = *(_simulation.diseases->at(disease_name));
-    ((MortalityType3&)me_disease.mortality()).set_influencers(influencers);
+    const Disease &influenced_by_disease = *(_simulation.diseases->at(influenced_by_disease_name));
+    const List &influenced_by_parameter_list = influenced_by_list[0];
+    const NumericVector multiplier = parse_numeric_column_or_error(influenced_by_parameter_list, "multiplier", disease_name);
+    const int lag = parse_int_or_error(influenced_by_parameter_list, "lag");
+    ((MortalityType3&)me_disease.mortality()).set_influencer(influenced_by_disease, multiplier, lag);
   }
 
   typedef unique_ptr<Incidence>(SimulationParser::*Incidence_function)(const List &, const char*const);
