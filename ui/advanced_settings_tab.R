@@ -20,179 +20,172 @@
 ## Boston, MA 02110-1301 USA.
 
 tabPanel("Advanced settings",
-  # Sysload ----
-  wellPanel(
-    h5("System load"),
-    p("CPU and RAM utilisation"),
-    verbatimTextOutput("sysload", placeholder = TRUE)
-  ),
+         # Theme selector ----
+         wellPanel(
+         h5("Theme selector"),
+         p("Changes the colour theme of the interface. The default is 'paper'"),
+         mythemeSelector()
+         ),
 
-  # Theme selector ----
-  wellPanel(
-  h5("Theme selector"),
-  p("Changes the colour theme of the interface. The default is 'paper'"),
-  mythemeSelector()
-  ),
+         # sim parameters ----
+         wellPanel(
+           h5("Simulation parameters"),
+           p("Please do not alter unless you know what you are doing!"),
 
-  # sim parameters ----
-  wellPanel(
-   h5("Simulation parameters"),
-   p("Please do not alter unless you know what you are doing!"),
+           numericInput(
+             "iteration_n_gui",
+             "Number of Monte Carlo iterations for the interactive exploration (GUI)",
+             design$sim_prm$iteration_n,
+             1L,
+             1e3,
+             1L
+           ),
 
-  numericInput(
-    "iteration_n_gui",
-    "Number of Monte Carlo iterations for the interactive exploration (GUI)",
-    design$sim_prm$iteration_n,
-    1L,
-    1e3,
-    1L
-  ),
+           numericInput(
+             "iteration_n_final_gui",
+             "Number of Monte Carlo iterations for the final results (GUI)",
+             design$sim_prm$iteration_n_final,
+             1L,
+             1e3,
+             1L
+           ),
 
-  numericInput(
-   "iteration_n_final_gui",
-   "Number of Monte Carlo iterations for the final results (GUI)",
-   design$sim_prm$iteration_n_final,
-   1L,
-   1e3,
-   1L
-  ),
+           numericInput(
+             "clusternumber_gui",
+             "Number of cores to be used for explicit parallelisation",
+             design$sim_prm$clusternumber,
+             1L,
+             1e3,
+             1L
+           ),
 
-  numericInput(
-   "clusternumber_gui",
-   "Number of cores to be used for explicit parallelisation",
-   design$sim_prm$clusternumber,
-   1L,
-   1e3,
-   1L
-  ),
+           numericInput(
+             "n_cpus_gui",
+             "Number of cores to be used for implicit parallelisation",
+             design$sim_prm$n_cpus,
+             1L,
+             1e3,
+             1L
+           ),
 
-  numericInput(
-   "n_cpus_gui",
-   "Number of cores to be used for implicit parallelisation",
-   design$sim_prm$n_cpus,
-   1L,
-   1e3,
-   1L
-  ),
+           numericInput(
+             "n_gui",
+             "Size of synthetic population",
+             design$sim_prm$n,
+             1e5,
+             1e6,
+             1e5L
+           ),
 
-  numericInput(
-   "n_gui",
-   "Size of synthetic population",
-   design$sim_prm$n,
-   1e5,
-   1e6,
-   1e5L
-  ),
+           numericInput(
+             "n_synthpop_aggregation_gui",
+             "Number of synthetic population files to combine together",
+             design$sim_prm$n_synthpop_aggregation,
+             1L,
+             10L,
+             1L
+           ),
 
-  numericInput(
-   "n_synthpop_aggregation_gui",
-   "Number of synthetic population files to combine together",
-   design$sim_prm$n_synthpop_aggregation,
-   1L,
-   10L,
-   1L
-  ),
+           numericInput(
+             "n_primers_gui",
+             "Number of synthetic population primer files to be produced. Better be a multiple of the setting above.",
+             design$sim_prm$n_primers,
+             1L,
+             100L,
+             1L
+           ),
 
-  numericInput(
-   "n_primers_gui",
-   "Number of synthetic population primer files to be produced. Better be a multiple of the setting above.",
-   design$sim_prm$n_primers,
-   1L,
-   100L,
-   1L
-  ),
+           numericInput(
+             "n_synthpop_aggregation_gui",
+             "Number of synthetic population files to combine together",
+             design$sim_prm$n_synthpop_aggregation,
+             1L,
+             10L,
+             1L
+           ),
 
-  numericInput(
-   "n_synthpop_aggregation_gui",
-   "Number of synthetic population files to combine together",
-   design$sim_prm$n_synthpop_aggregation,
-   1L,
-   10L,
-   1L
-  ),
+           numericInput(
+             "cvd_lag_gui",
+             "Median lag between exposure and CVD incidence",
+             design$sim_prm$cvd_lag,
+             2L,
+             9L,
+             1L
+           ),
 
-  numericInput(
-   "cvd_lag_gui",
-   "Median lag between exposure and CVD incidence",
-   design$sim_prm$cvd_lag,
-   2L,
-   9L,
-   1L
-  ),
+           numericInput(
+             "copd_lag_gui",
+             "Median lag between exposure and COPD incidence",
+             design$sim_prm$copd_lag,
+             2L,
+             9L,
+             1L
+           ),
 
-  numericInput(
-   "copd_lag_gui",
-   "Median lag between exposure and COPD incidence",
-   design$sim_prm$copd_lag,
-   2L,
-   9L,
-   1L
-  ),
+           numericInput(
+             "cancer_lag_gui",
+             "Median lag between exposure and cancer incidence",
+             design$sim_prm$cancer_lag,
+             2L,
+             9L,
+             1L
+           ),
 
-  numericInput(
-   "cancer_lag_gui",
-   "Median lag between exposure and cancer incidence",
-   design$sim_prm$cancer_lag,
-   2L,
-   9L,
-   1L
-  ),
+           numericInput(
+             "nonmodelled_lag_gui",
+             "Median lag between exposure and death from causes not explicitly modelled",
+             design$sim_prm$nonmodelled_lag,
+             2L,
+             9L,
+             1L
+           ),
 
-  numericInput(
-   "nonmodelled_lag_gui",
-   "Median lag between exposure and death from causes not explicitly modelled",
-   design$sim_prm$nonmodelled_lag,
-   2L,
-   9L,
-   1L
-  ),
+           numericInput(
+             "cancer_cure_gui",
+             "Number of years after which a prevalent cancer case is considered cured",
+             design$sim_prm$cancer_cure,
+             2L,
+             10L,
+             1L
+           ),
 
-  numericInput(
-   "cancer_cure_gui",
-   "Number of years after which a prevalent cancer case is considered cured",
-   design$sim_prm$cancer_cure,
-   2L,
-   10L,
-   1L
-  ),
+           numericInput(
+             "jumpiness_gui",
+             "Increase for more erratic jumps in trajectories",
+             design$sim_prm$jumpiness,
+             0.1,
+             10,
+             0.1
+           ),
 
-  numericInput(
-   "jumpiness_gui",
-   "Increase for more erratic jumps in trajectories",
-   design$sim_prm$jumpiness,
-   0.1,
-   10,
-   0.1
-  ),
+           numericInput(
+             "statin_adherence_gui",
+             "Statin adherence. The mean of a beta distribution with shape2 = 0.2",
+             design$sim_prm$statin_adherence,
+             0.1,
+             1,
+             0.01
+           ),
 
-  numericInput(
-   "statin_adherence_gui",
-   "Statin adherence. The mean of a beta distribution with shape2 = 0.2",
-   design$sim_prm$statin_adherence,
-   0.1,
-   1,
-   0.01
-  ),
+           numericInput(
+             "bpmed_adherence_gui",
+             "BP medication adherence. The mean of a beta distribution with shape2 = 0.2",
+             design$sim_prm$bpmed_adherence,
+             0.1,
+             1,
+             0.05
+           ),
 
-  numericInput(
-   "bpmed_adherence_gui",
-   "BP medication adherence. The mean of a beta distribution with shape2 = 0.2",
-   design$sim_prm$bpmed_adherence,
-   0.1,
-   1,
-   0.05
-  ),
+           numericInput(
+             "decision_aid_gui",
+             "Adjust the decision aid line used in some of the graphs",
+             design$sim_prm$decision_aid,
+             0,
+             1,
+             0.05
+           )
 
-  numericInput(
-   "decision_aid_gui",
-   "Adjust the decision aid line used in some of the graphs",
-   design$sim_prm$decision_aid,
-   0,
-   1,
-   0.05
-  )
-
-), # wellPanel
+         ), # wellPanel
 
   # Logging ----
   wellPanel(
