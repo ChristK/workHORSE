@@ -96,15 +96,6 @@ tabPanel("Advanced settings",
            ),
 
            numericInput(
-             "n_synthpop_aggregation_gui",
-             "Number of synthetic population files to combine together",
-             design$sim_prm$n_synthpop_aggregation,
-             1L,
-             10L,
-             1L
-           ),
-
-           numericInput(
              "cvd_lag_gui",
              "Median lag between exposure and CVD incidence",
              design$sim_prm$cvd_lag,
