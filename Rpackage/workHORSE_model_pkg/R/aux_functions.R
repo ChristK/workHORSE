@@ -2222,13 +2222,17 @@ simulate_init_prvl <-
     dt[, (col_nam) := NULL]
   }
 
+#' @export
+output_dir <- function(x = "") {
+  file.path(design$sim_prm$output_dir, x)
+}
 
 #' @export
 run_simulation <- function(parameters, design, final = FALSE) {
   # NOTE final = F for the exploratory runs
-  output_dir <<- function(x = "") {
-    file.path(design$sim_prm$output_dir, x)
-  }
+  # output_dir <<- function(x = "") {
+  #   file.path(design$sim_prm$output_dir, x)
+  # }
 
   on.exit(file.remove(output_dir("intermediate_out.csv")))
 
