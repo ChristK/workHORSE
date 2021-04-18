@@ -207,7 +207,10 @@ server = function(input, output, session) {
         logs$parameters <-
           qread(file.path(design$sim_prm$output_dir, "parameters.qs"))
       }
-
+      if (file.exists(file.path(design$sim_prm$output_dir, "times.txt"))) {
+        logs$times<-
+          readLines(file.path(design$sim_prm$output_dir, "times.txt"))
+      }
 
       write_yaml(logs, file = file)
     }
