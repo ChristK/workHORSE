@@ -25,7 +25,7 @@ cat("Initialising workHORSE model...\n\n")
 if (!require(CKutils)) {
   if (!require(remotes))
     install.packages("remotes")
-  remotes::install_github("ChristK/CKutils", force = TRUE)
+  remotes::install_github("ChristK/CKutils", force = TRUE, upgrade = "never")
   library(CKutils)
 }
 if (!require(workHORSEmisc)) {
@@ -33,7 +33,8 @@ if (!require(workHORSEmisc)) {
     install.packages("remotes")
   roxygen2::roxygenise("./Rpackage/workHORSE_model_pkg/", clean = TRUE)
   # TODO remove before deployment
-  remotes::install_local("./Rpackage/workHORSE_model_pkg/", force = TRUE)
+  remotes::install_local("./Rpackage/workHORSE_model_pkg/", force = TRUE,
+    upgrade = "never")
   library(workHORSEmisc)
 }
 
