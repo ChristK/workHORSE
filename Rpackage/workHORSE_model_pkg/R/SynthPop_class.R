@@ -379,7 +379,7 @@ SynthPop <-
       #' @return The invisible `SynthPop` object.
       print = function() {
         print(c(
-          "path" = ifelse(is.na(private$filename),
+          "path" = ifelse(is.na(private$filename$synthpop),
                           "Not relevant because mc = 0L",
                           private$filename$synthpop),
           "mc" = self$mc,
