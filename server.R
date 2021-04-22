@@ -140,7 +140,7 @@ server = function(input, output, session) {
 
         qsave(reactiveValuesToList(input, all.names = TRUE),
           file.path(design$sim_prm$output_dir, "input.qs"))
-        qsave(parameters, file.path(design$sim_prm$output_dir, "input.qs"))
+        qsave(parameters, file.path(design$sim_prm$output_dir, "parameters.qs"))
 
         withProgress(message = 'Running workHORSE model.',
           detail = 'This may take a couple of minutes...',
@@ -170,7 +170,7 @@ server = function(input, output, session) {
 
     qsave(reactiveValuesToList(input, all.names = TRUE),
       file.path(design$sim_prm$output_dir, "input.qs"))
-    qsave(parameters, file.path(design$sim_prm$output_dir, "input.qs"))
+    qsave(parameters, file.path(design$sim_prm$output_dir, "parameters.qs"))
 
     # progress$inc(1/n, detail = paste("Doing part", i))
     withProgress(message = 'Running workHORSE model.',
