@@ -36,19 +36,19 @@ tabPanel(
             bs_embed_popover(title = "Please select the locality for your simulation",
                              content = "The model will use a synthetic population that closely resembles that of the selected area. If you select multiple areas, the overlapping ones will only be included once. For example, if you select both 'England' and 'London', London will be ignored because it is already included in England. The first time you select an area combination, workHORSE will generate and save the synthetic population for that area combination which may take up to 30 min. Subsequent selections of the same area combination will be much faster as the model will reuse the already existing synthetic population.
 
-      The 'Confirm area selection' confirms that you have finished your area selection above. When pressed, workHORSE prepares the synthetic population in the background, while you design the scenarios, to save time. WorkHORSE will proceed as normal even if you do not press this button, although it will take longer to produce results.
+      The 'Produce synthpops for area selection' button in the advanced settings tab initiates the production of the synthetic populations in the background while you design the scenarios, to save time. WorkHORSE will proceed as normal even if you do not press this button, although it will take longer to produce results the first time you simulate an area.
                              ",
                              placement = "bottom")
-        ),
+        ) #,
 
-      actionButton(
-        "locality_select_validator",
-        "Confirm area selection",
-        icon = icon("check-circle"),
-        style = "color: #fff; background-color: #337ab7; border-color: #2e6da4",
-        #class = "btn-info",
-        width = "auto"
-      )
+      # actionButton(
+      #   "locality_select_validator",
+      #   "Confirm area selection",
+      #   icon = icon("check-circle"),
+      #   style = "color: #fff; background-color: #337ab7; border-color: #2e6da4",
+      #   #class = "btn-info",
+      #   width = "auto"
+      # )
       ),
     column(
       6,

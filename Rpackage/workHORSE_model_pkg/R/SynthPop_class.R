@@ -421,7 +421,7 @@ SynthPop <-
       get_checksum = function() {
         out <- private$checksum
         names(out) <- "Checksum"
-        cat(out)
+        cat(paste0(names(out), ": ", out))
         invisible(self)
       },
 
