@@ -230,29 +230,42 @@ tabPanel("Advanced settings",
     h5("Manage synthpop files"),
     p("Actions to manipulate synthpop files"),
 
+    actionButton(
+      "locality_select_validator",
+      "Produce synthpops for area selection",
+      icon = icon("check-circle"),
+      style = "color: #fff; background-color: #337ab7; border-color: #2e6da4",
+      #class = "btn-info",
+      width = "100%" # "auto"
+    ),
+
     verbatimTextOutput("checksum", placeholder = TRUE),
 
     verbatimTextOutput("synthpop_info", placeholder = TRUE),
 
     actionButton(
       "check_synthpops_gui",
-      "Check the integridy of the synthpop files and delete any orphan or malformed files. Make sure that you are the only user running the model when you click this. Otherwise it may crash the session of other concurrent users",
+      "Check the integridy of the synthpop files and delete any orphan or malformed files",
       icon = icon("trash-alt"),
       class = "btn-warning",
       width = "100%"
     ),
+    # . Make sure that you are the only user running the model when you click
+    # this. Otherwise it may crash the session of other concurrent users
 
     actionButton(
       "check_synthpops_gui_check_checksum",
-      "Check the integridy of the synthpop files, which produced from parameters same as in the GUI, and delete any orphan or malformed files. Make sure that you are the only user running the model when you click this. Otherwise it may crash the session of other concurrent users",
+      "Check the integridy of the synthpop files, which produced from parameters same as in the GUI, and delete any orphan or malformed files",
       icon = icon("trash-alt"),
       class = "btn-warning",
       width = "100%"
     ),
+    # Make sure that you are the only user running the model when you click
+    # this. Otherwise it may crash the session of other concurrent users
 
     actionButton(
       "delete_synthpops_gui_spare_primer",
-      "Delete synthpop files which produced from parameters same as in the GUI, but spare the primer files",
+      "Delete synthpop files which produced from parameters same as in the GUI,  sparing the primer files",
       icon = icon("trash-alt"),
       class = "btn-danger",
       width = "100%"

@@ -128,6 +128,7 @@ server = function(input, output, session) {
        # the inner loop need not be cpu/2. But RAM usage is excess.
      ))
     design$update_fromGUI(reactiveValuesToList(input))
+    # if no are selected from gui, defaults to England
     future({
         SynthPop$
         new(0, design)$
