@@ -20,6 +20,15 @@
 ## Boston, MA 02110-1301 USA.
 
 tabPanel("Advanced settings",
+  # Sysload ----
+
+  wellPanel(
+    h5("System load"),
+    p("CPU and RAM utilisation"),
+    verbatimTextOutput("sysload", placeholder = TRUE)
+  ),
+
+
          # Theme selector ----
          wellPanel(
          h5("Theme selector"),
@@ -221,9 +230,45 @@ tabPanel("Advanced settings",
     h5("Manage synthpop files"),
     p("Actions to manipulate synthpop files"),
 
+    verbatimTextOutput("checksum", placeholder = TRUE),
+
+    verbatimTextOutput("synthpop_info", placeholder = TRUE),
+
     actionButton(
-      "delete_synthpops_gui",
-      "Delete synthpop files",
+      "check_synthpops_gui",
+      "Check the integridy of the synthpop files and delete any orphan or malformed files. Make sure that you are the only user running the model when you click this. Otherwise it may crash the session of other concurrent users",
+      icon = icon("trash-alt"),
+      class = "btn-warning",
+      width = "100%"
+    ),
+
+    actionButton(
+      "check_synthpops_gui_check_checksum",
+      "Check the integridy of the synthpop files, which produced from parameters same as in the GUI, and delete any orphan or malformed files. Make sure that you are the only user running the model when you click this. Otherwise it may crash the session of other concurrent users",
+      icon = icon("trash-alt"),
+      class = "btn-warning",
+      width = "100%"
+    ),
+
+    actionButton(
+      "delete_synthpops_gui_spare_primer",
+      "Delete synthpop files which produced from parameters same as in the GUI, but spare the primer files",
+      icon = icon("trash-alt"),
+      class = "btn-danger",
+      width = "100%"
+    ),
+
+    actionButton(
+      "delete_synthpops_gui_check_checksum",
+      "Delete synthpop files which produced from parameters same as in the GUI, including the primer files",
+      icon = icon("trash-alt"),
+      class = "btn-danger",
+      width = "100%"
+    ),
+
+    actionButton(
+      "delete_synthpops_gui_all",
+      "Delete everything in the synthpop folder!",
       icon = icon("trash-alt"),
       class = "btn-danger",
       width = "100%"

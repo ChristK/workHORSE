@@ -101,9 +101,9 @@ SynthPop <-
         }
 
         # get unique lsoas
-        lsoas <- private$get_unique_LSOAs(design_)
+        # lsoas <- private$get_unique_LSOAs(design_)
 
-        private$checksum <- private$gen_checksum(design_, lsoas)
+        private$checksum <- private$gen_checksum(design_)
 
         self$mc <- mc_
         private$design <- design_
@@ -121,8 +121,7 @@ SynthPop <-
             # parallelism)
             private$gen_synthpop(mc_,
                                  private$filename,
-                                 design_,
-                                 lsoas)
+                                 design_)
 
           } else if (file.exists(private$filename$metafile) &&
                      !all(files_exist)) {
@@ -130,17 +129,30 @@ SynthPop <-
             # a generate_synthpop() is still running. So the function waits
             # until the file is created before it proceeds to load it. Note that
             # if this is not the case then the loop is infinite!!!
-            while (!all(sapply(private$filename, file.exists)))
+            while (!all(sapply(private$filename, file.exists))) {
               Sys.sleep(5)
-
+              if (design_$sim_prm$logs) {
+                message("Metafile exists without a synthpop file. Check for synthpop after 5 sec.")
+              }
+            }
             # Ensure the file write is complete (size stable)
+            if (design_$sim_prm$logs) {
+              message("Synthpop file found.")
+            }
+
             sz1 <- file.size(private$filename$synthpop)
             Sys.sleep(3)
             sz2 <- file.size(private$filename$synthpop)
             while (sz1 != sz2) {
+              if (design_$sim_prm$logs) {
+                message("Synthpop file size increases.")
+              }
               sz1 <- file.size(private$filename$synthpop)
               Sys.sleep(3)
               sz2 <- file.size(private$filename$synthpop)
+            }
+            if (design_$sim_prm$logs) {
+              message("Synthpop file stabilised.")
             }
 
           } else if (!file.exists(private$filename$metafile) &&
@@ -150,8 +162,7 @@ SynthPop <-
             self$delete_incomplete_synthpop()
             private$gen_synthpop(mc_,
                                  private$filename,
-                                 design_,
-                                 lsoas)
+                                 design_)
           }
           # No need to provision for case when all file present. The following
           # lines handle this case anyway
@@ -171,33 +182,42 @@ SynthPop <-
       #' @param mc_ If `mc_ = NULL`, delete all files in the synthpop directory.
       #'   If `mc_` is an integer vector delete the specific synthpop files
       #'   including the metadata and index files but spares primers.
+      #' @param spare_primer If `TRUE` primer files are not deleted.
+      #' @param check_checksum If  `TRUE` only delete files with the same
+      #'   checksum as the synthpop. Only relevant when `mc_ = NULL`.
       #' @return The invisible `SynthPop` object.
-      delete_synthpop = function(mc_) {
+      delete_synthpop = function(mc_, spare_primer = TRUE, check_checksum = TRUE) {
         if (is.null(mc_)) {
-          file.remove(list.files(
+          fl <- list.files(
             private$synthpop_dir,
             full.names = TRUE,
             recursive = TRUE
-          ))
+          )
+          if (spare_primer)
+            fl <- grep("_primer.fst$", fl, invert = TRUE, value = TRUE)
+
+          file.remove(fl)
         } else if (length(mc_) == 1L &&
                    is.numeric(mc_) && ceiling(mc_) > 0L) {
-          file.remove(unlist(
+          fl <- unlist(
             private$gen_synthpop_filename(mc_,
-                                          private$checksum,
-                                          private$design)[1:3]
-          ))
+              private$checksum,
+              private$design))
+          if (spare_primer) fl <- fl[1:3]
+          file.remove(fl)
 
         } else if (length(mc_) > 1L &&
                    all(is.numeric(mc_)) && all(ceiling(mc_) > 0L)) {
-          filnam <-
+          fl <-
             lapply(mc_,
                    private$gen_synthpop_filename,
                    private$synthpop_dir,
                    private$checksum,
                    private$design)
-          filnam <- unlist(filnam)
-          filnam <- grep("_primer.fst$", filnam, invert = TRUE, value = TRUE)
-          file.remove(filnam)
+          fl <- unlist(fl)
+          if (spare_primer)
+            fl <- grep("_primer.fst$", fl, invert = TRUE, value = TRUE)
+          file.remove(fl)
 
         } else
           message("mc_ need to be NULL or numeric. Nothing was deleted.")
@@ -208,16 +228,27 @@ SynthPop <-
       #' @description
       #' Check that every synthpop file has a metafile and an index file. Delete
       #' any orphan files.
+      #' @param check_checksum If  `TRUE` only delete incomplete group files
+      #'   with the same checksum as the synthpop.
       #' @return The invisible `SynthPop` object.
       delete_incomplete_synthpop =
-        function() {
-          files <- list.files(private$synthpop_dir, "^synthpop_.*\\.fst$")
+        function(check_checksum = TRUE) {
+          if (check_checksum) {
+            f1 <- paste0("^synthpop_", private$checksum , ".*\\.fst$")
+            f2 <- paste0("^synthpop_", private$checksum , ".*_meta\\.yaml$")
+          } else {
+            f1 <- "^synthpop_.*\\.fst$"
+            f2 <- "^synthpop_.*_meta\\.yaml$"
+          }
+
+          files <-
+            list.files(private$synthpop_dir, f1)
           # remove indx and primer files
           files <-
             grep("_indx.fst$|_primer.fst", files, invert = TRUE, value = TRUE)
           files <- sub("\\.fst$", "", files)
           metafiles <-
-            list.files(private$synthpop_dir, "^synthpop_.*_meta\\.yaml$")
+            list.files(private$synthpop_dir, f2)
           metafiles <- sub("_meta\\.yaml$", "", metafiles)
 
           to_remove <- setdiff(metafiles, files)
@@ -238,15 +269,147 @@ SynthPop <-
         },
 
       #' @description
+      #' Check the integrity of (and optionally delete) .fst files by checking
+      #' their metadata are readable.
+      #' @param remove_malformed If `TRUE`, delete all malformed .fst files and
+      #'   their associated files.
+      #' @param check_checksum If  `TRUE` only check files with the same
+      #'   checksum as the synthpop.
+      #' @return The invisible `SynthPop` object.
+      check_integridy =
+        function(remove_malformed = FALSE,
+          check_checksum = TRUE) {
+          if (check_checksum) {
+            pat <- paste0("^synthpop_", private$checksum , ".*\\.fst$")
+          } else {
+            pat <- "^synthpop_.*\\.fst$"
+          }
+
+          files <-
+            list.files(private$synthpop_dir,
+              pat,
+              full.names = TRUE)
+          if (length(files) > 0L) {
+            malformed <- sapply(files, function(x) {
+              out <- try(metadata_fst(x), silent = TRUE)
+              out <- inherits(out, "try-error")
+              out
+            }, USE.NAMES = FALSE)
+
+
+            des <- sum(malformed)
+
+            if (remove_malformed) {
+              if (des == 0L) {
+                message(paste0(des, " malformed fst file(s)"))
+              } else {
+                # des != 0L
+                message(paste0(des, " malformed fst file(s)..."))
+                to_remove <- files[malformed]
+
+                # remove primers first
+                tr <- grep("_primer.fst$", to_remove, value = TRUE)
+                file.remove(tr[file.exists(tr)])
+                to_remove <-
+                  grep("_primer.fst$",
+                    to_remove,
+                    value = TRUE,
+                    invert = TRUE)
+
+                # then remove other files
+                to_remove <- gsub(".fst$", "", to_remove)
+                to_remove <- gsub("_indx$", "", to_remove)
+
+                # _meta.yaml
+                tr <- paste0(to_remove, "_meta.yaml")
+                file.remove(tr[file.exists(tr)])
+                # _indx.fst
+                tr <- paste0(to_remove, "_indx.fst")
+                file.remove(tr[file.exists(tr)])
+                # .fst
+                tr <-  paste0(to_remove, ".fst")
+                file.remove(tr[file.exists(tr)])
+
+                message("...now deleted!")
+              }
+
+            } else {
+              # remove_malformed = FALSE
+              message(paste0(des, " malformed fst file(s)"))
+            }
+          } else {
+            # if length(files) == 0
+            message("no .fst files found.")
+          }
+          return(invisible(self))
+        },
+
+
+
+
+      #' @description
       #' Count the synthpop files in a directory. It includes files without
       #' metafiles and index files.
       #' @return The invisible `SynthPop` object.
       count_synthpop =
         function() {
-          files <- list.files(private$synthpop_dir, "^synthpop_.*\\.fst$")
-          files <- # remove indx files
-            grep("_indx.fst$", files, invert = TRUE, value = TRUE)
-          print(length(files))
+          out <- list()
+          # folder size
+          files <-
+            list.files(private$synthpop_dir, full.names = TRUE)
+          if (length(files) > 0L) {
+            vect_size <- sapply(files, file.size)
+            out$`synthpop folder size (Gb)` <-
+              signif(sum(vect_size) / (1024 ^ 3), 4) # Gb
+
+            # synthpops with same checksum
+            files <- list.files(private$synthpop_dir,
+              paste0("^synthpop_", private$checksum , ".*\\.fst$"))
+            files <- # remove indx files
+              grep("_indx.fst$", files, invert = TRUE, value = TRUE)
+
+            out$`synthpop files with same checksum (excluding primers)` <-
+              sum(!grepl("_primer.fst$", files))
+
+            out$`synthpop primers with same checksum` <-
+              sum(grepl("_primer.fst$", files))
+
+            out$`synthpop indx files with same checksum` <-
+              length(list.files(
+                private$synthpop_dir,
+                paste0("^synthpop_", private$checksum , ".*_indx\\.fst$")
+              ))
+
+            out$`synthpop meta files with same checksum` <-
+              length(list.files(
+                private$synthpop_dir,
+                paste0("^synthpop_", private$checksum , ".*_meta\\.yaml$")
+              ))
+
+            # synthpops with any checksum
+            files <-
+              list.files(private$synthpop_dir, "^synthpop_.*\\.fst$")
+            files <- # remove indx files
+              grep("_indx.fst$", files, invert = TRUE, value = TRUE)
+
+            out$`synthpop files with any checksum (excluding primers)` <-
+              sum(!grepl("_primer.fst$", files))
+
+            out$`synthpop primers with any checksum` <-
+              sum(grepl("_primer.fst$", files))
+
+            out$`synthpop indx files with any checksum` <-
+              length(list.files(private$synthpop_dir, "^synthpop_.*_indx\\.fst$"))
+
+            out$`synthpop meta files with any checksum` <-
+              length(list.files(private$synthpop_dir, "^synthpop_.*_meta\\.yaml$"))
+
+
+            cat(paste0(names(out), ": ", out, "\n"))
+          } else {
+            # if length(files) == 0L
+            cat("no files found.")
+          }
           return(invisible(self))
         },
 
@@ -255,16 +418,32 @@ SynthPop <-
       #' @param x One of "all", "synthpop", "metafile", or "indxfile". Can be
       #'   abbreviated.
       #' @return The invisible `SynthPop` object.
+      get_checksum = function() {
+        out <- private$checksum
+        names(out) <- "Checksum"
+        cat(out)
+        invisible(self)
+      },
+
+      #' @description
+      #' Get the synthpop file paths.
+      #' @param x One of "all", "synthpop", "metafile", or "indxfile". Can be
+      #'   abbreviated.
+      #' @return The invisible `SynthPop` object.
       get_filename = function(x = c("all", "synthpop", "metafile", "indxfile", "primer")) {
-        x <- match.arg(x)
-        switch(
-          x,
-          all      = print(private$filename),
-          synthpop = print(private$filename[["synthpop"]]),
-          metafile = print(private$filename[["metafile"]]),
-          indxfile = print(private$filename[["indxfile"]]),
-          primer   = print(private$filename[["primer"]])
-        )
+        if (self$mc == 0L) {
+          print("Not relevant because mc = 0L")
+        } else {
+          x <- match.arg(x)
+          switch(
+            x,
+            all      = print(private$filename),
+            synthpop = print(private$filename[["synthpop"]]),
+            metafile = print(private$filename[["metafile"]]),
+            indxfile = print(private$filename[["indxfile"]]),
+            primer   = print(private$filename[["primer"]])
+          )
+        }
         invisible(self)
       },
 
@@ -333,8 +512,7 @@ SynthPop <-
             # the file on disk
             private$gen_synthpop(mc_iter,
                                  filename,
-                                 private$design,
-                                 lsoas)
+                                 private$design)
 
           } else if (file.exists(filename$metafile) &&
                      !all(files_exist)) {
@@ -363,8 +541,7 @@ SynthPop <-
             self$delete_incomplete_synthpop()
             private$gen_synthpop(mc_iter,
                                  filename,
-                                 private$design,
-                                 lsoas)
+                                 private$design)
           }
           # No need to provision for case when all files present.
 
@@ -379,9 +556,10 @@ SynthPop <-
       #' @return The invisible `SynthPop` object.
       print = function() {
         print(c(
-          "path" = ifelse(is.na(private$filename$synthpop),
+          "path" = ifelse(self$mc == 0L,
                           "Not relevant because mc = 0L",
                           private$filename$synthpop),
+          "checksum" = private$checksum,
           "mc" = self$mc,
           self$metadata
         ))
@@ -452,11 +630,12 @@ SynthPop <-
 
       # gen synthpop unique checksum for the given set of inputs
       gen_checksum =
-        function(design_,
-                 lsoas_) {
+        function(design_) {
           # get a md5 checksum based on function arguments
           # First get function call arguments
           fcall <- private$get_unique_characteristics(design_)
+
+          lsoas_ <- private$get_unique_LSOAs(design_)
 
           locality_years_age_id <-
             digest::digest(paste(lsoas_, fcall, sep = ",", collapse = ","),
@@ -517,9 +696,9 @@ SynthPop <-
 
       # generate synthpop demographics
       gen_synthpop_demog =
-        function(design_, lsoas_) {
+        function(design_) {
           # locality <- c("East Midlands", "Adur", "Allerdale")
-
+          lsoas_ <- private$get_unique_LSOAs(design_)
           # load dt
           dt <-
             read_fst("./synthpop/lsoa_mid_year_population_estimates.fst",
@@ -612,8 +791,7 @@ SynthPop <-
       gen_synthpop = # returns NULL. Writes synthpop on disk
         function(mc_,
                  filename_,
-                 design_,
-                 lsoas_) {
+                 design_) {
           # increase design_$sim_prm$jumpiness for more erratic jumps in
           # trajectories
 
@@ -644,6 +822,7 @@ SynthPop <-
           set.seed(SEED + mc_)
           dqset.seed(SEED, mc_)
 
+          lsoas_ <- private$get_unique_LSOAs(design_)
 
           # Generate design%sim_prm$n_primers primer synthpops with
           # sociodemographic and exposures information. The primer synthpops
@@ -652,7 +831,7 @@ SynthPop <-
 
           if (mc_ <= design_$sim_prm$n_primers &&
               !file.exists(filename_$primer)) {
-            dt <- private$gen_synthpop_demog(design_, lsoas_)
+            dt <- private$gen_synthpop_demog(design_)
 
             # Calculate local qimd (lqimd) ----
             message("Calculate local qimd (lqimd)")
@@ -679,7 +858,7 @@ SynthPop <-
             design2_$sim_prm$n <-
               tt * design_$sim_prm$sim_horizon_max
             design2_$sim_prm$ageH <- design_$sim_prm$ageL
-            dt2 <- private$gen_synthpop_demog(design2_, lsoas_)
+            dt2 <- private$gen_synthpop_demog(design2_)
             dt2[, age := age - rep(1:design_$sim_prm$sim_horizon_max, tt)]
 
             # as sim progress these will become 30 yo
