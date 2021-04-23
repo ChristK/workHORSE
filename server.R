@@ -57,6 +57,13 @@ server = function(input, output, session) {
         )[names %in% input$inout_scenario_select, ]
   })
 
+  # Reactive function to create an empty synthpop
+
+  empty_synthpop <- reactive({
+    parameters <- fromGUI_prune(reactiveValuesToList(input))
+    design$update_fromGUI(parameters)
+    SynthPop$new(0, design)
+  })
 
 
   # firstFrame <- vapplyseq_len(input$scenarios_number_slider), function(i) isTRUE(tr[["frame"]] %in% frameNames[[1]]), logical(1))
@@ -223,13 +230,47 @@ server = function(input, output, session) {
     unlink(file.path(design$sim_prm$output_dir, "logs"), recursive = TRUE)
   })
 
+  # Add sysload info -----
+  output$sysload <- renderPrint({
+    # Re-execute this reactive expression after 2000 milliseconds
+    invalidateLater(2000)
+    isolate(sysLoad())
+  })
+
+  # Manipulate synthpops ----
+  output$checksum <- renderPrint({
+    empty_synthpop()$get_checksum()
+  })
+
+  output$synthpop_info <- renderPrint({
+    # Re-execute this reactive expression after 10 seconds
+    invalidateLater(5e3)
+    empty_synthpop()$count_synthpop()
+  })
+
   # Delete synthpops
-  observeEvent(input$delete_synthpops_gui, {
-    file.remove(list.files(
-      design$sim_prm$synthpop_dir,
-      pattern = "^synthpop",
-      full.names = TRUE
-    ))
+  observeEvent(input$check_synthpops_gui, {
+    empty_synthpop()$
+    check_integridy(remove_malformed = TRUE, check_checksum = FALSE)$
+      delete_incomplete_synthpop(check_checksum = FALSE)
+  })
+
+  observeEvent(input$check_synthpops_gui_check_checksum, {
+    empty_synthpop()$
+      check_integridy(remove_malformed = TRUE, check_checksum = TRUE)$
+      delete_incomplete_synthpop(check_checksum = TRUE)
+  })
+
+  observeEvent(input$delete_synthpops_gui_spare_primer, {
+    empty_synthpop()$delete_synthpop(NULL, spare_primer = TRUE, check_checksum = TRUE)
+  })
+
+  observeEvent(input$delete_synthpops_gui_check_checksum, {
+    empty_synthpop()$delete_synthpop(NULL, spare_primer = FALSE, check_checksum = TRUE)
+  })
+
+  observeEvent(input$delete_synthpops_gui_all, {
+    empty_synthpop()$delete_synthpop(NULL, spare_primer = FALSE, check_checksum = FALSE)
   })
 
 
