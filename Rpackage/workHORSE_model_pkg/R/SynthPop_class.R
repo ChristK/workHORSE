@@ -481,73 +481,143 @@ SynthPop <-
         # get unique lsoas
         lsoas <- private$get_unique_LSOAs(private$design)
 
-        foreach(
-          mc_iter = mc_,
-          .inorder = FALSE,
-          .verbose = FALSE,
-          .packages = c(
-            "R6",
-            "gamlss.dist", # For distr in prevalence.R
-            "dqrng",
-            "qs",
-            "fst",
-            "CKutils",
-            "workHORSEmisc",
-            "data.table"
-          ),
-          .export = NULL,
-          .noexport = NULL # c("time_mark")
-        ) %dopar% {
-          data.table::setDTthreads(private$design$sim_prm$n_cpus)
-          fst::threads_fst(private$design$sim_prm$n_cpus)
-          filename <-
-            private$gen_synthpop_filename(mc_iter,
-                                          private$checksum,
-                                          private$design)
+        if (length(mc_) == 1L) {
+          foreach(
+            mc_iter = mc_,
+            .inorder = FALSE,
+            .verbose = FALSE,
+            .packages = c(
+              "R6",
+              "gamlss.dist",
+              # For distr in prevalence.R
+              "dqrng",
+              "qs",
+              "fst",
+              "CKutils",
+              "workHORSEmisc",
+              "data.table"
+            ),
+            .export = NULL,
+            .noexport = NULL # c("time_mark")
+          ) %do% {
+            data.table::setDTthreads(private$design$sim_prm$n_cpus)
+            fst::threads_fst(private$design$sim_prm$n_cpus)
+            filename <-
+              private$gen_synthpop_filename(mc_iter,
+                private$checksum,
+                private$design)
 
-          # logic for the synthpop load
-          files_exist <- sapply(filename[-4L], file.exists)
-          if (all(!files_exist)) {
-            # No files exist (ignores primer). Create the synthpop and store
-            # the file on disk
-            private$gen_synthpop(mc_iter,
-                                 filename,
-                                 private$design)
+            # logic for the synthpop load
+            files_exist <- sapply(filename[-4L], file.exists)
+            if (all(!files_exist)) {
+              # No files exist (ignores primer). Create the synthpop and store
+              # the file on disk
+              private$gen_synthpop(mc_iter,
+                filename,
+                private$design)
 
-          } else if (file.exists(filename$metafile) &&
-                     !all(files_exist)) {
-            # Metafile exists but not all three files (ignores primer). It means
-            # that most likely a generate_synthpop() is still running. So the
-            # function waits until the file is created before it proceeds to
-            # load it. Note that if this is not the case then the loop is
-            # infinite!!!
-            while (!all(sapply(filename, file.exists)))
-              Sys.sleep(5)
+            } else if (file.exists(filename$metafile) &&
+                !all(files_exist)) {
+              # Metafile exists but not all three files (ignores primer). It means
+              # that most likely a generate_synthpop() is still running. So the
+              # function waits until the file is created before it proceeds to
+              # load it. Note that if this is not the case then the loop is
+              # infinite!!!
+              while (!all(sapply(filename, file.exists)))
+                Sys.sleep(5)
 
-            # Ensure the file write is complete (size stable)
-            sz1 <- file.size(filename$synthpop)
-            Sys.sleep(3)
-            sz2 <- file.size(filename$synthpop)
-            while (sz1 != sz2) {
+              # Ensure the file write is complete (size stable)
               sz1 <- file.size(filename$synthpop)
               Sys.sleep(3)
               sz2 <- file.size(filename$synthpop)
+              while (sz1 != sz2) {
+                sz1 <- file.size(filename$synthpop)
+                Sys.sleep(3)
+                sz2 <- file.size(filename$synthpop)
+              }
+
+            } else if (!file.exists(filename$metafile) &&
+                !all(files_exist)) {
+              # Metafile doesn't exist but some other files exist (ignores
+              # primer). In this case delete everything and start from scratch
+              self$delete_incomplete_synthpop()
+              private$gen_synthpop(mc_iter,
+                filename,
+                private$design)
             }
+            # No need to provision for case when all files present.
 
-          } else if (!file.exists(filename$metafile) &&
-                     !all(files_exist)) {
-            # Metafile doesn't exist but some other files exist (ignores
-            # primer). In this case delete everything and start from scratch
-            self$delete_incomplete_synthpop()
-            private$gen_synthpop(mc_iter,
-                                 filename,
-                                 private$design)
+            return(NULL)
           }
-          # No need to provision for case when all files present.
+        } else {
+          foreach(
+            mc_iter = mc_,
+            .inorder = FALSE,
+            .verbose = FALSE,
+            .packages = c(
+              "R6",
+              "gamlss.dist",
+              # For distr in prevalence.R
+              "dqrng",
+              "qs",
+              "fst",
+              "CKutils",
+              "workHORSEmisc",
+              "data.table"
+            ),
+            .export = NULL,
+            .noexport = NULL # c("time_mark")
+          ) %dopar% {
+            data.table::setDTthreads(private$design$sim_prm$n_cpus)
+            fst::threads_fst(private$design$sim_prm$n_cpus)
+            filename <-
+              private$gen_synthpop_filename(mc_iter,
+                private$checksum,
+                private$design)
 
-          return(NULL)
+            # logic for the synthpop load
+            files_exist <- sapply(filename[-4L], file.exists)
+            if (all(!files_exist)) {
+              # No files exist (ignores primer). Create the synthpop and store
+              # the file on disk
+              private$gen_synthpop(mc_iter,
+                filename,
+                private$design)
+
+            } else if (file.exists(filename$metafile) &&
+                !all(files_exist)) {
+              # Metafile exists but not all three files (ignores primer). It means
+              # that most likely a generate_synthpop() is still running. So the
+              # function waits until the file is created before it proceeds to
+              # load it. Note that if this is not the case then the loop is
+              # infinite!!!
+              while (!all(sapply(filename, file.exists)))
+                Sys.sleep(5)
+
+              # Ensure the file write is complete (size stable)
+              sz1 <- file.size(filename$synthpop)
+              Sys.sleep(3)
+              sz2 <- file.size(filename$synthpop)
+              while (sz1 != sz2) {
+                sz1 <- file.size(filename$synthpop)
+                Sys.sleep(3)
+                sz2 <- file.size(filename$synthpop)
+              }
+
+            } else if (!file.exists(filename$metafile) &&
+                !all(files_exist)) {
+              # Metafile doesn't exist but some other files exist (ignores
+              # primer). In this case delete everything and start from scratch
+              self$delete_incomplete_synthpop()
+              private$gen_synthpop(mc_iter,
+                filename,
+                private$design)
+            }
+            # No need to provision for case when all files present.
+
+            return(NULL)
+          }
         }
-
         invisible(self)
       },
 
