@@ -188,11 +188,21 @@ SynthPop <-
       #' @return The invisible `SynthPop` object.
       delete_synthpop = function(mc_, spare_primer = TRUE, check_checksum = TRUE) {
         if (is.null(mc_)) {
-          fl <- list.files(
-            private$synthpop_dir,
-            full.names = TRUE,
-            recursive = TRUE
-          )
+          if (check_checksum) {
+            fl <- list.files(
+              private$synthpop_dir,
+              pattern = paste0("^synthpop_", private$checksum),
+              full.names = TRUE,
+              recursive = TRUE
+            )
+          } else {
+            fl <- list.files(
+              private$synthpop_dir,
+              full.names = TRUE,
+              recursive = TRUE
+            )
+          }
+
           if (spare_primer)
             fl <- grep("_primer.fst$", fl, invert = TRUE, value = TRUE)
 
