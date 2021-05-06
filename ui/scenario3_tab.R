@@ -1088,7 +1088,7 @@ fluidRow(
     h5("Structural Policies / Calibration"),
     h6("In this section the effect of implementing structural/population level
        strategies  can be modelled, in addition",
-       "to the health checks programm specified above",
+       "to the health checks programm specified above.",
        "On occasion, this section can be used to calibrate the synthetic
         population exposure to risk factors."),
     HTML("<br> <br/> "),
@@ -1174,7 +1174,7 @@ fluidRow(
              -20,
              20,
              0,
-             0.1,
+             0.01,
              sep = "",
              ticks = FALSE,
              post  = " %"
