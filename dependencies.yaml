@@ -26,6 +26,7 @@
 - doFuture
 - future.apply
 - digest
+- piggyback
 - data.table
 # - gamlss, # only necessary when fitting the models
 # - gamlss.tr, # only necessary when fitting the models
