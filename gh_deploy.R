@@ -8,7 +8,6 @@ if (interactive()) {
 } else { # used with Rscript
   # i.e. Rscript /root/workHORSE/gh_deploy.R "/root/workHORSE/"
   args <- commandArgs(TRUE)
-  print(args)
   pb_download(dest = args, repo = repo, tag = tag, show_progress = FALSE)
 }
 
