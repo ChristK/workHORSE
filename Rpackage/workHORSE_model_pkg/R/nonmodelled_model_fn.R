@@ -24,8 +24,7 @@ nonmodelled_model <- function(
   scenario_nam,
   mc, # Not currently used. For consistency
   dt,
-  design,
-  lags_mc,
+  design_,
   timing = TRUE) {
 
   message("Estimating deaths from non-modelled causes...")
@@ -42,7 +41,7 @@ nonmodelled_model <- function(
     exps_nam <-  gsub("_curr_xps$", "_lagged", exps_tolag)
     for (i in seq_along(exps_tolag)) {
       set(dt, NULL, exps_nam[i],
-        dt[, shift_bypid(get(exps_tolag[i]), lags_mc$nonmodelled, pid)])
+        dt[, shift_bypid(get(exps_tolag[i]), design_$lags_mc$nonmodelled, pid)])
     }
 
   } else {
@@ -62,7 +61,7 @@ nonmodelled_model <- function(
         exps_tolag)
     for (i in seq_along(exps_tolag)) {
       set(dt, NULL, exps_nam[i],
-        dt[, shift_bypid(get(exps_tolag[i]), lags_mc$nonmodelled_lag, pid)])
+        dt[, shift_bypid(get(exps_tolag[i]), design_$lags_mc$nonmodelled_lag, pid)])
     }
   }
 
@@ -70,18 +69,18 @@ nonmodelled_model <- function(
   # factors as determinants of premature mortality: a multicohort study and
   # meta-analysis of 1·7 million men and women. The Lancet 2017;389:1229–37.
   # figure 4
-  tt <- get_rr_mc(mc, "nonmodelled", "tobacco", design$stochastic)
+  tt <- RR$tobacco_nonmodelled$get_rr(mc, design_, drop = TRUE)
   set(dt, NULL, "tobacco_rr", 1)
   dt[smok_status_lagged == "4", tobacco_rr := tt]
   # dt[, summary(tobacco_rr)]
 
-  tt <- get_rr_mc(mc, "nonmodelled", "t2dm", design$stochastic)
+  tt <- RR$t2dm_nonmodelled$get_rr(mc, design_, drop = TRUE)
   set(dt, NULL, "t2dm_rr", 1)
   dt[t2dm_prvl_lagged > 0L, t2dm_rr := tt]
   dt[, nonmodelled_mrtl_t2dm_mltp := tt]
   # dt[, summary(t2dm_rr)]
 
-  tt <- get_rr_mc(mc, "nonmodelled", "pa", design$stochastic)
+  tt <- RR$pa_nonmodelled$get_rr(mc, design_, drop = TRUE)
   set(dt, NULL, "pa_rr", 1)
   dt[active_days_lagged < 2L, pa_rr := tt]
   # dt[, summary(pa_rr)]
@@ -89,13 +88,13 @@ nonmodelled_model <- function(
   # One unit of alcohol (UK) is defined as 8 grams of pure alcohol.
   # The study uses cut-off 21 units for men and 14 for women per week.
   # In grams 24g for men and 16g for women
-  tt <- get_rr_mc(mc, "nonmodelled", "alcohol", design$stochastic)
+  tt <- RR$alcohol_nonmodelled$get_rr(mc, design_, drop = TRUE)
   set(dt, NULL, "alcohol_rr", 1)
   dt[(sex == "men" & alcohol_lagged > 24)|
       (sex == "women" & alcohol_lagged > 16), alcohol_rr := tt]
   # dt[, summary(alcohol_rr)]
 
-  tt <- get_rr_mc(mc, "nonmodelled", "sbp", design$stochastic)
+  tt <- RR$sbp_nonmodelled$get_rr(mc, design_, drop = TRUE)
   set(dt, NULL, "sbp_rr", 1)
   dt[sbp_lagged > 140, sbp_rr := tt]
   # dt[, summary(sbp_rr)]
@@ -106,7 +105,7 @@ nonmodelled_model <- function(
   #cat("Estimating nonmodelled PAF...\n")
   if (!"p0_nonmodelled" %in% names(dt)) {
     nonmodelledparf <-
-      dt[between(age, design$ageL, design$ageH) & year == design$init_year,
+      dt[between(age, design_$sim_prm$ageL, design_$sim_prm$ageH) & year == design_$sim_prm$init_year,
          .(parf = 1 - 1 / (
            sum(
              tobacco_rr * sbp_rr * pa_rr * alcohol_rr * t2dm_rr
@@ -123,7 +122,7 @@ nonmodelled_model <- function(
     # }
     # , keyby = .(sex, qimd)]
 
-    tt <- get_lifetable_all(mc, "nonmodelled", design, "qx")[year == design$init_year][, year := NULL]
+    tt <- get_lifetable_all(mc, "nonmodelled", design_$sim_prm, "qx")[year == design_$sim_prm$init_year][, year := NULL]
     absorb_dt(nonmodelledparf, tt)
     nonmodelledparf[, p0_nonmodelled := qx_mc * (1 - parf)]
     # nonmodelledparf[, summary(p0_nonmodelled)]
@@ -142,7 +141,7 @@ nonmodelled_model <- function(
 
     # Calibration
     # dt[, prb_nonmodelled_mrtl_not2dm := prb_nonmodelled_mrtl_not2dm * 1.15]
-    # tt <- get_lifetable_all(mc, "nonmodelled", design, "qx")
+    # tt <- get_lifetable_all(mc, "nonmodelled", design_, "qx")
     # dt[tt, on = .NATURAL, prb_nonmodelled_mrtl_not2dm := qx_mc]
     # dt[, nonmodelled_mrtl_t2dm_mltp := 1]
 

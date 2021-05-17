@@ -26,8 +26,7 @@ chd_model <-
     scenario_nam,
     mc,
     dt,
-    design,
-    lags_mc = lags_mc,
+    design_,
     diagnosis_prb = 1,
     timing = TRUE) {
 
@@ -45,7 +44,7 @@ chd_model <-
       exps_nam <-  gsub("_curr_xps$", "_lagged", exps_tolag)
       for (i in seq_along(exps_tolag)) {
         set(dt, NULL, exps_nam[i],
-          dt[, shift_bypid(get(exps_tolag[i]), lags_mc$cvd_lag, pid)])
+          dt[, shift_bypid(get(exps_tolag[i]), design_$lags_mc$cvd_lag, pid)])
       }
 
     } else {
@@ -65,7 +64,7 @@ chd_model <-
           "_lagged",
           exps_tolag)
       for (i in seq_along(exps_tolag)) {
-        set(dt, NULL, exps_nam[i], dt[, shift_bypid(get(exps_tolag[i]), lags_mc$cvd_lag, pid)])
+        set(dt, NULL, exps_nam[i], dt[, shift_bypid(get(exps_tolag[i]), design_$lags_mc$cvd_lag, pid)])
       }
     }
 
@@ -77,7 +76,7 @@ chd_model <-
     #factor for coronary heart disease in women compared with men: a systematic
     #review and meta-analysis of prospective cohort studies. The Lancet. 2011
     #Oct 14;378(9799):1297–305. Appendix webfigure 8 cat("smoking RR\n")
-    tt <- get_rr_mc(mc, "chd", "tobacco", design$stochastic)
+    tt <- RR$tobacco_chd$get_rr(mc, design_, drop = TRUE)
     setnames(tt, "smok_status", "smok_status_lagged")
     absorb_dt(dt, tt)
     setnafill(dt, "c", 1, cols = "tobacco_rr")
@@ -91,7 +90,7 @@ chd_model <-
       data.table(
         ets_lagged = 1L,
         smok_status_lagged = as.character(1:3),
-        ets_rr = get_rr_mc(mc, "chd", "ets", design$stochastic)
+        ets_rr = RR$ets_chd$get_rr(mc, design_, drop = TRUE)
       )
     absorb_dt(dt, tt)
     setnafill(dt, "c", 1, cols = "ets_rr")
@@ -103,10 +102,10 @@ chd_model <-
     # mortality: a meta-analysis of individual data for one million adults in 61
     # prospective studies. The Lancet. 2002 Dec 14;360(9349):1903–1913" Figure 5
     #cat("sbp RR\n")
-    tt <- get_rr_mc(mc, "chd", "sbp", design$stochastic)
+    tt <- RR$sbp_chd$get_rr(mc, design_, drop = TRUE)
     absorb_dt(dt, tt)
     dt[, sbp_rr := clamp(sbp_rr ^ ((
-      get_rr_mc(mc, "chd", "sbp_tmred", design$stochastic) - sbp_lagged
+      RR$sbptmred_chd$get_rr(mc, design_, drop = TRUE) - sbp_lagged
     ) / 20), 1, 20)]
     setnafill(dt, "c", 1, cols = "sbp_rr")
     # dt[, summary(sbp_rr)]
@@ -117,7 +116,7 @@ chd_model <-
     # studies with 55.000 vascular deaths. The Lancet. 2007 Dec
     # 7;370(9602):1829–39. Appendix Webtable 6  fully adjusted
     #cat("chol RR\n")
-    tt <- get_rr_mc(mc, "chd", "tchol", design$stochastic)
+    tt <- RR$tchol_chd$get_rr(mc, design_, drop = TRUE)
     absorb_dt(dt, tt)
     dt[, tchol_rr := clamp(tchol_rr ^ (3.8 - tchol_lagged), 1, 20)]
     setnafill(dt, "c", 1, cols = "tchol_rr")
@@ -132,7 +131,7 @@ chd_model <-
     # of diabetes, and total and HDL cholesterol) and figure 2 for age specific
     # gradient
     #cat("bmi RR\n")
-    tt <- get_rr_mc(mc, "chd", "bmi", design$stochastic)
+    tt <- RR$bmi_chd$get_rr(mc, design_, drop = TRUE)
     absorb_dt(dt, tt)
     dt[, bmi_rr := clamp(bmi_rr ^ ((bmi_lagged - 20) / 4.56), 1, 20)]
     setnafill(dt, "c", 1, cols = "bmi_rr")
@@ -145,7 +144,7 @@ chd_model <-
     # were adjusted for age, smoking status, body-mass index, and  systolic
     # blood pressure)
     #cat("diab RR\n")
-    tt <- get_rr_mc(mc, "chd", "t2dm", design$stochastic)
+    tt <- RR$t2dm_chd$get_rr(mc, design_, drop = TRUE)
     tt[, i.t2dm_prvl_lagged := 1L]
     dt[tt, on = .(age, t2dm_prvl_lagged >= i.t2dm_prvl_lagged), t2dm_parf_rr := i.t2dm_rr]
     setnafill(dt, "c", 1, cols = "t2dm_parf_rr")
@@ -159,10 +158,10 @@ chd_model <-
     # Fruit and Vegetable Consumption and Risk of Coronary Heart Disease: A
     # Meta-Analysis of Cohort Studies. J Nutr. 2006 Oct 1;136(10):2588–93. To
     # avoid negative PAF an optimal level of F&V has to be set arbitrarily. I
-    # set it to 10 when convert porftvg from categorical to numeric I create
+    # set it to 7 when convert porftvg from categorical to numeric I create
     # bias. eg 1=less than 1 portion
     #cat("fv RR\n")
-    dt[, fv_rr := clamp(get_rr_mc(mc, "chd", "fv", design$stochastic) ^
+    dt[, fv_rr := clamp(RR$fv_chd$get_rr(mc, design_, drop = TRUE) ^
         ((fruit_lagged + veg_lagged - 80 * 7) / 80),
       1,
       30)] # no benefit after 7 portions
@@ -173,7 +172,7 @@ chd_model <-
     # WHO [cited 2014 Jan 30];Available from: http://www.who.int/publications/cra/en/
     # Table 10.19 (with adjustment for measurement error)
     #cat("pa RR\n")
-    tt <- get_rr_mc(mc, "chd", "pa", design$stochastic)
+    tt <- RR$pa_chd$get_rr(mc, design_, drop = TRUE)
     setnames(tt, "active_days", "active_days_lagged")
     absorb_dt(dt, tt)
     setnafill(dt, "c", 1, cols = "pa_rr")
@@ -185,14 +184,14 @@ chd_model <-
     # health record cohort of 1 million patients. PLOS ONE. 2017 Jun
     # 9;12(6):e0178945. Fig 3
     #cat("ethnicity RR\n")
-    tt <- get_rr_mc(mc, "chd", "ethnicity", design$stochastic)
+    tt <- RR$ethnicity_chd$get_rr(mc, design_, drop = TRUE)
     absorb_dt(dt, tt)
     setnafill(dt, "c", 1, cols = "ethnicity_rr")
     # dt[, summary(ethnicity_rr)]
 
     # From GBD 2017
     # Highest alcohol intake 72g/d
-    tt <- get_rr_mc(mc, "chd", "alcohol", design$stochastic)
+    tt <- RR$alcohol_chd$get_rr(mc, design_, drop = TRUE)
     setnames(tt, "alcohol", "alcohol_lagged")
     dt[alcohol_lagged > max(tt$alcohol_lagged),
       alcohol_lagged := max(tt$alcohol_lagged)]
@@ -213,8 +212,8 @@ chd_model <-
     # alcohol)
     if (!"p0_chd" %in% names(dt)) {
       chdparf <-
-        dt[between(age, design$ageL, design$ageH) &
-            chd_prvl == 0 & year == design$init_year,
+        dt[between(age, design_$sim_prm$ageL, design_$sim_prm$ageH) &
+            chd_prvl == 0 & year == design_$sim_prm$init_year,
           .(parf = 1 - 1 / (
             sum(
               tobacco_rr * ets_rr * sbp_rr * tchol_rr * bmi_rr *
@@ -230,7 +229,7 @@ chd_model <-
       # , keyby = .(sex, qimd)]
 
       absorb_dt(chdparf,
-        get_disease_epi_mc(mc, "chd", "i", "v", design$stochastic))
+        get_disease_epi_mc(mc, "chd", "i", "v", design_$sim_prm$stochastic))
       chdparf[, p0_chd := incidence * (1 - parf)]
       # chdparf[, summary(p0_chd)]
       chdparf[is.na(p0_chd), p0_chd := incidence]
@@ -257,14 +256,14 @@ chd_model <-
     dt[chd_prvl > 0, chd_dgn := clamp(chd_prvl - 5L, 0, 100)]
 
     # Estimate case fatality ----
-    absorb_dt(dt, get_disease_epi_mc(mc, "chd", "f", "v", design$stochastic))
+    absorb_dt(dt, get_disease_epi_mc(mc, "chd", "f", "v", design_$sim_prm$stochastic))
     setnames(dt, "fatality", "prb_chd_mrtl")
 
      } else {
 
       set(dt, NULL, "chd_prvl_sc", 0L)
-      dt[year < design$init_year_fromGUI, chd_prvl_sc := chd_prvl]
-      dt[year == design$init_year_fromGUI & chd_prvl > 1L, chd_prvl_sc := chd_prvl]
+      dt[year < design_$sim_prm$init_year_fromGUI, chd_prvl_sc := chd_prvl]
+      dt[year == design_$sim_prm$init_year_fromGUI & chd_prvl > 1L, chd_prvl_sc := chd_prvl]
 
       # Estimate CHD incidence prbl
       #cat("Estimating CHD incidence without diabetes...\n\n")
@@ -279,8 +278,8 @@ chd_model <-
       dt[, prb_chd_dgn_sc := prb_chd_dgn]
 
       set(dt, NULL, "chd_dgn_sc", 0L)
-      dt[year < design$init_year_fromGUI, chd_dgn_sc := chd_dgn]
-      dt[year == design$init_year_fromGUI & chd_dgn > 1L, chd_dgn_sc := chd_dgn]
+      dt[year < design_$sim_prm$init_year_fromGUI, chd_dgn_sc := chd_dgn]
+      dt[year == design_$sim_prm$init_year_fromGUI & chd_dgn > 1L, chd_dgn_sc := chd_dgn]
 
       # Estimate case fatality
       dt[, prb_chd_mrtl_sc := prb_chd_mrtl]

@@ -112,6 +112,32 @@ if (!exists("default_search_tbl_summary")) default_search_tbl_summary <- ""
 # default column search values
 if (!exists("default_search_columns_tbl_summary")) default_search_columns_tbl_summary <- NULL
 
+
+# RR ----
+# Create a named list of Exposure objects for the files in ./inputs/RR
+fl <- list.files(path = "./inputs/RR/", pattern = ".csvy$")
+fl <- gsub(".csvy$", "", fl)
+fl2 <- strsplit(fl, "_", T)
+fl2 <- lapply(fl2, function(x) {
+  tt <- x[2]
+  if (length(x) > 2) tt <- paste(x[-1], collapse = "_")
+  return(c(x[1], tt))
+})
+
+RR <- mapply(Exposure$new, lapply(fl2, `[[`, 1), lapply(fl2, `[[`, 2))
+names(RR) <- fl
+
+# Read the files in ./inputs/RR
+pfl <- paste0("./inputs/RR/", fl, ".csvy")
+for (i in seq_along(pfl)) {
+  RR[[i]]$read_exps_prm(pfl[[i]], design)
+}
+
+# Generate stochastic RRs
+for (i in seq_along(RR)) {
+  RR[[i]]$gen_stochastic_effect(design, overwrite = FALSE, smooth = FALSE)
+}
+
 # dockerfile_object <- containerit::dockerfile()
 # dockerfile_object
 # containerit::write(dockerfile_object, file = "./dockerfile")

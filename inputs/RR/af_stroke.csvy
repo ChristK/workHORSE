@@ -1,0 +1,50 @@
+#---
+#exps_name: af
+#outcome: stroke
+#distribution: lognormal
+#source: Christiansen et al. 2016
+#notes: For no risk factor and many limitations
+#---
+agegroup,sex,rr,ci_rr
+<1,men,1,1
+01-04,men,1,1
+05-09,men,1,1
+10-14,men,1,1
+15-19,men,1,1
+20-24,men,1,1
+25-29,men,1,1
+30-34,men,2.3,3
+35-39,men,2.3,3
+40-44,men,2.3,3
+45-49,men,2.3,3
+50-54,men,2.3,3
+55-59,men,2.3,3
+60-64,men,1.8,2.2
+65-69,men,1.8,2.2
+70-74,men,1.4,1.7
+75-79,men,1.4,1.7
+80-84,men,1.3,1.5
+85-89,men,1.3,1.5
+90-94,men,1,1
+95-99,men,1,1
+<1,women,1,1
+01-04,women,1,1
+05-09,women,1,1
+10-14,women,1,1
+15-19,women,1,1
+20-24,women,1,1
+25-29,women,1,1
+30-34,women,2.9,5.2
+35-39,women,2.9,5.2
+40-44,women,2.9,5.2
+45-49,women,2.9,5.2
+50-54,women,2.9,5.2
+55-59,women,2.9,5.2
+60-64,women,3.3,4.3
+65-69,women,3.3,4.3
+70-74,women,2.4,2.8
+75-79,women,2.4,2.8
+80-84,women,1.8,2
+85-89,women,1.8,2
+90-94,women,1,1
+95-99,women,1,1

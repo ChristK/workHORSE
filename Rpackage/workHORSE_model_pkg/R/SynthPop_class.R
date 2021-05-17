@@ -1929,8 +1929,7 @@ SynthPop <-
           finalise_synthpop(
             mc_aggr,
             dt,
-            design_$sim_prm,
-            design_$lags_mc
+            design_
           )
 
           generate_rns(

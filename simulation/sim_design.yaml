@@ -27,6 +27,7 @@ kismet: yes
 simsmok_calibration: yes
 validation: no # or yes. Note, no true/false
 max_prvl_for_outputs: 2 # duration 1 is incidence and 2 is prevalence
+iteration_n_max: 1000
 output_dir: ./output/
 synthpop_dir: /mnt/storage_fast/synthpop
 scenarios: ''

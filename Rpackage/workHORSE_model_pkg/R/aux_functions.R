@@ -555,74 +555,6 @@ get_disease_epi_mc <-
 # get disease disease epi parameters for mc
 
 
-#' @export
-get_rr_mc <-
-  function(mc,
-           disease,
-           risk_factor,
-           stochastic = TRUE) {
-    stopifnot(between(mc, 1, 1e3)) # TODO make 1e3 derived from filenam_indx
-    suffix <- paste0(risk_factor, "_", disease)
-    filenam <- paste0("./simulation/rr/", suffix, "_rr_l.fst")
-    filenam_indx <-
-      paste0("./simulation/rr/", suffix, "_rr_indx.fst")
-    if (file.exists(filenam_indx)) {
-      indx <-
-        read_fst(
-          filenam_indx,
-          from = mc,
-          to = mc,
-          as.data.table = TRUE
-        )
-      out <-
-        read_fst(
-          filenam,
-          from = indx$from,
-          to = indx$to,
-          as.data.table = TRUE
-        )
-    } else {
-      out <- read_fst(filenam,
-                      from = mc,
-                      to = mc,
-                      as.data.table = TRUE)
-    }
-    out[, mc := NULL]
-    colnam_rr <- paste0("rr_", suffix)
-    colnam_mean_rr <- paste0("mean_rr_", suffix)
-    if (stochastic) {
-      out[, (colnam_mean_rr) := NULL]
-      setnames(out, colnam_rr, paste0(risk_factor, "_rr"))
-    } else {
-      out[, (colnam_rr) := NULL]
-      setnames(out, colnam_mean_rr, paste0(risk_factor, "_rr"))
-    }
-    if (identical(dim(out), c(1L, 1L)))
-      out <- as.numeric(out)
-    out[]
-  }
-# get_rr_mc(1, "chd", "sbp", TRUE)
-
-
-
-# get_lag_mc <- function(mc, design) {
-#   # argument checks in the helper function get_lag_mc_hlp
-#   nam <- grep("_lag$", names(design), value = TRUE)
-#
-#   if (design$stochastic) {
-#     out <- vector("list", length(nam))
-#     names(out) <- nam
-#     invisible(lapply(nam, function(x) {
-#       out[x] <<-
-#         get_lag_mc_hlp(mc, design[[paste0(x, "_enum")]], design[[x]])
-#     }))
-#   } else {
-#     out <- design[nam]
-#   }
-#   out$plco_lag <- 6L # for lung ca plco formula
-#   out
-# }
-
 
 #' @export
 get_lifetable_all <-
@@ -1424,7 +1356,7 @@ set_attendees <- function(scenario_parms, dt, scenario_nam, parameters_dt,
 }
 
 #' @export
-set_px <- function(scenario_parms, dt, mc, design) {
+set_px <- function(scenario_parms, dt, mc, design_) {
   dt[, "Qrisk2_cat" := Qrisk2(.SD, FALSE, FALSE, FALSE)$Qrisk2_cat]
   atte_colnam <- "attendees_sc"
 
@@ -1487,7 +1419,7 @@ set_px <- function(scenario_parms, dt, mc, design) {
   # dose-specific meta-analysis of lipid changes in randomised, double blind
   # trials. BMC Family Practice 2003;4:18.
 
-  atorv_eff <- get_rr_mc(mc, "tchol", "statins", design$stochastic)
+  atorv_eff <- RR$statins_tchol$get_rr(mc, design_, drop = TRUE)
 
   # adherence <- rpert(1e6, 0.5, 0.9, 1, 8)
   # proportion of prescribed dose taken
@@ -1867,7 +1799,7 @@ run_scenario <-
       set_eligible(scenario_parms[[sc]], dt$pop, hlp)
       set_invitees(scenario_parms[[sc]], dt$pop, hlp)
       set_attendees(scenario_parms[[sc]], dt$pop, scenario_nam, parameters_dt, design, hlp)
-      set_px(scenario_parms[[sc]], dt$pop, mc, design$sim_prm) # slow
+      set_px(scenario_parms[[sc]], dt$pop, mc, design) # slow
       set_lifestyle(scenario_parms[[sc]], dt$pop, design)
       set_structural(scenario_parms[[sc]], dt$pop, design)
     }
@@ -1880,17 +1812,17 @@ run_scenario <-
     # efficiency No need to recalculate disease probability for everyone only
     # apply disease impact on attendees (works only with kismet == TRUE)
 
-    af_model(                 scenario_nam, mc, dt$pop, design$sim_prm, timing = timing[[2]])
-    htn_model(                scenario_nam, mc, dt$pop, design$sim_prm, timing = timing[[2]])
-    t2dm_model(               scenario_nam, mc, dt$pop, design$sim_prm, design$lags_mc, timing = timing[[2]])
-    chd_model(                scenario_nam, mc, dt$pop, design$sim_prm, design$lags_mc, timing = timing[[2]])
-    stroke_model(             scenario_nam, mc, dt$pop, design$sim_prm, design$lags_mc, timing = timing[[2]])
-    poststroke_dementia_model(scenario_nam, mc, dt$pop, design$sim_prm, design$lags_mc, timing = timing[[2]])
-    copd_model(               scenario_nam, mc, dt$pop, design$sim_prm, design$lags_mc, timing = timing[[2]])
-    lung_ca_model(            scenario_nam, mc, dt$pop, design$sim_prm, design$lags_mc, timing = timing[[2]])
-    colon_ca_model(           scenario_nam, mc, dt$pop, design$sim_prm, design$lags_mc, timing = timing[[2]])
-    breast_ca_model(          scenario_nam, mc, dt$pop, design$sim_prm, design$lags_mc, timing = timing[[2]])
-    nonmodelled_model(        scenario_nam, mc, dt$pop, design$sim_prm, design$lags_mc, timing = timing[[2]])
+    af_model(                 scenario_nam, mc, dt$pop, design, timing = timing[[2]])
+    htn_model(                scenario_nam, mc, dt$pop, design, timing = timing[[2]])
+    t2dm_model(               scenario_nam, mc, dt$pop, design, timing = timing[[2]])
+    chd_model(                scenario_nam, mc, dt$pop, design, timing = timing[[2]])
+    stroke_model(             scenario_nam, mc, dt$pop, design, timing = timing[[2]])
+    poststroke_dementia_model(scenario_nam, mc, dt$pop, design, timing = timing[[2]])
+    copd_model(               scenario_nam, mc, dt$pop, design, timing = timing[[2]])
+    lung_ca_model(            scenario_nam, mc, dt$pop, design, timing = timing[[2]])
+    colon_ca_model(           scenario_nam, mc, dt$pop, design, timing = timing[[2]])
+    breast_ca_model(          scenario_nam, mc, dt$pop, design, timing = timing[[2]])
+    nonmodelled_model(        scenario_nam, mc, dt$pop, design, timing = timing[[2]])
 
     output <- gen_output(scenario_nam, design$sim_prm, design$lags_mc, dt$pop, output)
 
@@ -1906,7 +1838,6 @@ finalise_synthpop <-
   function(mc,
            dt,
            design,
-           lags_mc,
            timing = c(TRUE, FALSE)) {
     message("Finalising synthpop...")
     if (timing[[1]])
@@ -1914,15 +1845,15 @@ finalise_synthpop <-
     init_prevalence(mc, dt, design, timing = timing[[2]])
     af_model("", mc, dt, design, timing = timing[[2]])
     htn_model("", mc, dt, design, timing = timing[[2]])
-    t2dm_model("", mc, dt, design, lags_mc, timing = timing[[2]])
-    nonmodelled_model("", mc, dt, design, lags_mc, timing = timing[[2]])
-    chd_model("", mc, dt, design, lags_mc, timing = timing[[2]])
-    stroke_model("", mc, dt, design, lags_mc, timing = timing[[2]])
-    poststroke_dementia_model("", mc, dt, design, lags_mc, timing = timing[[2]])
-    copd_model("", mc, dt, design, lags_mc, timing = timing[[2]])
-    lung_ca_model("", mc, dt, design, lags_mc, timing = timing[[2]])
-    colon_ca_model("", mc, dt, design, lags_mc, timing = timing[[2]])
-    breast_ca_model("", mc, dt, design, lags_mc, timing = timing[[2]])
+    t2dm_model("", mc, dt, design, timing = timing[[2]])
+    nonmodelled_model("", mc, dt, design, timing = timing[[2]])
+    chd_model("", mc, dt, design, timing = timing[[2]])
+    stroke_model("", mc, dt, design, timing = timing[[2]])
+    poststroke_dementia_model("", mc, dt, design, timing = timing[[2]])
+    copd_model("", mc, dt, design, timing = timing[[2]])
+    lung_ca_model("", mc, dt, design, timing = timing[[2]])
+    colon_ca_model("", mc, dt, design, timing = timing[[2]])
+    breast_ca_model("", mc, dt, design, timing = timing[[2]])
     if (timing[[1]])
       print(proc.time() - ptm)
   }
@@ -2201,22 +2132,22 @@ export_all_prvl <-
 simulate_init_prvl <-
   function(mc,
            disease,
-           design = design,
+           design_ = design_$sim_prm,
            dt = POP) {
-    tbl <- get_disease_epi_mc(mc, disease, "p", "v", design$stochastic)
+    tbl <- get_disease_epi_mc(mc, disease, "p", "v", design_$sim_prm$stochastic)
     incd <-
-      get_disease_epi_mc(mc, disease, "i", "v", design$stochastic)
+      get_disease_epi_mc(mc, disease, "i", "v", design_$sim_prm$stochastic)
     absorb_dt(tbl, incd)
     tbl[, prevalence := prevalence - incidence]
-    tbl[, year := design$init_year]
+    tbl[, year := design_$sim_prm$init_year]
     # given init year is 13 and close enough to 11 which I have epi for
     col_nam <- setdiff(names(tbl), names(dt))
     absorb_dt(dt, tbl)
     nam <- paste0(disease, "_prvl")
-    dt[year == design$init_year, (nam) := as.integer(dqrunif(.N) < prevalence)]
+    dt[year == design_$sim_prm$init_year, (nam) := as.integer(dqrunif(.N) < prevalence)]
     # faster than rbinom
-    dt[year > design$init_year &
-         age == design$ageL, (nam) := as.integer(dqrunif(.N) < prevalence)]
+    dt[year > design_$sim_prm$init_year &
+         age == design_$sim_prm$ageL, (nam) := as.integer(dqrunif(.N) < prevalence)]
     # faster than rbinom
     setnafill(dt, "c", 0L, cols = nam)
     dt[, (col_nam) := NULL]

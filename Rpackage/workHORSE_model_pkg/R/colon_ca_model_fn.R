@@ -26,8 +26,7 @@ colon_ca_model <-
     scenario_nam,
     mc,
     dt,
-    design,
-    lags_mc,
+    design_,
     diagnosis_prb = 0.7,
     timing = TRUE) {
     message("Loading colon cancer (C18) model...")
@@ -44,7 +43,7 @@ colon_ca_model <-
         names(dt), value = TRUE)
       exps_nam <-  gsub("_curr_xps$", "_lagged", exps_tolag)
       for (i in seq_along(exps_tolag)) {
-        set(dt, NULL, exps_nam[i], dt[, shift_bypid(get(exps_tolag[i]), lags_mc$cancer_lag, pid)])
+        set(dt, NULL, exps_nam[i], dt[, shift_bypid(get(exps_tolag[i]), design_$lags_mc$cancer_lag, pid)])
       }
 
     } else {
@@ -63,7 +62,7 @@ colon_ca_model <-
       exps_nam <-
         gsub("_curr_xps$|_sc$", "_lagged", exps_tolag)
       for (i in seq_along(exps_tolag)) {
-        set(dt, NULL, exps_nam[i], dt[, shift_bypid(get(exps_tolag[i]), lags_mc$cvd_lag, pid)])
+        set(dt, NULL, exps_nam[i], dt[, shift_bypid(get(exps_tolag[i]), design_$lags_mc$cvd_lag, pid)])
       }
     }
 
@@ -75,7 +74,7 @@ colon_ca_model <-
     # Few studies have separate colon cancer RR thus results are non significant
     # I will use packyears for this and only consider incidence and not mortality
     # Table III and text for CI
-    tt <- get_rr_mc(mc, "colon_ca", "packyears", design$stochastic)
+    tt <- RR$packyears_colon_ca$get_rr(mc, design_, drop = TRUE)
     setnames(tt, "packyears", "smok_packyrs_lagged")
     dt[smok_packyrs_lagged > max(tt$smok_packyrs_lagged),
       smok_packyrs_lagged := max(tt$smok_packyrs_lagged)]
@@ -84,7 +83,7 @@ colon_ca_model <-
     # dt[, summary(packyears_rr)]
 
     # RR for alcohol from GBD 2016
-    tt <- get_rr_mc(mc, "colon_ca", "alcohol", design$stochastic)
+    tt <- RR$alcohol_colon_ca$get_rr(mc, design_, drop = TRUE)
     setnames(tt, "alcohol", "alcohol_lagged")
     dt[alcohol_lagged > max(tt$alcohol_lagged),
       alcohol_lagged := max(tt$alcohol_lagged)]
@@ -97,14 +96,14 @@ colon_ca_model <-
     # Geneva: World Health Organisation; 2004.
     # Available from: http://www.who.int/publications/cra/en/
     # table 10.22, p111, estimates with adjustment for measurement error
-    tt <- get_rr_mc(mc, "colon_ca", "pa", design$stochastic)
+    tt <- RR$pa_colon_ca$get_rr(mc, design_, drop = TRUE)
     setnames(tt, "active_days", "active_days_lagged")
     absorb_dt(dt, tt)
     setnafill(dt, "c", 1, cols = "pa_rr")
     # dt[, summary(pa_rr)]
 
     # RR for BMI from GBD
-    tt <- get_rr_mc(mc, "colon_ca", "bmi", design$stochastic)
+    tt <- RR$bmi_colon_ca$get_rr(mc, design_, drop = TRUE)
     absorb_dt(dt, tt)
     dt[, bmi_rr := clamp(bmi_rr ^ ((bmi_lagged - 20) / 5), 1, 20)]
     setnafill(dt, "c", 1, cols = "bmi_rr")
@@ -112,7 +111,7 @@ colon_ca_model <-
 
     # RR for t2dm from GBD
     set(dt, NULL, "t2dm_rr", 1)
-    tt <- get_rr_mc(mc, "colon_ca", "t2dm", design$stochastic)
+    tt <- RR$t2dm_colon_ca$get_rr(mc, design_, drop = TRUE)
     dt[t2dm_prvl_lagged > 0, t2dm_rr := tt]
 
     nam <- grep("_rr$", names(dt), value = TRUE)
@@ -125,8 +124,8 @@ colon_ca_model <-
     #cat("Estimating colon_ca PAF...\n")
     if (!"p0_colon_ca" %in% names(dt)) {
       colon_caparf <-
-        dt[between(age, design$ageL, design$ageH) &
-            colon_ca_prvl == 0 & year == design$init_year,
+        dt[between(age, design_$sim_prm$ageL, design_$sim_prm$ageH) &
+            colon_ca_prvl == 0 & year == design_$sim_prm$init_year,
           .(parf = 1 - 1 / (sum(packyears_rr * alcohol_rr * pa_rr * bmi_rr *
               t2dm_rr) / .N)),
           keyby = .(age, sex, qimd)]
@@ -138,7 +137,7 @@ colon_ca_model <-
       # , keyby = .(sex, qimd)]
 
       absorb_dt(colon_caparf,
-        get_disease_epi_mc(mc, "colon_ca", "i", "v", design$stochastic))
+        get_disease_epi_mc(mc, "colon_ca", "i", "v", design_$sim_prm$stochastic))
       colon_caparf[, p0_colon_ca := incidence * (1 - parf)]
       # colon_caparf[, summary(p0_colon_ca)]
       colon_caparf[is.na(p0_colon_ca), p0_colon_ca := incidence]
@@ -156,8 +155,7 @@ colon_ca_model <-
       dt[, prb_colon_ca_incd_not2dm :=
           p0_colon_ca * packyears_rr * alcohol_rr * pa_rr * bmi_rr]
       # Remember no t2dm as this will be a multiplier
-      dt[, colon_ca_incd_t2dm_mltp := get_rr_mc(mc,
-        "colon_ca", "t2dm", design$stochastic)]
+      dt[, colon_ca_incd_t2dm_mltp := RR$t2dm_colon_ca$get_rr(mc, design_, drop = TRUE)]
 
 
       dt[, (grep("_rr$", names(dt), value = TRUE)) := NULL]
@@ -172,7 +170,7 @@ colon_ca_model <-
 
       # Estimate case fatality ----
       absorb_dt(dt,
-                get_disease_epi_mc(mc, "colon_ca", "f", "v", design$stochastic))
+                get_disease_epi_mc(mc, "colon_ca", "f", "v", design_$sim_prm$stochastic))
       setnames(dt, "fatality", "prb_colon_ca_mrtl")
 
 
@@ -180,8 +178,8 @@ colon_ca_model <-
     } else {
 
       set(dt, NULL, "colon_ca_prvl_sc", 0L)
-      dt[year < design$init_year_fromGUI, colon_ca_prvl_sc := colon_ca_prvl]
-      dt[year == design$init_year_fromGUI & colon_ca_prvl > 1L,
+      dt[year < design_$sim_prm$init_year_fromGUI, colon_ca_prvl_sc := colon_ca_prvl]
+      dt[year == design_$sim_prm$init_year_fromGUI & colon_ca_prvl > 1L,
          colon_ca_prvl_sc := colon_ca_prvl]
 
       # Estimate colon cancer incidence prbl
@@ -197,8 +195,8 @@ colon_ca_model <-
       dt[, prb_colon_ca_dgn_sc := prb_colon_ca_dgn]
 
       set(dt, NULL, "colon_ca_dgn_sc", 0L)
-      dt[year < design$init_year_fromGUI, colon_ca_dgn_sc := colon_ca_dgn]
-      dt[year == design$init_year_fromGUI & colon_ca_dgn >= 1L, colon_ca_dgn_sc := colon_ca_dgn]
+      dt[year < design_$sim_prm$init_year_fromGUI, colon_ca_dgn_sc := colon_ca_dgn]
+      dt[year == design_$sim_prm$init_year_fromGUI & colon_ca_dgn >= 1L, colon_ca_dgn_sc := colon_ca_dgn]
 
       # Estimate case fatality
       dt[, prb_colon_ca_mrtl_sc := prb_colon_ca_mrtl]

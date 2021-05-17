@@ -26,8 +26,7 @@ breast_ca_model <-
     scenario_nam,
     mc,
     dt,
-    design,
-    lags_mc,
+    design_,
     diagnosis_prb = 0.7,
     timing = TRUE) {
     message("Loading breast cancer (C50) model...")
@@ -40,7 +39,7 @@ breast_ca_model <-
       exps_nam <-  gsub("_curr_xps$", "_lagged", exps_tolag)
       for (i in seq_along(exps_tolag)) {
         set(dt, NULL, exps_nam[i],
-          dt[, shift_bypid(get(exps_tolag[i]), lags_mc$cancer_lag, pid)])
+          dt[, shift_bypid(get(exps_tolag[i]), design_$lags_mc$cancer_lag, pid)])
       }
     } else {
 
@@ -58,7 +57,7 @@ breast_ca_model <-
           "_lagged",
           exps_tolag)
       for (i in seq_along(exps_tolag)) {
-        set(dt, NULL, exps_nam[i], dt[, shift_bypid(get(exps_tolag[i]), lags_mc$cvd_lag, pid)])
+        set(dt, NULL, exps_nam[i], dt[, shift_bypid(get(exps_tolag[i]), design_$lags_mc$cvd_lag, pid)])
       }
 
     }
@@ -67,7 +66,7 @@ breast_ca_model <-
     # and passive smoking and risk of breast cancer: a meta-analysis.
     # Breast Cancer Res Treat 2015;154:213–24.
     # Table 1
-    tt <- get_rr_mc(mc, "breast_ca", "tobacco", design$stochastic)
+    tt <- RR$tobacco_breast_ca$get_rr(mc, design_, drop = TRUE)
     setnames(tt, "smok_status", "smok_status_lagged")
     absorb_dt(dt, tt)
     setnafill(dt, "c", 1, cols = "tobacco_rr")
@@ -80,13 +79,14 @@ breast_ca_model <-
         ets_lagged = 1L,
         sex = "women",
         smok_status_lagged = as.character(1:2),
-        ets_rr = get_rr_mc(mc, "breast_ca", "ets", design$stochastic)
+        ets_rr = RR$ets_breast_ca$get_rr(mc, design_, drop = TRUE)
       )
     absorb_dt(dt, tt)
     setnafill(dt, "c", 1, cols = "ets_rr")
 
     # RR for alcohol from GBD 2016
-    tt <- get_rr_mc(mc, "breast_ca", "alcohol", design$stochastic)
+    tt <-
+      RR$alcohol_breast_ca$get_rr(mc, design_, drop = TRUE)
     setnames(tt, "alcohol", "alcohol_lagged")
     dt[alcohol_lagged > max(tt$alcohol_lagged),
       alcohol_lagged := max(tt$alcohol_lagged)]
@@ -100,7 +100,8 @@ breast_ca_model <-
     # Geneva: World Health Organisation; 2004.
     # Available from: http://www.who.int/publications/cra/en/
     # table 10.21, estimates with adjustment for measurement error
-    tt <- get_rr_mc(mc, "breast_ca", "pa", design$stochastic)
+    tt <-
+      RR$pa_breast_ca$get_rr(mc, design_, drop = TRUE)
     setnames(tt, "active_days", "active_days_lagged")
     absorb_dt(dt, tt)
     setnafill(dt, "c", 1, cols = "pa_rr")
@@ -108,7 +109,7 @@ breast_ca_model <-
     # dt[, summary(pa_rr)]
 
     # RR for BMI from GBD
-    tt <- get_rr_mc(mc, "breast_ca", "bmi", design$stochastic)
+    tt <- RR$bmi_breast_ca$get_rr(mc, design_, drop = TRUE)
     absorb_dt(dt, tt)
     dt[, bmi_rr := clamp(bmi_rr ^ ((bmi_lagged - 20) / 5), 1, 20)]
     setnafill(dt, "c", 1, cols = "bmi_rr")
@@ -117,7 +118,7 @@ breast_ca_model <-
 
     # RR for t2dm from GBD
     set(dt, NULL, "t2dm_rr", 1)
-    tt <- get_rr_mc(mc, "breast_ca", "t2dm", design$stochastic)
+    tt <- RR$t2dm_breast_ca$get_rr(mc, design_, drop = TRUE)
     dt[t2dm_prvl_lagged > 0, t2dm_rr := tt]
     dt[sex == "men", t2dm_rr := 1]
 
@@ -131,8 +132,8 @@ breast_ca_model <-
     #cat("Estimating breast_ca PAF...\n")
     if (!"p0_breast_ca" %in% names(dt)) {
       breast_caparf <-
-        dt[between(age, design$ageL, design$ageH) &
-            breast_ca_prvl == 0 & year == design$init_year,
+        dt[between(age, design_$sim_prm$ageL, design_$sim_prm$ageH) &
+            breast_ca_prvl == 0 & year == design_$sim_prm$init_year,
           .(parf = 1 - 1 / (sum(tobacco_rr * ets_rr * alcohol_rr * pa_rr * bmi_rr *
               t2dm_rr) / .N)),
           keyby = .(age, sex, qimd)]
@@ -144,7 +145,7 @@ breast_ca_model <-
       # keyby = .(sex, qimd)]
 
       absorb_dt(breast_caparf,
-        get_disease_epi_mc(mc, "breast_ca", "i", "v", design$stochastic))
+        get_disease_epi_mc(mc, "breast_ca", "i", "v", design_$sim_prm$stochastic))
       breast_caparf[, p0_breast_ca := incidence * (1 - parf)]
       # breast_caparf[, summary(p0_breast_ca)]
       breast_caparf[is.na(p0_breast_ca), p0_breast_ca := incidence]
@@ -161,8 +162,8 @@ breast_ca_model <-
     dt[, prb_breast_ca_incd_not2dm :=
         p0_breast_ca * tobacco_rr * ets_rr * alcohol_rr * pa_rr * bmi_rr]
     # Remember no t2dm as this will be a multiplier
-    dt[, breast_ca_incd_t2dm_mltp := get_rr_mc(mc,
-      "breast_ca", "t2dm", design$stochastic)]
+    dt[, breast_ca_incd_t2dm_mltp :=
+        RR$t2dm_breast_ca$get_rr(mc, design_, drop = TRUE)]
     dt[sex == "men", breast_ca_incd_t2dm_mltp := 1]
 
     dt[, (grep("_rr$", names(dt), value = TRUE)) := NULL]
@@ -177,14 +178,14 @@ breast_ca_model <-
 
     # Estimate case fatality ----
     absorb_dt(dt,
-              get_disease_epi_mc(mc, "breast_ca", "f", "v", design$stochastic))
+              get_disease_epi_mc(mc, "breast_ca", "f", "v", design_$sim_prm$stochastic))
     setnames(dt, "fatality", "prb_breast_ca_mrtl")
 
     } else {
 
       set(dt, NULL, "breast_ca_prvl_sc", 0L)
-      dt[year < design$init_year_fromGUI, breast_ca_prvl_sc := breast_ca_prvl]
-      dt[year == design$init_year_fromGUI & breast_ca_prvl > 1L, breast_ca_prvl_sc := breast_ca_prvl]
+      dt[year < design_$sim_prm$init_year_fromGUI, breast_ca_prvl_sc := breast_ca_prvl]
+      dt[year == design_$sim_prm$init_year_fromGUI & breast_ca_prvl > 1L, breast_ca_prvl_sc := breast_ca_prvl]
 
       # Estimate breast cancer incidence prbl
       #cat("Estimating breast cancer incidence without diabetes...\n\n")
@@ -198,8 +199,8 @@ breast_ca_model <-
       dt[, prb_breast_ca_dgn_sc := prb_breast_ca_dgn]
 
       set(dt, NULL, "breast_ca_dgn_sc", 0L)
-      dt[year < design$init_year_fromGUI, breast_ca_dgn_sc := breast_ca_dgn]
-      dt[year == design$init_year_fromGUI & breast_ca_dgn > 1L, breast_ca_dgn_sc := breast_ca_dgn]
+      dt[year < design_$sim_prm$init_year_fromGUI, breast_ca_dgn_sc := breast_ca_dgn]
+      dt[year == design_$sim_prm$init_year_fromGUI & breast_ca_dgn > 1L, breast_ca_dgn_sc := breast_ca_dgn]
 
       # Estimate case fatality
       dt[, prb_breast_ca_mrtl_sc := prb_breast_ca_mrtl]

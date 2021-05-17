@@ -25,8 +25,7 @@ t2dm_model <-
     scenario_nam,
     mc,
     dt,
-    design,
-    lags_mc,
+    design_,
     diagnosis_prb = 0.6, # probability to diagnosis every year
     postHC_diagnosis_prb = 0.9, # 90% of T2DM after a HC is diagnosed
     timing = TRUE) {
@@ -68,14 +67,14 @@ t2dm_model <-
       # collaborative meta-analysis of randomised statin trials. The Lancet
       # 2010;375:735–42. # They report OR, I assume RR is approximately equal.
       # Mean observation time was 4 years so I lag for 4 years
-      tt <- get_rr_mc(mc, "t2dm", "statins", design$stochastic)
+      tt <- RR$statins_t2dm$get_rr(mc, design_, drop = TRUE)
 
       # Lagged exposures
       exps_tolag <- c("statin_px_sc", "statin_px_curr_xps")
       exps_nam   <- paste0(exps_tolag, "_lagged")
       for (i in seq_along(exps_tolag)) {
         set(dt, NULL, exps_nam[i],
-            dt[, shift_bypid(get(exps_tolag[i]), lags_mc$statin_t2dm_lag, pid, 0L)])
+            dt[, shift_bypid(get(exps_tolag[i]), design_$lags_mc$statin_t2dm_lag, pid, 0L)])
       }
 
       dt[statin_px_sc_lagged == 1L & statin_px_curr_xps_lagged == 0L,
@@ -91,13 +90,13 @@ t2dm_model <-
 
       # prevalence
       set(dt, NULL, "t2dm_prvl_sc", 0L)
-      dt[year < design$init_year_fromGUI, t2dm_prvl_sc := t2dm_prvl]
-      dt[year == design$init_year_fromGUI & t2dm_prvl > 0L, t2dm_prvl_sc := t2dm_prvl]
+      dt[year < design_$sim_prm$init_year_fromGUI, t2dm_prvl_sc := t2dm_prvl]
+      dt[year == design_$sim_prm$init_year_fromGUI & t2dm_prvl > 0L, t2dm_prvl_sc := t2dm_prvl]
 
       # Diagnosis
       set(dt, NULL, colnam_dgn, 0L)
-      dt[year < design$init_year_fromGUI, (colnam_dgn) := t2dm_dgn]
-      dt[year == design$init_year_fromGUI & t2dm_dgn > 1L, (colnam_dgn) := t2dm_dgn]
+      dt[year < design_$sim_prm$init_year_fromGUI, (colnam_dgn) := t2dm_dgn]
+      dt[year == design_$sim_prm$init_year_fromGUI & t2dm_dgn > 1L, (colnam_dgn) := t2dm_dgn]
 
 
       dt[, (paste0("prb_t2dm_dgn", scenario_nam)) := prb_t2dm_dgn]

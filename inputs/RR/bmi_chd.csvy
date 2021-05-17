@@ -1,0 +1,52 @@
+#---
+#exps_name: bmi
+#outcome: chd
+#distribution: lognormal
+#source: The Lancet 2011;377:1085–95. doi:10.1016/S0140-6736(11)60105-0 Table 1
+#notes:
+#  - Adjusted for age, sex, smoking status, systolic blood pressure, history of diabetes, and total and HDL cholesterol) and figure 2 for age specific gradient.
+#  - bmi_rr := bmi_rr ^ ((bmi_lagged - 20) / 4.56)
+#---
+agegroup,sex,rr,ci_rr
+<1,men,1,1
+01-04,men,1,1
+05-09,men,1,1
+10-14,men,1,1
+15-19,men,1,1
+20-24,men,1.213256,1.278837
+25-29,men,1.213256,1.278837
+30-34,men,1.213256,1.278837
+35-39,men,1.213256,1.278837
+40-44,men,1.213256,1.278837
+45-49,men,1.213256,1.278837
+50-54,men,1.213256,1.278837
+55-59,men,1.213256,1.278837
+60-64,men,1.058372,1.115581
+65-69,men,1.058372,1.115581
+70-74,men,1,1
+75-79,men,1,1
+80-84,men,1,1
+85-89,men,1,1
+90-94,men,1,1
+95-99,men,1,1
+<1,women,1,1
+01-04,women,1,1
+05-09,women,1,1
+10-14,women,1,1
+15-19,women,1,1
+20-24,women,1.213256,1.278837
+25-29,women,1.213256,1.278837
+30-34,women,1.213256,1.278837
+35-39,women,1.213256,1.278837
+40-44,women,1.213256,1.278837
+45-49,women,1.213256,1.278837
+50-54,women,1.213256,1.278837
+55-59,women,1.213256,1.278837
+60-64,women,1.058372,1.115581
+65-69,women,1.058372,1.115581
+70-74,women,1,1
+75-79,women,1,1
+80-84,women,1,1
+85-89,women,1,1
+90-94,women,1,1
+95-99,women,1,1

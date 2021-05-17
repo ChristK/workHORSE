@@ -27,7 +27,7 @@ htn_model <-
     scenario_nam,
     mc_iter, # Not used currently, for consistency
     dt,
-    design,
+    design_,
     diagnosis_prb = 0.4,
     postHC_diagnosis_prb = 0.9, # Assumes almost perfect diagnosis of HTN after HC
     timing = TRUE) {
@@ -41,7 +41,7 @@ htn_model <-
 
     # Prevalence
     set(dt, NULL, "htn_prvl", 0L)
-    dt[year == design$init_year &
+    dt[year == design_$sim_prm$init_year &
         (sbp_curr_xps > 140 | bpmed_curr_xps > 0),
       htn_prvl := 1L + rnbinom(.N, age, 0.8)] # Duration of disease is set arbitrarily (not used elsewhere)
     dt[htn_prvl > 0L & htn_prvl > (age - 20L), htn_prvl := age - 20L]
@@ -73,13 +73,13 @@ htn_model <-
 
       # Prevalence
       set(dt, NULL, colnam, 0L)
-      dt[year < design$init_year_fromGUI, (colnam) := htn_prvl]
-      dt[year == design$init_year_fromGUI & htn_prvl > 1L, (colnam) := htn_prvl]
+      dt[year < design_$sim_prm$init_year_fromGUI, (colnam) := htn_prvl]
+      dt[year == design_$sim_prm$init_year_fromGUI & htn_prvl > 1L, (colnam) := htn_prvl]
 
       # Diagnosis
       set(dt, NULL, colnam_dgn, 0L)
-      dt[year < design$init_year_fromGUI, (colnam_dgn) := htn_dgn]
-      dt[year == design$init_year_fromGUI & htn_dgn > 1L, (colnam_dgn) := htn_dgn]
+      dt[year < design_$sim_prm$init_year_fromGUI, (colnam_dgn) := htn_dgn]
+      dt[year == design_$sim_prm$init_year_fromGUI & htn_dgn > 1L, (colnam_dgn) := htn_dgn]
 
       dt[, (paste0("prb_htn_dgn", scenario_nam)) := prb_htn_dgn]
       dt[htn_dgn == 0L & attendees_sc == 1L, paste0("prb_htn_dgn", scenario_nam) := postHC_diagnosis_prb]

@@ -25,8 +25,7 @@ poststroke_dementia_model <-
     scenario_nam,
     mc,
     dt,
-    design,
-    lags_mc, # Not used. For consistency
+    design_,
     diagnosis_prb = 1,
     timing = TRUE)
   {
@@ -41,7 +40,7 @@ poststroke_dementia_model <-
 
     # The probability is based on Eithne's syst review
     if (!nzchar(scenario_nam)) { # first run for scenario ""
-      tt <- get_rr_mc(mc, "dementia", "stroke", design$stochastic)
+      tt <- RR$stroke_dementia$get_rr(mc, design_, drop = TRUE)
       setnames(tt, "stroke_rr", "prb_poststroke_dementia_incd_nostroke")
       absorb_dt(dt, tt)
       setnafill(dt, "c", 1, cols = "prb_poststroke_dementia_incd_nostroke")
@@ -54,13 +53,13 @@ poststroke_dementia_model <-
     } else {
       colnam <- "poststroke_dementia_prvl_sc"
       set(dt, NULL, colnam, 0L)
-      dt[year < design$init_year_fromGUI, (colnam) := poststroke_dementia_prvl]
-      dt[year == design$init_year_fromGUI & poststroke_dementia_prvl > 1L,
+      dt[year < design_$sim_prm$init_year_fromGUI, (colnam) := poststroke_dementia_prvl]
+      dt[year == design_$sim_prm$init_year_fromGUI & poststroke_dementia_prvl > 1L,
          (colnam) := poststroke_dementia_prvl]
 
       colnam <- "prb_poststroke_dementia_incd_nostroke_sc"
       dt[, (colnam) := prb_poststroke_dementia_incd_nostroke]
-      # tt <- get_rr_mc(mc, "dementia", "stroke", design$stochastic)
+      # tt <- RR$stroke_dementia$get_rr(mc, design_, drop = TRUE)
       # setnames(tt, "stroke_rr", colnam)
       # absorb_dt(dt, tt)
       # setnafill(dt, "c", 1, cols = colnam)
@@ -70,8 +69,8 @@ poststroke_dementia_model <-
 
       colnam <- "poststroke_dementia_dgn_sc"
       set(dt, NULL, colnam, 0L)
-      dt[year < design$init_year_fromGUI, (colnam) := poststroke_dementia_dgn]
-      dt[year == design$init_year_fromGUI & poststroke_dementia_dgn > 1L,
+      dt[year < design_$sim_prm$init_year_fromGUI, (colnam) := poststroke_dementia_dgn]
+      dt[year == design_$sim_prm$init_year_fromGUI & poststroke_dementia_dgn > 1L,
          (colnam) := poststroke_dementia_dgn]
 
     }
