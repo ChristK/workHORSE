@@ -96,6 +96,7 @@ Design <-
             "cancer_cure"           ,
             "validation"            ,
             "max_prvl_for_outputs"  ,
+            "iteration_n_max"       ,
             "n_primers"             ,
             "n_synthpop_aggregation"
           ) %in% names(sim_prm),

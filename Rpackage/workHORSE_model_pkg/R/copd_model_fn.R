@@ -26,8 +26,7 @@ copd_model <-
     scenario_nam,
     mc,
     dt,
-    design,
-    lags_mc,
+    design_,
     diagnosis_prb = 0.7,
     timing = TRUE) {
     message("Loading COPD (J40-J47) model...")
@@ -43,7 +42,7 @@ copd_model <-
       names(dt), value = TRUE)
     exps_nam <-  gsub("_curr_xps$", "_lagged", exps_tolag)
     for (i in seq_along(exps_tolag)) {
-      set(dt, NULL, exps_nam[i], dt[, shift_bypid(get(exps_tolag[i]), lags_mc$copd_lag, pid)])
+      set(dt, NULL, exps_nam[i], dt[, shift_bypid(get(exps_tolag[i]), design_$lags_mc$copd_lag, pid)])
     }
     } else {
       # Calculate pack years
@@ -61,7 +60,7 @@ copd_model <-
       exps_nam <-
         gsub("_curr_xps$|_sc$", "_lagged", exps_tolag)
       for (i in seq_along(exps_tolag)) {
-        set(dt, NULL, exps_nam[i], dt[, shift_bypid(get(exps_tolag[i]), lags_mc$copd_lag, pid)])
+        set(dt, NULL, exps_nam[i], dt[, shift_bypid(get(exps_tolag[i]), design_$lags_mc$copd_lag, pid)])
       }
 }
     # RR for tobacco from Forey BA, Thornton AJ, Lee PN. Systematic review with meta
@@ -73,7 +72,7 @@ copd_model <-
     # mortality copd. The problem is that there is no differentiation between current
     # and ex-smokers. This dilutes the effect but currently I see no workaround.
 
-    tt <- get_rr_mc(mc, "copd", "packyears", design$stochastic)
+    tt <- RR$packyears_copd$get_rr(mc, design_, drop = TRUE)
     setnames(tt, "packyears", "smok_packyrs_lagged")
     dt[smok_packyrs_lagged > max(tt$smok_packyrs_lagged),
       smok_packyrs_lagged := max(tt$smok_packyrs_lagged)]
@@ -88,7 +87,7 @@ copd_model <-
       data.table(
         ets_lagged = 1L,
         smok_status_lagged = as.character(1:2),
-        ets_rr = get_rr_mc(mc, "copd", "ets", design$stochastic)
+        ets_rr = RR$ets_copd$get_rr(mc, design_, drop = TRUE)
       )
     absorb_dt(dt, tt)
     setnafill(dt, "c", 1, cols = "ets_rr")
@@ -103,8 +102,8 @@ copd_model <-
     #cat("Estimating COPD PAF...\n")
     if (!"p0_copd" %in% names(dt)) {
       copdparf <-
-        dt[between(age, design$ageL, design$ageH) &
-            copd_prvl == 0 & year == design$init_year,
+        dt[between(age, design_$sim_prm$ageL, design_$sim_prm$ageH) &
+            copd_prvl == 0 & year == design_$sim_prm$init_year,
           .(parf = 1 - 1 / (sum(packyears_rr * ets_rr) / .N)),
           keyby = .(age, sex, qimd)]
       # copdparf[, parf := clamp(predict(loess(parf ~ age, span = 0.5))), by = .(sex, qimd)]
@@ -115,7 +114,7 @@ copd_model <-
       # , keyby = .(sex, qimd)]
 
       absorb_dt(copdparf,
-        get_disease_epi_mc(mc, "copd", "i", "v", design$stochastic))
+        get_disease_epi_mc(mc, "copd", "i", "v", design_$sim_prm$stochastic))
       copdparf[, p0_copd := incidence * (1 - parf)]
       # copdparf[, summary(p0_copd)]
       copdparf[is.na(p0_copd), p0_copd := incidence]
@@ -142,15 +141,15 @@ copd_model <-
     dt[copd_prvl > 0, copd_dgn := clamp(copd_prvl - 5L, 0, 100)]
 
     # Estimate case fatality ----
-    absorb_dt(dt, get_disease_epi_mc(mc, "copd", "f", "v", design$stochastic))
+    absorb_dt(dt, get_disease_epi_mc(mc, "copd", "f", "v", design_$sim_prm$stochastic))
     setnames(dt, "fatality", "prb_copd_mrtl")
 
     dt[, smok_packyrs_curr_xps := NULL]
     } else {
 
       set(dt, NULL, "copd_prvl_sc", 0L)
-      dt[year < design$init_year_fromGUI, copd_prvl_sc := copd_prvl]
-      dt[year == design$init_year_fromGUI & copd_prvl > 1L, copd_prvl_sc := copd_prvl]
+      dt[year < design_$sim_prm$init_year_fromGUI, copd_prvl_sc := copd_prvl]
+      dt[year == design_$sim_prm$init_year_fromGUI & copd_prvl > 1L, copd_prvl_sc := copd_prvl]
 
       # Estimate COPD incidence prbl
       #cat("Estimating COPD incidence...\n\n")
@@ -164,8 +163,8 @@ copd_model <-
       dt[, prb_copd_dgn_sc := prb_copd_dgn]
 
       set(dt, NULL, "copd_dgn_sc", 0L)
-      dt[year < design$init_year_fromGUI, copd_dgn_sc := copd_dgn]
-      dt[year == design$init_year_fromGUI & copd_dgn > 1L, copd_dgn_sc := copd_dgn]
+      dt[year < design_$sim_prm$init_year_fromGUI, copd_dgn_sc := copd_dgn]
+      dt[year == design_$sim_prm$init_year_fromGUI & copd_dgn > 1L, copd_dgn_sc := copd_dgn]
 
       # Estimate case fatality
       dt[, prb_copd_mrtl_sc := prb_copd_mrtl]

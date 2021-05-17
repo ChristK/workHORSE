@@ -25,7 +25,7 @@ af_model <- function(
   scenario_nam,
   mc_iter, # Not currently used. For consistency
   dt,
-  design,
+  design_,
   diagnosis_prb = NA,
   postHC_diagnosis_prb = 0.1, # currently not checked in a HC. TODO link to GUI
   timing = TRUE) {
@@ -38,12 +38,12 @@ af_model <- function(
 
     # Prevalence
     set(dt, NULL, "af_prvl", 0L)
-    dt[year == design$init_year &
+    dt[year == design_$sim_prm$init_year &
         af_prvl_curr_xps > 0, af_prvl := af_prvl_curr_xps]
 
     # Diagnosis
     set(dt, NULL, "af_dgn", 0L)
-    dt[year == design$init_year, af_dgn := af_dgn_curr_xps]
+    dt[year == design_$sim_prm$init_year, af_dgn := af_dgn_curr_xps]
 
     # dt[, prb_af_dgn := prop_if(af_prvl_curr_xps > 0 & af_dgn_curr_xps > 0)/prop_if(af_prvl_curr_xps > 0), keyby = .(age, sex, qimd)]
     dt[, prb_af_dgn := fifelse(af_dgn_curr_xps == 0, 0, 1)]
@@ -56,12 +56,12 @@ af_model <- function(
 
     dt[, af_prvl_sc := af_prvl]
 
-    # dt[year < design$init_year_fromGUI, af_prvl_sc := af_prvl]
-    # dt[year == design$init_year_fromGUI & af_prvl > 1L, af_prvl_sc := af_prvl]
+    # dt[year < design_$sim_prm$init_year_fromGUI, af_prvl_sc := af_prvl]
+    # dt[year == design_$sim_prm$init_year_fromGUI & af_prvl > 1L, af_prvl_sc := af_prvl]
 
     dt[, af_dgn_sc := af_dgn]
-    # dt[year < design$init_year_fromGUI, af_dgn_sc := af_dgn]
-    # dt[year == design$init_year_fromGUI & af_dgn > 1L, af_dgn_sc := af_dgn]
+    # dt[year < design_$sim_prm$init_year_fromGUI, af_dgn_sc := af_dgn]
+    # dt[year == design_$sim_prm$init_year_fromGUI & af_dgn > 1L, af_dgn_sc := af_dgn]
 
 
     dt[, prb_af_incd_sc := prb_af_incd]

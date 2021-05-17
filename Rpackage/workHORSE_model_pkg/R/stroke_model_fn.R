@@ -25,8 +25,7 @@ stroke_model <-
     scenario_nam,
     mc,
     dt,
-    design,
-    lags_mc = lags_mc,
+    design_,
     diagnosis_prb = 1,
     timing = TRUE) {
 
@@ -43,7 +42,7 @@ stroke_model <-
       )
     exps_nam <-  gsub("_curr_xps$", "_lagged", exps_tolag)
     for (i in seq_along(exps_tolag)) {
-      set(dt, NULL, exps_nam[i], dt[, shift_bypid(get(exps_tolag[i]), lags_mc$cvd_lag, pid)])
+      set(dt, NULL, exps_nam[i], dt[, shift_bypid(get(exps_tolag[i]), design_$lags_mc$cvd_lag, pid)])
     }
     } else {
       exps_tolag <-
@@ -55,12 +54,12 @@ stroke_model <-
 
       exps_nam <-  gsub("_curr_xps$|_sc$", "_lagged", exps_tolag)
       for (i in seq_along(exps_tolag)) {
-        set(dt, NULL, exps_nam[i], dt[, shift_bypid(get(exps_tolag[i]), lags_mc$cvd_lag, pid)])
+        set(dt, NULL, exps_nam[i], dt[, shift_bypid(get(exps_tolag[i]), design_$lags_mc$cvd_lag, pid)])
       }
     }
     ## RR for AF from (Christiansen et al. 2016). For no risk factor and many limitations
     tt <-
-      get_rr_mc(mc, "stroke", "af", design$stochastic)[, i.af_prvl_lagged := 1L]
+      RR$af_stroke$get_rr(mc, design_, drop = TRUE)[, i.af_prvl_lagged := 1L]
     dt[tt, on = .(age, af_prvl_lagged >= i.af_prvl_lagged), af_rr := i.af_rr]
     setnafill(dt, "c", 1, cols = "af_rr")
     # dt[, summary(af_rr)]
@@ -82,7 +81,7 @@ stroke_model <-
     # "Stroke risk decreased significantly by two years and was at the
     # level of nonsmokers by five years after cessation of cigarette smoking"
     #cat("smoking RR\n")
-    tt <- get_rr_mc(mc, "stroke", "tobacco", design$stochastic)
+    tt <- RR$tobacco_stroke$get_rr(mc, design_, drop = TRUE)
     setnames(tt, "smok_status", "smok_status_lagged")
     absorb_dt(dt, tt)
     setnafill(dt, "c", 1, cols = "tobacco_rr")
@@ -95,7 +94,7 @@ stroke_model <-
       data.table(
         ets_lagged = 1L,
         smok_status_lagged = as.character(1:3),
-        ets_rr = get_rr_mc(mc, "stroke", "ets", design$stochastic)
+        ets_rr = RR$ets_stroke$get_rr(mc, design_, drop = TRUE)
       )
     absorb_dt(dt, tt)
     setnafill(dt, "c", 1, cols = "ets_rr")
@@ -107,10 +106,10 @@ stroke_model <-
     # The Lancet. 2002 Dec 14;360(9349):1903–1913"
     # Figure 3
     #cat("sbp RR\n")
-    tt <- get_rr_mc(mc, "stroke", "sbp", design$stochastic)
+    tt <- RR$sbp_stroke$get_rr(mc, design_, drop = TRUE)
     absorb_dt(dt, tt)
     dt[, sbp_rr := clamp(sbp_rr ^ ((
-      get_rr_mc(mc, "stroke", "sbp_tmred", design$stochastic) - sbp_lagged
+      RR$sbptmred_stroke$get_rr(mc, design_, drop = TRUE) - sbp_lagged
     ) / 20), 1, 20)]
     setnafill(dt, "c", 1, cols = "sbp_rr")
     # dt[, summary(sbp_rr)]
@@ -123,7 +122,7 @@ stroke_model <-
     # with 55.000 vascular deaths. The Lancet. 2007;370:1829–39.
     # Figure 4 (for total stroke. I used only significant HR's).
     #cat("chol RR\n")
-    tt <- get_rr_mc(mc, "stroke", "tchol", design$stochastic)
+    tt <- RR$tchol_stroke$get_rr(mc, design_, drop = TRUE)
     absorb_dt(dt, tt)
     dt[, tchol_rr := clamp(tchol_rr ^ (3.8 - tchol_lagged), 1, 20)]
     setnafill(dt, "c", 1, cols = "tchol_rr")
@@ -139,7 +138,7 @@ stroke_model <-
     # BMI not significant for ischaemic stroke but other obesity metrics are.
     #!! NEED TO decide if I want to use it
     #cat("bmi RR\n")
-    tt <- get_rr_mc(mc, "stroke", "bmi", design$stochastic)
+    tt <- RR$bmi_stroke$get_rr(mc, design_, drop = TRUE)
     absorb_dt(dt, tt)
     dt[, bmi_rr := clamp(bmi_rr ^ ((bmi_lagged - 20) / 4.56), 1, 20)]
     setnafill(dt, "c", 1, cols = "bmi_rr")
@@ -152,7 +151,7 @@ stroke_model <-
     # figure 2 (HRs were adjusted for age, smoking status, body-mass index,
     # and  systolic blood pressure)
     #cat("diab RR\n")
-    tt <- get_rr_mc(mc, "stroke", "t2dm", design$stochastic)
+    tt <- RR$t2dm_stroke$get_rr(mc, design_, drop = TRUE)
     tt[, i.t2dm_prvl_lagged := 1L]
     dt[tt, on = .(age, t2dm_prvl_lagged >= i.t2dm_prvl_lagged), t2dm_parf_rr := i.t2dm_rr]
     setnafill(dt, "c", 1, cols = "t2dm_parf_rr")
@@ -170,7 +169,7 @@ stroke_model <-
     # To avoid negative PAF an optimal level of F&V has to be set arbitrarily. I set it to 7
     #cat("fv RR\n")
     dt[,
-      fv_rr := clamp(get_rr_mc(mc, "stroke", "fv", design$stochastic) ^
+      fv_rr := clamp(RR$fv_stroke$get_rr(mc, design_, drop = TRUE) ^
           ((fruit_lagged + veg_lagged - 80 * 7) / 80),
         1,
         20)] # no benefit after 7 portions
@@ -180,7 +179,7 @@ stroke_model <-
     # RR for PA 1. WHO | Comparative Quantification of Health Risks [Internet].
     # WHO [cited 2014 Jan 30];Available from: http://www.who.int/publications/cra/en/
     # Table 10.20 (with adjustment for measurement error)
-    tt <- get_rr_mc(mc, "stroke", "pa", design$stochastic)
+    tt <- RR$pa_stroke$get_rr(mc, design_, drop = TRUE)
     setnames(tt, "active_days", "active_days_lagged")
     absorb_dt(dt, tt)
     setnafill(dt, "c", 1, cols = "pa_rr")
@@ -188,7 +187,7 @@ stroke_model <-
 
     # From GBD 2017
     # Highest alcohol intake 72g/d
-    tt <- get_rr_mc(mc, "stroke", "alcohol", design$stochastic)
+    tt <- RR$alcohol_stroke$get_rr(mc, design_, drop = TRUE)
     setnames(tt, "alcohol", "alcohol_lagged")
     dt[alcohol_lagged > max(tt$alcohol_lagged), alcohol_lagged := max(tt$alcohol_lagged)]
     absorb_dt(dt, tt)
@@ -206,8 +205,8 @@ stroke_model <-
     #cat("Estimating stroke PAF...\n")
     if (!"p0_stroke" %in% names(dt)) {
       strokeparf <-
-        dt[between(age, design$ageL, design$ageH) &
-            stroke_prvl == 0 & year == design$init_year,
+        dt[between(age, design_$sim_prm$ageL, design_$sim_prm$ageH) &
+            stroke_prvl == 0 & year == design_$sim_prm$init_year,
           .(parf = 1 - 1 / (
             sum(
               tobacco_rr * ets_rr * sbp_rr * tchol_rr * bmi_rr *
@@ -223,7 +222,7 @@ stroke_model <-
       # , keyby = .(sex, qimd)]
 
       absorb_dt(strokeparf,
-        get_disease_epi_mc(mc, "stroke", "i", "v", design$stochastic))
+        get_disease_epi_mc(mc, "stroke", "i", "v", design_$sim_prm$stochastic))
       strokeparf[, p0_stroke := incidence * (1 - parf)]
       # strokeparf[, summary(p0_stroke)]
       strokeparf[is.na(p0_stroke), p0_stroke := incidence]
@@ -248,14 +247,14 @@ stroke_model <-
     dt[stroke_prvl > 0, stroke_dgn := clamp(stroke_prvl - 5L, 0, 100)]
 
     # Estimate case fatality ----
-    absorb_dt(dt, get_disease_epi_mc(mc, "stroke", "f", "v", design$stochastic))
+    absorb_dt(dt, get_disease_epi_mc(mc, "stroke", "f", "v", design_$sim_prm$stochastic))
     setnames(dt, "fatality", "prb_stroke_mrtl")
 
     } else {
 
       set(dt, NULL, "stroke_prvl_sc", 0L)
-      dt[year < design$init_year_fromGUI, stroke_prvl_sc := stroke_prvl]
-      dt[year == design$init_year_fromGUI & stroke_prvl > 1L, stroke_prvl_sc := stroke_prvl]
+      dt[year < design_$sim_prm$init_year_fromGUI, stroke_prvl_sc := stroke_prvl]
+      dt[year == design_$sim_prm$init_year_fromGUI & stroke_prvl > 1L, stroke_prvl_sc := stroke_prvl]
 
       # Estimate stroke incidence prbl
       #cat("Estimating stroke incidence without diabetes...\n\n")
@@ -270,8 +269,8 @@ stroke_model <-
       dt[, prb_stroke_dgn_sc := prb_stroke_dgn]
 
       set(dt, NULL, "stroke_dgn_sc", 0L)
-      dt[year < design$init_year_fromGUI, stroke_dgn_sc := stroke_dgn]
-      dt[year == design$init_year_fromGUI & stroke_dgn > 1L, stroke_dgn_sc := stroke_dgn]
+      dt[year < design_$sim_prm$init_year_fromGUI, stroke_dgn_sc := stroke_dgn]
+      dt[year == design_$sim_prm$init_year_fromGUI & stroke_dgn > 1L, stroke_dgn_sc := stroke_dgn]
 
       # Estimate case fatality
       dt[, prb_stroke_mrtl_sc := prb_stroke_mrtl]

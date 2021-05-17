@@ -22,11 +22,11 @@
 
 
 #' @export
-init_prevalence <- function(mc, dt, design, timing = TRUE) {
+init_prevalence <- function(mc, dt, design_, timing = TRUE) {
   if (timing) ptm <- proc.time()
 
   # Generate chd prevalence and duration (BI, NBI) ----
-  simulate_init_prvl(mc, "chd", design, dt)
+  simulate_init_prvl(mc, "chd", design_, dt)
 
   tbl <-
     read_fst("./lifecourse_models/chd_duration_table.fst",
@@ -44,7 +44,7 @@ init_prevalence <- function(mc, dt, design, timing = TRUE) {
   # dt[, chd_prvl:=NULL]
 
   # Generate stroke prevalence and duration (BI, PIG) ----
-  simulate_init_prvl(mc, "stroke", design, dt)
+  simulate_init_prvl(mc, "stroke", design_, dt)
 
   tbl <-
     read_fst("./lifecourse_models/stroke_duration_table.fst",
@@ -59,7 +59,7 @@ init_prevalence <- function(mc, dt, design, timing = TRUE) {
   dt[, stroke_prvl := carry_backward(stroke_prvl, pid_mrk)] # Not strictly necessary
 
   # Generate poststroke dementia prevalence and duration ----
-  tbl <- get_rr_mc(mc, "dementia", "stroke", design$stochastic)
+  tbl <- RR$stroke_dementia$get_rr(mc, design_, drop = TRUE)
   setnames(tbl, "stroke_rr", "poststroke_dementia_prb")
   absorb_dt(dt, tbl)
   setnafill(dt, "c", 0, cols = "poststroke_dementia_prb")
@@ -69,7 +69,7 @@ init_prevalence <- function(mc, dt, design, timing = TRUE) {
   dt[, poststroke_dementia_prb := NULL]
 
   # Generate copd prevalence and duration (BI, GEOM) ----
-  simulate_init_prvl(mc, "copd", design, dt)
+  simulate_init_prvl(mc, "copd", design_, dt)
 
   tbl <-
     read_fst("./lifecourse_models/copd_duration_table.fst",
@@ -84,47 +84,47 @@ init_prevalence <- function(mc, dt, design, timing = TRUE) {
   dt[, copd_prvl := carry_backward(copd_prvl, pid_mrk)] # Not strictly necessary
 
   # Generate breast_cancer prevalence and duration (BI, PO) ----
-  simulate_init_prvl(mc, "breast_ca", design, dt)
+  simulate_init_prvl(mc, "breast_ca", design_, dt)
 
   # duration
   tbl <- get_disease_epi_mc(mc, "breast_ca", "d", "m", FALSE)
-  tbl[, year := design$init_year] # given init year is 13 and close enough to 11 which I have epi for
+  tbl[, year := design_$sim_prm$init_year] # given init year is 13 and close enough to 11 which I have epi for
   col_nam <- setdiff(names(tbl), names(dt))
   absorb_dt(dt, tbl)
   dt[breast_ca_prvl == 1L, breast_ca_prvl := 2L + rpois(.N, clamp(duration - 2, 0, 100))]
-  dt[breast_ca_prvl > design$cancer_cure,
-     breast_ca_prvl := dqsample(2:design$cancer_cure, .N, TRUE)]
+  dt[breast_ca_prvl > design_$sim_prm$cancer_cure,
+     breast_ca_prvl := dqsample(2:design_$sim_prm$cancer_cure, .N, TRUE)]
   dt[breast_ca_prvl > age, breast_ca_prvl := age]
   dt[, (col_nam) := NULL]
   dt[, breast_ca_prvl := carry_backward(breast_ca_prvl, pid_mrk)] # Not strictly necessary
 
   # Generate colon_cancer prevalence and duration (BI, PO) ----
-  simulate_init_prvl(mc, "colon_ca", design, dt)
+  simulate_init_prvl(mc, "colon_ca", design_, dt)
 
   # duration
   tbl <- get_disease_epi_mc(mc, "colon_ca", "d", "m", FALSE)
-  tbl[, year := design$init_year] # given init year is 13 and close enough to 11 which I have epi for
+  tbl[, year := design_$sim_prm$init_year] # given init year is 13 and close enough to 11 which I have epi for
   col_nam <- setdiff(names(tbl), names(dt))
   absorb_dt(dt, tbl)
   dt[colon_ca_prvl == 1L, colon_ca_prvl := 2L + rpois(.N, clamp(duration - 2, 0, 100))]
-  dt[colon_ca_prvl > design$cancer_cure,
-     colon_ca_prvl := dqsample(2:design$cancer_cure, .N, TRUE)]
+  dt[colon_ca_prvl > design_$sim_prm$cancer_cure,
+     colon_ca_prvl := dqsample(2:design_$sim_prm$cancer_cure, .N, TRUE)]
   dt[colon_ca_prvl > age, colon_ca_prvl := age]
   dt[, (col_nam) := NULL]
   dt[, colon_ca_prvl := carry_backward(colon_ca_prvl, pid_mrk)] # Not strictly necessary
 
 
   # Generate lung_cancer prevalence and duration (BI, PO) ----
-  simulate_init_prvl(mc, "lung_ca", design, dt)
+  simulate_init_prvl(mc, "lung_ca", design_, dt)
 
   # duration
   tbl <- get_disease_epi_mc(mc, "lung_ca", "d", "m", FALSE)
-  tbl[, year := design$init_year] # given init year is 13 and close enough to 11 which I have epi for
+  tbl[, year := design_$sim_prm$init_year] # given init year is 13 and close enough to 11 which I have epi for
   col_nam <- setdiff(names(tbl), names(dt))
   absorb_dt(dt, tbl)
   dt[lung_ca_prvl == 1L, lung_ca_prvl := 2L + rpois(.N, clamp(duration - 2, 0, 100))]
-  dt[lung_ca_prvl > design$cancer_cure,
-     lung_ca_prvl := dqsample(2:design$cancer_cure, .N, TRUE)]
+  dt[lung_ca_prvl > design_$sim_prm$cancer_cure,
+     lung_ca_prvl := dqsample(2:design_$sim_prm$cancer_cure, .N, TRUE)]
   dt[lung_ca_prvl > age, lung_ca_prvl := age]
   dt[, (col_nam) := NULL]
   dt[, lung_ca_prvl := carry_backward(lung_ca_prvl, pid_mrk)] # Not strictly necessary
