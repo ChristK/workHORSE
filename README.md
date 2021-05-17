@@ -163,13 +163,7 @@ sudo docker run -d -v /var/run/docker.sock:/var/run/docker.sock --net sp-example
 
 ## Cloning this Repo
 
-Alternatively, you can clone this repository. However, because workHORSE uses
-some large R objects that cannot be uploaded to GitHub due to their size, after
-you clone the GitHub repo, please download and untar [this additional data
-file](https://filedn.com/lj14yWNHbMFXQ0F4Fkti6a8/workHORSE_data_files.tar) to
-your local workHORSE folder. If you are using Linux, you can use from your local
-workHORSE folder.
-
-``` bash
-wget -c https://filedn.com/lj14yWNHbMFXQ0F4Fkti6a8/workHORSE_data_files.tar -O - | tar -x
-```
+You can clone this repository, however, workHORSE uses some large files that
+cannot be uploaded to GitHub repo. These files are uploaded to GitHub releases.
+After you clone this GitHub repo, please source the included R script
+\`\`\``gh_deploy.R`\`\`\` to download the additional large files.
