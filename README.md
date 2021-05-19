@@ -57,7 +57,7 @@ deployed in any operating system that is supported by [Docker](www.docker.com).
     your Internet connection).
 
 ``` bash
-sudo docker pull chriskypri/workhorse-app
+sudo docker pull chriskypri/workhorse-app:stable
 ```
 
 1.  Create docker volume for storing synthetic population data.
@@ -69,7 +69,7 @@ sudo docker volume create workhorse-volume
 1.  Run docker image:
 
 ``` bash
-sudo docker run --mount source=workhorse-volume,target=/mnt/storage_fast/synthpop -p 9898:9898 -it chriskypri/workhorse-app
+sudo docker run --mount source=workhorse-volume,target=/mnt/storage_fast/synthpop -p 9898:9898 -it chriskypri/workhorse-app:stable
 ```
 
 1.  Now you should be able to run the WorkHORSE app by opening web browser and
@@ -108,9 +108,9 @@ Then click 'Apply & Restart'
 2.  Run commands:
 
 ``` bash
-docker pull chriskypri/workhorse-app
+docker pull chriskypri/workhorse-app:stable
 docker volume create workhorse-volume
-docker run --mount source=workhorse-volume,target=/mnt/storage_fast/synthpop -p 9898:9898 -it chriskypri/workhorse-app
+docker run --mount source=workhorse-volume,target=/mnt/storage_fast/synthpop -p 9898:9898 -it chriskypri/workhorse-app:stable
 ```
 
 1.  The window like below should appear. Allow docker to communicate via network
@@ -131,13 +131,13 @@ docker run --mount source=workhorse-volume,target=/mnt/storage_fast/synthpop -p 
     your Internet connection).
 
 ``` bash
-sudo docker pull chriskypri/workhorse-app
+sudo docker pull chriskypri/workhorse-app:stable
 ```
 
 1.  Get docker image with shinyproxy.
 
 ``` bash
-sudo docker pull chriskypri/workhorse-shinyproxy
+sudo docker pull chriskypri/workhorse-shinyproxy:stable
 ```
 
 1.  Create docker volume for storing synthetic population data.
@@ -155,7 +155,7 @@ sudo docker network create sp-workhorse-net
 1.  Run shinyproxy image
 
 ``` bash
-sudo docker run -d -v /var/run/docker.sock:/var/run/docker.sock --net sp-example-net -p 8080:8080 chriskypri/workhorse-shinyproxy
+sudo docker run -d -v /var/run/docker.sock:/var/run/docker.sock --net sp-example-net -p 8080:8080 chriskypri/workhorse-shinyproxy:stable
 ```
 
 1.  Now you should be able to run the WorkHORSE app by opening web browser and
