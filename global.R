@@ -28,12 +28,40 @@ if (!require(CKutils)) {
   remotes::install_github("ChristK/CKutils", force = TRUE, upgrade = "never")
   library(CKutils)
 }
-if (!require(workHORSEmisc)) {
+
+qsave(
+  fileSnapshot(
+    "./Rpackage/workHORSE_model_pkg/",
+    timestamp = NULL, # tempfile("timestamp"),
+    md5sum = TRUE,
+    recursive = TRUE
+  ),
+  output_dir(".workHORSE_model_pkg_snapshot.qs")
+)
+
+snapshot <- # TODO add logic when .workHORSE_model_pkg_snapshot.qs missing
+  changedFiles(qread(output_dir(".workHORSE_model_pkg_snapshot.qs")))
+
+if (!require(workHORSEmisc) ||
+    any(nzchar(snapshot$added),
+      nzchar(snapshot$deleted),
+      nzchar(snapshot$changed))) {
+  qsave(
+    fileSnapshot(
+      "./Rpackage/workHORSE_model_pkg/",
+      timestamp = NULL,
+      # tempfile("timestamp"),
+      md5sum = TRUE
+    ),
+    output_dir(".workHORSE_model_pkg_snapshot.qs")
+  )
+
   if (!require(remotes))
     install.packages("remotes")
   roxygen2::roxygenise("./Rpackage/workHORSE_model_pkg/", clean = TRUE)
   # TODO remove before deployment
-  remotes::install_local("./Rpackage/workHORSE_model_pkg/", force = TRUE,
+  remotes::install_local("./Rpackage/workHORSE_model_pkg/",
+    force = TRUE,
     upgrade = "never")
   library(workHORSEmisc)
 }
