@@ -1088,7 +1088,7 @@ fluidRow(
     h5("Structural Policies / Calibration"),
     h6("In this section the effect of implementing structural/population level
        strategies  can be modelled, in addition",
-       "to the health checks programm specified above.",
+       "to the health checks programm specified above",
        "On occasion, this section can be used to calibrate the synthetic
         population exposure to risk factors."),
     HTML("<br> <br/> "),
@@ -1174,7 +1174,7 @@ fluidRow(
              -20,
              20,
              0,
-             0.01,
+             0.1,
              sep = "",
              ticks = FALSE,
              post  = " %"
@@ -1233,6 +1233,98 @@ fluidRow(
     ),
     column(3
 
+    ),
+    column(3
+
+    )
+  )),
+  wellPanel(fluidRow(
+    ## Misc Policies ----
+    h5("Miscellaneous Policies"),
+    h6("FILLME"),
+    HTML("<br> <br/> "),
+    column(6,
+      sliderInput(
+        "qimd_one_slider_sc7",
+        "Reassign QIMD 1 to QIMD...",
+        1, 5, 1, 1,
+        sep = "",
+        ticks = FALSE,
+        post  = ""
+      )
+      %>%
+        shinyInput_label_embed(
+          icon("info") %>%
+            bs_embed_popover(title = "FILLME")
+        ),
+      sliderInput(
+        "qimd_two_slider_sc7",
+        "Reassign QIMD 2 to QIMD...",
+        1, 5, 2, 1,
+        sep = "",
+        ticks = FALSE,
+        post  = ""
+      )
+      %>%
+        shinyInput_label_embed(
+          icon("info") %>%
+            bs_embed_popover(title = "FILLME")
+        ),
+      sliderInput(
+        "qimd_three_slider_sc7",
+        "Reassign QIMD 3 to QIMD...",
+        1, 5, 3, 1,
+        sep = "",
+        ticks = FALSE,
+        post  = ""
+      )
+      %>%
+        shinyInput_label_embed(
+          icon("info") %>%
+            bs_embed_popover(title = "FILLME")
+        ),
+      sliderInput(
+        "qimd_four_slider_sc7",
+        "Reassign QIMD 4 to QIMD...",
+        1, 5, 4, 1,
+        sep = "",
+        ticks = FALSE,
+        post  = ""
+      )
+      %>%
+        shinyInput_label_embed(
+          icon("info") %>%
+            bs_embed_popover(title = "FILLME")
+        ),
+      sliderInput(
+        "qimd_five_slider_sc7",
+        "Reassign QIMD 5 to QIMD...",
+        1, 5, 5, 1,
+        sep = "",
+        ticks = FALSE,
+        post  = ""
+      )
+      %>%
+        shinyInput_label_embed(
+          icon("info") %>%
+            bs_embed_popover(title = "FILLME")
+        )
+
+    ),
+    column(3,
+      switchInput(
+        "qimd_fatalities_checkbox_sc7",
+        "Should QIMD reassignment affect case fatalities?",
+        value = FALSE,
+        onLabel = "Yes",
+        offLabel = "Now",
+        labelWidth = "100%"
+      )
+      %>%
+        shinyInput_label_embed(
+          icon("info") %>%
+            bs_embed_popover(title = "FILLME")
+        )
     ),
     column(3
 
