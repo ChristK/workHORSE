@@ -1802,6 +1802,7 @@ run_scenario <-
       set_px(scenario_parms[[sc]], dt$pop, mc, design) # slow
       set_lifestyle(scenario_parms[[sc]], dt$pop, design)
       set_structural(scenario_parms[[sc]], dt$pop, design)
+      set_social(scenario_parms[[sc]], dt$pop, design)
     }
 
     dt$pop[, eligible_sc  := clamp(eligible_sc + hlp$previous_elig)]
@@ -1832,6 +1833,10 @@ run_scenario <-
       print(proc.time() - ptm)
     invisible(output)
   }
+
+#' @export
+set_social <- function() {}
+
 
 #' @export
 finalise_synthpop <-

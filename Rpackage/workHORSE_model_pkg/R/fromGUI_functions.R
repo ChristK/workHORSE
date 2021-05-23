@@ -1,4 +1,4 @@
-## workHORSE is an implementation of the IMPACTncd framework, developed by Chris
+## IMPACTreal is an implementation of the IMPACTncd framework, developed by Chris
 ## Kypridemos with contributions from Peter Crowther (Melandra Ltd), Maria
 ## Guzman-Castillo, Amandine Robert, and Piotr Bandosz. This work has been
 ## funded by NIHR  HTA Project: 16/165/01 - workHORSE: Health Outcomes
@@ -473,6 +473,37 @@ fromGUI_scenario_parms <- function(scenario_nam, parameters_dt) {
       parameters_dt[scenario == scenario_nam &
                       input_names %flike% "structural_chol_slider",
                     as.numeric(value1)/100]
+
+    # Misc policies
+    l$sc_str_qimd1_change <-
+      parameters_dt[scenario == scenario_nam &
+          input_names %flike% "qimd_one_slider",
+        as.numeric(value1)]
+
+    l$sc_str_qimd2_change <-
+      parameters_dt[scenario == scenario_nam &
+          input_names %flike% "qimd_two_slider",
+        as.numeric(value1)]
+
+    l$sc_str_qimd3_change <-
+      parameters_dt[scenario == scenario_nam &
+          input_names %flike% "qimd_three_slider",
+        as.numeric(value1)]
+
+    l$sc_str_qimd4_change <-
+      parameters_dt[scenario == scenario_nam &
+          input_names %flike% "qimd_four_slider",
+        as.numeric(value1)]
+
+    l$sc_str_qimd5_change <-
+      parameters_dt[scenario == scenario_nam &
+          input_names %flike% "qimd_five_slider",
+        as.numeric(value1)]
+
+    l$sc_str_qimd_fatality_change <-
+      parameters_dt[scenario == scenario_nam &
+          input_names %flike% "qimd_fatalities_checkbox",
+        as.logical(value1)]
 
     # Ensemble logic
     l$sc_ens_is <- FALSE
