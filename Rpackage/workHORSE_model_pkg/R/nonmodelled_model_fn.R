@@ -111,9 +111,9 @@ nonmodelled_model <- function(
              tobacco_rr * sbp_rr * pa_rr * alcohol_rr * t2dm_rr
            ) / .N
          )),
-         # I should include year  to avoid doublecounting of exposure trends that
-         # have been implicitly included in mortality forecasts. However I don't
-         # have t2dm prvalence post 2013 so this is currently impossible
+         # I should include year  to avoid double counting of exposure trends
+         # that have been implicitly included in mortality forecasts. However I
+         # don't have t2dm prevalence post 2013 so this is currently impossible
          keyby = .(age, sex, qimd)]
     # nonmodelledparf[, parf := clamp(predict(loess(parf ~ age, span = 0.5))), by = .(sex, qimd)]
     # nonmodelledparf[, {
@@ -134,7 +134,7 @@ nonmodelled_model <- function(
   }
   if (!nzchar(scenario_nam)) { # first run for scenario ""
     # Estimate nonmodelled mortality prbl -------------------------------
-    #cat("Estimating nonmodelled incidence without diabetes...\n\n")
+    # cat("Estimating nonmodelled incidence without diabetes...\n\n")
     set(dt, NULL, "prb_nonmodelled_mrtl_not2dm", 0)
     dt[, prb_nonmodelled_mrtl_not2dm :=
          p0_nonmodelled * tobacco_rr * sbp_rr * pa_rr * alcohol_rr] # Remember no t2dm as this will be a multiplier
@@ -146,13 +146,18 @@ nonmodelled_model <- function(
     # dt[, nonmodelled_mrtl_t2dm_mltp := 1]
 
   } else {
-
- # Estimate nonmodelled mortality prbl
-    #cat("Estimating nonmodelled incidence without diabetes...\n\n")
+    # Estimate nonmodelled mortality prbl
+    # cat("Estimating nonmodelled incidence without diabetes...\n\n")
     colnam <- "prb_nonmodelled_mrtl_not2dm_sc"
     set(dt, NULL, colnam, 0)
-    dt[, (colnam) :=
-         p0_nonmodelled * tobacco_rr * sbp_rr * pa_rr * alcohol_rr] # Remember no t2dm as this will be a multiplier
+
+    if ("p0_nonmodelled_sc" %in% names(dt)) {
+      dt[, (colnam) :=
+          p0_nonmodelled_sc * tobacco_rr * sbp_rr * pa_rr * alcohol_rr] # Remember no t2dm as this will be a multiplier
+    } else {
+      dt[, (colnam) :=
+          p0_nonmodelled * tobacco_rr * sbp_rr * pa_rr * alcohol_rr] # Remember no t2dm as this will be a multiplier
+    }
   }
 
   dt[, (grep("_rr$", names(dt), value = TRUE)) := NULL]

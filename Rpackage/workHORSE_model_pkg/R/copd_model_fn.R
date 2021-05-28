@@ -167,7 +167,8 @@ copd_model <-
       dt[year == design_$sim_prm$init_year_fromGUI & copd_dgn > 1L, copd_dgn_sc := copd_dgn]
 
       # Estimate case fatality
-      dt[, prb_copd_mrtl_sc := prb_copd_mrtl]
+      if (!"prb_copd_mrtl_sc" %in% names(dt))
+        set(dt, NULL, "prb_copd_mrtl_sc", dt$prb_copd_mrtl)
 
       dt[, smok_packyrs_sc := NULL]
 }

@@ -405,6 +405,24 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// my_pZISICHEL
+NumericVector my_pZISICHEL(NumericVector q, const NumericVector& mu, const NumericVector& sigma, const NumericVector& nu, const NumericVector& tau, const bool& lower_tail, const bool& log_p, const int& n_cpu);
+RcppExport SEXP _workHORSEmisc_my_pZISICHEL(SEXP qSEXP, SEXP muSEXP, SEXP sigmaSEXP, SEXP nuSEXP, SEXP tauSEXP, SEXP lower_tailSEXP, SEXP log_pSEXP, SEXP n_cpuSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type q(qSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type nu(nuSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type tau(tauSEXP);
+    Rcpp::traits::input_parameter< const bool& >::type lower_tail(lower_tailSEXP);
+    Rcpp::traits::input_parameter< const bool& >::type log_p(log_pSEXP);
+    Rcpp::traits::input_parameter< const int& >::type n_cpu(n_cpuSEXP);
+    rcpp_result_gen = Rcpp::wrap(my_pZISICHEL(q, mu, sigma, nu, tau, lower_tail, log_p, n_cpu));
+    return rcpp_result_gen;
+END_RCPP
+}
 // carry_forward
 IntegerVector carry_forward(const IntegerVector& x, const LogicalVector& pid, const int& y);
 RcppExport SEXP _workHORSEmisc_carry_forward(SEXP xSEXP, SEXP pidSEXP, SEXP ySEXP) {
@@ -491,6 +509,19 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericVector& >::type a(aSEXP);
     Rcpp::traits::input_parameter< NumericVector& >::type b(bSEXP);
     rcpp_result_gen = Rcpp::wrap(fbound(x, a, b));
+    return rcpp_result_gen;
+END_RCPP
+}
+// dtsubset
+SEXP dtsubset(SEXP x, SEXP rows, SEXP cols);
+RcppExport SEXP _workHORSEmisc_dtsubset(SEXP xSEXP, SEXP rowsSEXP, SEXP colsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type x(xSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type rows(rowsSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type cols(colsSEXP);
+    rcpp_result_gen = Rcpp::wrap(dtsubset(x, rows, cols));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -622,6 +653,19 @@ BEGIN_RCPP
     return R_NilValue;
 END_RCPP
 }
+// simsmok_sc
+void simsmok_sc(DataFrame& df, const NumericMatrix& pr_relapse, const int& relapse_cutoff, const IntegerVector& row_sel);
+RcppExport SEXP _workHORSEmisc_simsmok_sc(SEXP dfSEXP, SEXP pr_relapseSEXP, SEXP relapse_cutoffSEXP, SEXP row_selSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< DataFrame& >::type df(dfSEXP);
+    Rcpp::traits::input_parameter< const NumericMatrix& >::type pr_relapse(pr_relapseSEXP);
+    Rcpp::traits::input_parameter< const int& >::type relapse_cutoff(relapse_cutoffSEXP);
+    Rcpp::traits::input_parameter< const IntegerVector& >::type row_sel(row_selSEXP);
+    simsmok_sc(df, pr_relapse, relapse_cutoff, row_sel);
+    return R_NilValue;
+END_RCPP
+}
 // simsmok_postcalibration
 void simsmok_postcalibration(DataFrame& df);
 RcppExport SEXP _workHORSEmisc_simsmok_postcalibration(SEXP dfSEXP) {
@@ -639,6 +683,17 @@ BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< DataFrame& >::type df(dfSEXP);
     simsmok_cig(df);
+    return R_NilValue;
+END_RCPP
+}
+// simsmok_cig_sc
+void simsmok_cig_sc(DataFrame& df, const IntegerVector& row_sel);
+RcppExport SEXP _workHORSEmisc_simsmok_cig_sc(SEXP dfSEXP, SEXP row_selSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< DataFrame& >::type df(dfSEXP);
+    Rcpp::traits::input_parameter< const IntegerVector& >::type row_sel(row_selSEXP);
+    simsmok_cig_sc(df, row_sel);
     return R_NilValue;
 END_RCPP
 }
@@ -747,6 +802,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_workHORSEmisc_my_pSICHEL", (DL_FUNC) &_workHORSEmisc_my_pSICHEL, 7},
     {"_workHORSEmisc_my_qSICHEL", (DL_FUNC) &_workHORSEmisc_my_qSICHEL, 7},
     {"_workHORSEmisc_my_qZISICHEL", (DL_FUNC) &_workHORSEmisc_my_qZISICHEL, 8},
+    {"_workHORSEmisc_my_pZISICHEL", (DL_FUNC) &_workHORSEmisc_my_pZISICHEL, 8},
     {"_workHORSEmisc_carry_forward", (DL_FUNC) &_workHORSEmisc_carry_forward, 3},
     {"_workHORSEmisc_carry_backward", (DL_FUNC) &_workHORSEmisc_carry_backward, 2},
     {"_workHORSEmisc_mk_new_simulant_markers", (DL_FUNC) &_workHORSEmisc_mk_new_simulant_markers, 1},
@@ -754,6 +810,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_workHORSEmisc_identify_invitees", (DL_FUNC) &_workHORSEmisc_identify_invitees, 5},
     {"_workHORSEmisc_hc_effect", (DL_FUNC) &_workHORSEmisc_hc_effect, 3},
     {"_workHORSEmisc_fbound", (DL_FUNC) &_workHORSEmisc_fbound, 3},
+    {"_workHORSEmisc_dtsubset", (DL_FUNC) &_workHORSEmisc_dtsubset, 3},
     {"_workHORSEmisc_QDiabetes", (DL_FUNC) &_workHORSEmisc_QDiabetes, 2},
     {"_workHORSEmisc_QDiabetes_vec_inputs", (DL_FUNC) &_workHORSEmisc_QDiabetes_vec_inputs, 10},
     {"_workHORSEmisc_Qrisk2", (DL_FUNC) &_workHORSEmisc_Qrisk2, 4},
@@ -763,8 +820,10 @@ static const R_CallMethodDef CallEntries[] = {
     {"_workHORSEmisc_shift_bypidBool", (DL_FUNC) &_workHORSEmisc_shift_bypidBool, 4},
     {"_workHORSEmisc_shift_bypidStr", (DL_FUNC) &_workHORSEmisc_shift_bypidStr, 4},
     {"_workHORSEmisc_simsmok", (DL_FUNC) &_workHORSEmisc_simsmok, 3},
+    {"_workHORSEmisc_simsmok_sc", (DL_FUNC) &_workHORSEmisc_simsmok_sc, 4},
     {"_workHORSEmisc_simsmok_postcalibration", (DL_FUNC) &_workHORSEmisc_simsmok_postcalibration, 1},
     {"_workHORSEmisc_simsmok_cig", (DL_FUNC) &_workHORSEmisc_simsmok_cig, 1},
+    {"_workHORSEmisc_simsmok_cig_sc", (DL_FUNC) &_workHORSEmisc_simsmok_cig_sc, 2},
     {"_workHORSEmisc_simsmok_cessation", (DL_FUNC) &_workHORSEmisc_simsmok_cessation, 10},
     {"_workHORSEmisc_simsmok_policy_impact_incr", (DL_FUNC) &_workHORSEmisc_simsmok_policy_impact_incr, 5},
     {"_workHORSEmisc_simsmok_policy_impact_decr", (DL_FUNC) &_workHORSEmisc_simsmok_policy_impact_decr, 6},

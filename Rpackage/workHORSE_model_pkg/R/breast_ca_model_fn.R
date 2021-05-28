@@ -22,31 +22,39 @@
 
 #' @export
 breast_ca_model <-
-  function(
-    scenario_nam,
+  function(scenario_nam,
     mc,
     dt,
     design_,
     diagnosis_prb = 0.7,
     timing = TRUE) {
     message("Loading breast cancer (C50) model...")
-    if (timing) ptm <- proc.time()
+    if (timing)
+      ptm <- proc.time()
 
-    if (!nzchar(scenario_nam)) { # first run for scenario ""
+    if (!nzchar(scenario_nam)) {
+      # first run for scenario ""
       # Lagged exposures
-      exps_tolag <- grep("^smok_sta|^ets_|^active_|^bmi_|^alcohol_|^t2dm_prvl_curr_xps",
-        names(dt), value = TRUE)
+      exps_tolag <-
+        grep(
+          "^smok_sta|^ets_|^active_|^bmi_|^alcohol_|^t2dm_prvl_curr_xps",
+          names(dt),
+          value = TRUE
+        )
       exps_nam <-  gsub("_curr_xps$", "_lagged", exps_tolag)
       for (i in seq_along(exps_tolag)) {
         set(dt, NULL, exps_nam[i],
           dt[, shift_bypid(get(exps_tolag[i]), design_$lags_mc$cancer_lag, pid)])
       }
     } else {
-
       exps_tolag <-
         c(paste0(
           c(
-            "active_days_", "alcohol_", "bmi_", "smok_status_", "t2dm_prvl_"
+            "active_days_",
+            "alcohol_",
+            "bmi_",
+            "smok_status_",
+            "t2dm_prvl_"
           ),
           "sc"
         ),
@@ -134,8 +142,10 @@ breast_ca_model <-
       breast_caparf <-
         dt[between(age, design_$sim_prm$ageL, design_$sim_prm$ageH) &
             breast_ca_prvl == 0 & year == design_$sim_prm$init_year,
-          .(parf = 1 - 1 / (sum(tobacco_rr * ets_rr * alcohol_rr * pa_rr * bmi_rr *
-              t2dm_rr) / .N)),
+          .(parf = 1 - 1 / (
+            sum(tobacco_rr * ets_rr * alcohol_rr * pa_rr * bmi_rr *
+                t2dm_rr) / .N
+          )),
           keyby = .(age, sex, qimd)]
       # breast_caparf[, parf := clamp(predict(loess(parf ~ age, span = 0.5))), by = .(sex, qimd)]
       # breast_caparf[, {
@@ -144,8 +154,10 @@ breast_ca_model <-
       # },
       # keyby = .(sex, qimd)]
 
-      absorb_dt(breast_caparf,
-        get_disease_epi_mc(mc, "breast_ca", "i", "v", design_$sim_prm$stochastic))
+      absorb_dt(
+        breast_caparf,
+        get_disease_epi_mc(mc, "breast_ca", "i", "v", design_$sim_prm$stochastic)
+      )
       breast_caparf[, p0_breast_ca := incidence * (1 - parf)]
       # breast_caparf[, summary(p0_breast_ca)]
       breast_caparf[is.na(p0_breast_ca), p0_breast_ca := incidence]
@@ -156,36 +168,36 @@ breast_ca_model <-
     }
 
     if (!nzchar(scenario_nam)) {
-    # Estimate breast_ca incidence prbl -------------------------------
-    #cat("Estimating breast_ca incidence...\n\n")
-    set(dt, NULL, "prb_breast_ca_incd_not2dm", 0)
-    dt[, prb_breast_ca_incd_not2dm :=
-        p0_breast_ca * tobacco_rr * ets_rr * alcohol_rr * pa_rr * bmi_rr]
-    # Remember no t2dm as this will be a multiplier
-    dt[, breast_ca_incd_t2dm_mltp :=
-        RR$t2dm_breast_ca$get_rr(mc, design_, drop = TRUE)]
-    dt[sex == "men", breast_ca_incd_t2dm_mltp := 1]
+      # Estimate breast_ca incidence prbl -------------------------------
+      #cat("Estimating breast_ca incidence...\n\n")
+      set(dt, NULL, "prb_breast_ca_incd_not2dm", 0)
+      dt[, prb_breast_ca_incd_not2dm :=
+          p0_breast_ca * tobacco_rr * ets_rr * alcohol_rr * pa_rr * bmi_rr]
+      # Remember no t2dm as this will be a multiplier
+      dt[, breast_ca_incd_t2dm_mltp :=
+          RR$t2dm_breast_ca$get_rr(mc, design_, drop = TRUE)]
+      dt[sex == "men", breast_ca_incd_t2dm_mltp := 1]
 
-    dt[, (grep("_rr$", names(dt), value = TRUE)) := NULL]
+      dt[, (grep("_rr$", names(dt), value = TRUE)) := NULL]
 
-    # Assume a probability of diagnosis ----
-    # probability to diagnosis every year
-    # hist(rnbinom(1e4, 1, diagnosis_prb), 100) # the distribution of the number of years until diagnosis
-    set(dt, NULL, "prb_breast_ca_dgn", diagnosis_prb)
+      # Assume a probability of diagnosis ----
+      # probability to diagnosis every year
+      # hist(rnbinom(1e4, 1, diagnosis_prb), 100) # the distribution of the number of years until diagnosis
+      set(dt, NULL, "prb_breast_ca_dgn", diagnosis_prb)
 
-    set(dt, NULL, "breast_ca_dgn", 0L)
-    dt[breast_ca_prvl > 0, breast_ca_dgn := clamp(breast_ca_prvl - 5L, 0, 100)]
+      set(dt, NULL, "breast_ca_dgn", 0L)
+      dt[breast_ca_prvl > 0, breast_ca_dgn := clamp(breast_ca_prvl - 5L, 0, 100)]
 
-    # Estimate case fatality ----
-    absorb_dt(dt,
-              get_disease_epi_mc(mc, "breast_ca", "f", "v", design_$sim_prm$stochastic))
-    setnames(dt, "fatality", "prb_breast_ca_mrtl")
+      # Estimate case fatality ----
+      absorb_dt(dt,
+        get_disease_epi_mc(mc, "breast_ca", "f", "v", design_$sim_prm$stochastic))
+      setnames(dt, "fatality", "prb_breast_ca_mrtl")
 
     } else {
-
       set(dt, NULL, "breast_ca_prvl_sc", 0L)
       dt[year < design_$sim_prm$init_year_fromGUI, breast_ca_prvl_sc := breast_ca_prvl]
-      dt[year == design_$sim_prm$init_year_fromGUI & breast_ca_prvl > 1L, breast_ca_prvl_sc := breast_ca_prvl]
+      dt[year == design_$sim_prm$init_year_fromGUI &
+          breast_ca_prvl > 1L, breast_ca_prvl_sc := breast_ca_prvl]
 
       # Estimate breast cancer incidence prbl
       #cat("Estimating breast cancer incidence without diabetes...\n\n")
@@ -200,12 +212,14 @@ breast_ca_model <-
 
       set(dt, NULL, "breast_ca_dgn_sc", 0L)
       dt[year < design_$sim_prm$init_year_fromGUI, breast_ca_dgn_sc := breast_ca_dgn]
-      dt[year == design_$sim_prm$init_year_fromGUI & breast_ca_dgn > 1L, breast_ca_dgn_sc := breast_ca_dgn]
+      dt[year == design_$sim_prm$init_year_fromGUI &
+          breast_ca_dgn > 1L, breast_ca_dgn_sc := breast_ca_dgn]
 
       # Estimate case fatality
-      dt[, prb_breast_ca_mrtl_sc := prb_breast_ca_mrtl]
+      if (!"prb_breast_ca_mrtl_sc" %in% names(dt))
+        set(dt, NULL, "prb_breast_ca_mrtl_sc", dt$prb_breast_ca_mrtl)
 
-}
+    }
     if (timing)
       print(proc.time() - ptm)
   }

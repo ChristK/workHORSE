@@ -600,7 +600,7 @@ output$cep1_1 <- renderPlotly({
     layout(
       p,
       yaxis = list(title = "Incremental cumulative cost (£)"),
-      xaxis = list(title = "Incremental cumulative effects (QALYS)"),
+      xaxis = list(title = "Incremental cumulative effects (QALYs)"),
       shapes = list(
         list(type = "rect",
              fillcolor = "green", line = list(color = "green"), opacity = 0.3,
@@ -677,7 +677,7 @@ output$cep1 <- renderPlotly({
     layout(
       p,
       yaxis = list(title = "Incremental cumulative cost (£)"),
-      xaxis = list(title = "Incremental cumulative effects (QALYS)"),
+      xaxis = list(title = "Incremental cumulative effects (QALYs)"),
       shapes = list(
         list(type = "rect",
              fillcolor = "green", line = list(color = "green"), opacity = 0.3,
@@ -709,16 +709,16 @@ output$cep1 <- renderPlotly({
 output$cep_anim <- renderPlotly({
 
   if (input$health_econ_perspective_checkbox == "Societal perspective") {
-    tt <- out_proc()[year == max(year),
-      .(net_utility_cml, cost_cml = societal_cost_cml, mc,
+    tt <- out_proc()[,
+      .(net_utility_cml, cost_cml = societal_cost_cml, mc, year,
         friendly_name = factor(friendly_name))]
   } else if (input$health_econ_perspective_checkbox == "Health and social care perspective") {
-    tt <- out_proc()[year == max(year),
-      .(net_utility_cml, cost_cml = total_hscp_cost_cml, mc,
+    tt <- out_proc()[,
+      .(net_utility_cml, cost_cml = total_hscp_cost_cml, mc, year,
         friendly_name = factor(friendly_name))]
   } else if (input$health_econ_perspective_checkbox == "Healthcare perspective") {
-    tt <- out_proc()[year == max(year),
-      .(net_utility_cml, cost_cml = total_hcp_cost_cml, mc,
+    tt <- out_proc()[,
+      .(net_utility_cml, cost_cml = total_hcp_cost_cml, mc, year,
         friendly_name = factor(friendly_name))]
   }
 
@@ -747,7 +747,7 @@ output$cep_anim <- renderPlotly({
     layout(
       p,
       yaxis = list(title = "Incremental cumulative cost (£)"),
-      xaxis = list(title = "Incremental cumulative effects (QALYS)"),
+      xaxis = list(title = "Incremental cumulative effects (QALYs)"),
       shapes = list(
         list(type = "rect",
              fillcolor = "green", line = list(color = "green"), opacity = 0.3,
@@ -772,9 +772,9 @@ output$cep_anim <- renderPlotly({
   # NOTE gives warning when colours and symbols are defined. Known bug
   # https://github.com/ropensci/plotly/issues/1696
 
-  # TODO the warning message concerns the colours and symbols that are not added on
-  # every frames of the animation as they should be, they are only added on the first.
-  # This needs to be done 3 times, for the 3 graphs with animations
+  # TODO the warning message concerns the colours and symbols that are not added
+  # on every frames of the animation as they should be. They are only added on
+  # the first. This needs to be done 3 times, for the 3 graphs with animations
   p <- animation_opts(p, frame = 1000, redraw = FALSE)
   p <- animation_slider(p,
                         currentvalue = list(prefix = "Year: ",

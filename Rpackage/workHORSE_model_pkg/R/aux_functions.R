@@ -1483,7 +1483,7 @@ set_lifestyle <-
   function(scenario_parms, dt, design) {
     atte_colnam <- "attendees_sc"
 
-    # PA
+    # PA ----
     colnam      <- "active_days_sc"
     colnam_cost <- "active_days_cost_sc"
     if (!"hc_eff_pa" %in% names(dt))      set(dt, NULL, "hc_eff_pa", 0L)
@@ -1498,7 +1498,7 @@ set_lifestyle <-
     dt[hc_eff_pa == 1L, (colnam) :=
          as.integer(round(clamp(active_days_sc + scenario_parms$sc_ls_papincr, 0, 7)))]
 
-    # Weight management
+    # Weight management ----
     colnam      <- "bmi_sc"
     colnam_cost <- "bmi_cost_sc"
     if (!"hc_eff_wm" %in% names(dt)) set(dt, NULL, "hc_eff_wm", 0L)
@@ -1514,7 +1514,7 @@ set_lifestyle <-
         (1 - scenario_parms$sc_ls_attrition), pid_mrk)]
     dt[hc_eff_wm == 1L, (colnam) := bmi_sc * (1 - scenario_parms$sc_ls_wghtreduc)]
 
-    # Alcohol
+    # Alcohol ----
     colnam      <- "alcohol_sc"
     colnam_cost <- "alcohol_cost_sc"
     if (!"hc_eff_al" %in% names(dt)) set(dt, NULL, "hc_eff_al", 0L)
@@ -1531,7 +1531,7 @@ set_lifestyle <-
          as.integer(round(alcohol_sc * (1 - scenario_parms$sc_ls_alcoholreduc)))]
 
 
-    # Smoking cessation
+    # Smoking cessation ----
     colnam_status   <- "smok_status_sc"
     colnam_quit_yrs <- "smok_quit_yrs_sc"
     colnam_dur      <- "smok_dur_sc"
@@ -1587,14 +1587,14 @@ set_lifestyle <-
 set_structural <-
   function(scenario_parms, dt, design) {
     if (any(scenario_parms[grepl("^sc_str_", names(scenario_parms))] != 0)) {
-      dt[, .row := 1:.N]
-      row_sel <- dt[between(year + 2000L, scenario_parms$sc_init_year,
-                 scenario_parms$sc_last_year) &
-           dead == FALSE, .row] # row number of selected person/year
-      dt[, .row := NULL]
+      row_sel <-
+        dt[between(year + 2000L,
+          scenario_parms$sc_init_year,
+          scenario_parms$sc_last_year) &
+            dead == FALSE, which = TRUE]
     }
 
-    # smoking
+    # smoking ----
     if (scenario_parms$sc_str_smk_change != 0) {
       if (!"smok_status_sc" %in% names(dt))
         set(dt, NULL, "smok_status_sc", dt$smok_status_curr_xps)
@@ -1676,7 +1676,7 @@ set_structural <-
       dt[, hc_eff := NULL]
 }
 
-    # fv
+    # fv ----
     if (scenario_parms$sc_str_fv_change != 0) {
       if (!"fruit_sc" %in% names(dt))
         set(dt, NULL, "fruit_sc", dt$fruit_curr_xps)
@@ -1692,7 +1692,7 @@ set_structural <-
            ))))]
     }
 
-    # alcohol
+    # alcohol ----
     if (scenario_parms$sc_str_alcohol_change != 0) {
       if (!"alcohol_sc" %in% names(dt))
         set(dt, NULL, "alcohol_sc", dt$alcohol_curr_xps)
@@ -1704,7 +1704,7 @@ set_structural <-
            )]
     }
 
-    # active_days
+    # active_days ----
     if (scenario_parms$sc_str_pa_change != 0) {
       if (!"active_days_sc" %in% names(dt))
         set(dt, NULL, "active_days_sc", dt$active_days_curr_xps)
@@ -1713,7 +1713,7 @@ set_structural <-
          )]
     }
 
-    # bmi
+    # bmi ----
     if (scenario_parms$sc_str_bmi_change != 0) {
       if (!"bmi_sc" %in% names(dt))
         set(dt, NULL, "bmi_sc", dt$bmi_curr_xps)
@@ -1723,7 +1723,7 @@ set_structural <-
          )]
     }
 
-    # sbp
+    # sbp ----
     if (scenario_parms$sc_str_sbp_change != 0) {
       if (!"sbp_sc" %in% names(dt))
         set(dt, NULL, "sbp_sc", dt$sbp_curr_xps)
@@ -1733,7 +1733,7 @@ set_structural <-
          )]
     }
 
-    # tchol
+    # tchol ----
     if (scenario_parms$sc_str_tchol_change != 0) {
       if (!"tchol_sc" %in% names(dt))
         set(dt, NULL, "tchol_sc", dt$tchol_curr_xps)
@@ -1745,6 +1745,334 @@ set_structural <-
 
     invisible(dt)
   }
+
+#' @export
+set_social <- function(scenario_parms, dt, design) {
+  # bypass if irrelevant
+  if (all(
+    scenario_parms$sc_soc_qimd1_change == 1L,
+    scenario_parms$sc_soc_qimd2_change == 2L,
+    scenario_parms$sc_soc_qimd3_change == 3L,
+    scenario_parms$sc_soc_qimd4_change == 4L,
+    scenario_parms$sc_soc_qimd5_change == 5L
+  )) {
+    return(invisible(dt))
+
+  } else {
+    # if any relevant scenario input
+
+    # Manipulate qimd per user input ----
+    set(dt, NULL, "qimd_sc", dt$qimd) # create new scenario qimd
+    l <- levels(dt$qimd)
+    if (scenario_parms$sc_soc_qimd1_change != 1L)
+      dt[qimd == l[1], qimd_sc := l[scenario_parms$sc_soc_qimd1_change]]
+    if (scenario_parms$sc_soc_qimd2_change != 2L)
+      dt[qimd == l[2], qimd_sc := l[scenario_parms$sc_soc_qimd2_change]]
+    if (scenario_parms$sc_soc_qimd3_change != 3L)
+      dt[qimd == l[3], qimd_sc := l[scenario_parms$sc_soc_qimd3_change]]
+    if (scenario_parms$sc_soc_qimd4_change != 4L)
+      dt[qimd == l[4], qimd_sc := l[scenario_parms$sc_soc_qimd4_change]]
+    if (scenario_parms$sc_soc_qimd5_change != 5L)
+      dt[qimd == l[5], qimd_sc := l[scenario_parms$sc_soc_qimd5_change]]
+
+
+
+    row_sel <- # Indices of eligible rows
+      dt[between(year + 2000L,
+        scenario_parms$sc_init_year,
+        scenario_parms$sc_last_year) &
+          # dead == FALSE & # NOTE this is appropriate
+          qimd != qimd_sc, which = TRUE]
+
+    # smoking ----
+    # Assumes that from the smoking initiation/cessation/relapse probabilities
+    # change, not smoking prevalence. Smoking intensity also changes.
+    # pid_mrk needs to be recalculated for row_sel
+    if ("smok" %in% scenario_parms$sc_soc_qimd_rf_change) {
+      if (!"smok_status_sc" %in% names(dt))
+        set(dt, NULL, "smok_status_sc", dt$smok_status_curr_xps)
+      if (!"smok_quit_yrs_sc" %in% names(dt))
+        set(dt, NULL, "smok_quit_yrs_sc", dt$smok_quit_yrs_curr_xps)
+      if (!"smok_dur_sc" %in% names(dt))
+        set(dt, NULL, "smok_dur_sc", dt$smok_dur_curr_xps)
+      if (!"smok_cig_sc" %in% names(dt))
+        set(dt, NULL, "smok_cig_sc", dt$smok_cig_curr_xps)
+
+      dt[row_sel, pid_mrk_sc := mk_new_simulant_markers(pid)]
+
+      # Assign smok_incid probabilities
+      lutbl <-
+        read_fst("./lifecourse_models/smok_incid_table.fst",
+          as.data.table = TRUE)
+      setnames(lutbl, c("qimd", "mu"), c("qimd_sc", "prb_smok_incid_sc"))
+      lookup_dt(dt, lutbl)
+
+
+      # Assign smok_cessation probabilities
+      lutbl <-
+        read_fst("./lifecourse_models/smok_cess_table.fst",
+          as.data.table = TRUE)
+      setnames(lutbl, c("qimd", "mu"), c("qimd_sc", "prb_smok_cess_sc"))
+      lookup_dt(dt, lutbl)
+
+      # Handle smok_relapse probabilities
+      # No need to use qimd_sc here. It happens at the simsmok_sc side
+      tbl <-
+        read_fst("./lifecourse_models/smok_relapse_table.fst",
+          as.data.table = TRUE)
+      tbl <-
+        dcast(tbl, sex + qimd ~ smok_quit_yrs, value.var = "pr")
+      nam <- tbl[, paste0(sex, " ", qimd)]
+      tbl <-
+        as.matrix(tbl[, mget(paste0(1:15))], rownames = nam)
+
+      simsmok_sc(dt, tbl, design$sim_prm$smoking_relapse_limit, row_sel)
+
+      dt[, c("prb_smok_incid_sc", "prb_smok_cess_sc") := NULL]
+
+      # smok intensity
+      lutbl <-
+        read_fst("./lifecourse_models/smok_cig_curr_table.fst",
+          as.data.table = TRUE)
+      setnames(lutbl, "qimd", "qimd_sc")
+      lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
+
+      dt[row_sel, mrk := TRUE]
+
+      dt[(mrk) & smok_status_sc == "4",
+        smok_cig_sc := qZINBI(rankstat_smok_cig_curr, mu, sigma, nu)]
+
+      lutbl <-
+        read_fst("./lifecourse_models/smok_cig_ex_table.fst",
+          as.data.table = TRUE)
+      setnames(lutbl, "qimd", "qimd_sc")
+      lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
+      dt[(pid_mrk_sc) & # no need for mrk as superseded by pid_mrk_sc
+          smok_status_sc == "3",
+        smok_cig_sc := my_qZABNB(rankstat_smok_cig_ex,
+          mu,
+          sigma,
+          nu,
+          tau,
+          n_cpu = design$sim_prm$n_cpu)]
+
+      simsmok_cig_sc(dt, row_sel) # carry forward smok_cig if smok_status == 3
+      dt[smok_cig_sc == 0L & smok_status_sc != "1", smok_cig_sc := 1L]
+      dt[, mrk := NULL]
+
+
+      dt[, smok_status_sc := factor(smok_status_sc)]
+      dt[, smoke_cat_sc := 0L]
+      dt[smok_status_sc == "3", smoke_cat_sc := 1L]
+      dt[smok_status_sc == "4", smoke_cat_sc := 3L]
+      dt[smok_status_sc == "4" & smok_cig_sc < 10L, smoke_cat_sc := 2L]
+      dt[smok_status_sc == "4" & smok_cig_sc > 19L, smoke_cat_sc := 4L]
+    }
+
+    # ets ----
+    if ("ets" %in% scenario_parms$sc_soc_qimd_rf_change) {
+      if (!"ets_sc" %in% names(dt)) set(dt, NULL, "ets_sc", dt$ets_curr_xps)
+
+      lutbl <-
+        read_fst("./lifecourse_models/ets_table.fst", as.data.table = TRUE)
+      lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
+      dt[row_sel, rank := pbinom(ets_curr_xps, 1, mu)]
+
+      setnames(lutbl, "qimd", "qimd_sc")
+      lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
+      dt[row_sel, ets_sc := as.integer(rank < mu)]
+    }
+
+    # fv ----
+    if ("fv" %in% scenario_parms$sc_soc_qimd_rf_change) {
+      if (!"fruit_sc" %in% names(dt))
+        set(dt, NULL, "fruit_sc", dt$fruit_curr_xps)
+      if (!"veg_sc" %in% names(dt))
+        set(dt, NULL, "veg_sc", dt$veg_curr_xps)
+
+
+      lutbl <-
+        read_fst("./lifecourse_models/frtpor_table.fst",
+          as.data.table = TRUE)
+      # is_valid_lookup_tbl(lutbl, c("year", "age", "sex", "sha", "qimd", "ethnicity"))
+      lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
+      dt[row_sel, rank :=
+          my_pZISICHEL(fruit_curr_xps / 80,
+            mu,
+            sigma,
+            nu,
+            tau,
+            n_cpu = design$sim_prm$n_cpu)]
+      # rn not uniformly distributed because it is discrete distr. That's expected
+      # and without consequences.
+
+      setnames(lutbl, "qimd", "qimd_sc")
+      lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
+      dt[row_sel, fruit_sc :=
+          my_qZISICHEL(rank,
+            mu, sigma, nu, tau, n_cpu = design$sim_prm$n_cpu) * 80L]  # g/d
+
+      lutbl <-
+        read_fst("./lifecourse_models/vegpor_table.fst",
+          as.data.table = TRUE)
+      lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
+      dt[row_sel, rank :=
+          my_pDEL(veg_curr_xps / 80,
+            mu, sigma, nu, n_cpu = design$sim_prm$n_cpu)]
+
+      setnames(lutbl, "qimd", "qimd_sc")
+      lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
+      dt[row_sel, veg_sc :=
+          my_qDEL(rank,
+            mu, sigma, nu, n_cpu = design$sim_prm$n_cpu) * 80L]  # g/d
+    }
+
+    # alcohol ----
+    if ("alc" %in% scenario_parms$sc_soc_qimd_rf_change) {
+      if (!"alcohol_sc" %in% names(dt))
+        set(dt, NULL, "alcohol_sc", dt$alcohol_curr_xps)
+
+      lutbl <-
+        read_fst("./lifecourse_models/alcohol_table.fst",
+          as.data.table = TRUE)
+      # is_valid_lookup_tbl(lutbl, c("year", "age", "sex", "sha", "qimd", "ethnicity"))
+      lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
+      dt[row_sel, rank := pZINBI(alcohol_curr_xps, mu, sigma, nu)]
+
+      setnames(lutbl, "qimd", "qimd_sc")
+      lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
+      dt[row_sel, alcohol_sc := qZINBI(rank, mu, sigma, nu)]
+    }
+
+    # active_days ----
+    if ("pa" %in% scenario_parms$sc_soc_qimd_rf_change) {
+      if (!"active_days_sc" %in% names(dt))
+        set(dt, NULL, "active_days_sc", dt$active_days_curr_xps)
+
+      dt[, c("mu", "sigma", "nu", "tau") := NULL]
+
+      lutbl <-
+        read_fst("./lifecourse_models/active_days_table.fst",
+          as.data.table = TRUE)
+      lookup_dt(dt, lutbl)
+      dt[row_sel, rank := fcase(
+        active_days_curr_xps == 0,
+        pa0 - 1e-5,
+        # -1e-5 for safety
+        active_days_curr_xps == 1,
+        pa1 - 1e-5,
+        active_days_curr_xps == 2,
+        pa2 - 1e-5,
+        active_days_curr_xps == 3,
+        pa3 - 1e-5,
+        active_days_curr_xps == 4,
+        pa4 - 1e-5,
+        active_days_curr_xps == 5,
+        pa5 - 1e-5,
+        active_days_curr_xps == 6,
+        pa6 - 1e-5,
+        active_days_curr_xps == 7,
+        1
+      )]
+
+      setnames(lutbl, "qimd", "qimd_sc")
+      lookup_dt(dt, lutbl, exclude_col = (paste0("pa", 0:6)))
+
+
+      dt[row_sel, active_days_sc := (rank > pa0) + (rank > pa1) + (rank > pa2) +
+          (rank > pa3) + (rank > pa4) + (rank > pa5) + (rank > pa6)]
+
+      dt[, (paste0("pa", 0:6)) := NULL]
+    }
+
+    # bmi ----
+    if ("bmi" %in% scenario_parms$sc_soc_qimd_rf_change) {
+      if (!"bmi_sc" %in% names(dt))
+        set(dt, NULL, "bmi_sc", dt$bmi_curr_xps)
+
+      lutbl <-
+        read_fst("./lifecourse_models/bmi_table.fst", as.data.table = TRUE)
+      lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
+      dt[row_sel, rank :=
+          my_pBCPEo(bmi_curr_xps, mu, sigma, nu, tau,
+            n_cpu = design$sim_prm$n_cpu)]
+
+      setnames(lutbl, "qimd", "qimd_sc")
+      lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
+      dt[row_sel, bmi_sc :=
+          my_qBCPEo(rank, mu, sigma, nu, tau, n_cpu = design$sim_prm$n_cpu)]
+    }
+
+    # sbp ----
+    if ("sbp" %in% scenario_parms$sc_soc_qimd_rf_change) {
+      if (!"sbp_sc" %in% names(dt))
+        set(dt, NULL, "sbp_sc", dt$sbp_curr_xps)
+
+      lutbl <-
+        read_fst("./lifecourse_models/sbp_table.fst", as.data.table = TRUE)
+      lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
+      dt[row_sel, rank :=
+          my_pBCPEo(sbp_curr_xps, mu, sigma, nu, tau,
+            n_cpu = design$sim_prm$n_cpu)]
+
+      setnames(lutbl, "qimd", "qimd_sc")
+      lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
+      dt[row_sel, sbp_sc :=
+          my_qBCPEo(rank, mu, sigma, nu, tau, n_cpu = design$sim_prm$n_cpu)]
+    }
+
+    # tchol ----
+    if ("tchol" %in% scenario_parms$sc_soc_qimd_rf_change) {
+      if (!"tchol_sc" %in% names(dt))
+        set(dt, NULL, "tchol_sc", dt$sbp_curr_xps)
+
+      lutbl <-
+        read_fst("./lifecourse_models/tchol_table.fst", as.data.table = TRUE)
+      lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
+      dt[row_sel, rank :=
+          my_pBCT(tchol_curr_xps, mu, sigma, nu, tau,
+            n_cpu = design$sim_prm$n_cpu)]
+
+      setnames(lutbl, "qimd", "qimd_sc")
+      lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
+      dt[row_sel, tchol_sc :=
+          my_qBCT(rank, mu, sigma, nu, tau, n_cpu = design$sim_prm$n_cpu)]
+
+      dt[, c("mu", "sigma", "nu", "tau", "rank") := NULL]
+    }
+
+    # case fatality ----
+    if (scenario_parms$sc_soc_qimd_fatality_change) {
+      nam <- names(dt)
+      nam <-
+        c(grep("^prb_.*\\_mrtl$", nam, value = TRUE),
+          "p0_nonmodelled")
+
+      for (i in nam) {
+        nc <- paste0(i, "_sc")
+        setnames(dt, i, "mod____") # to avoid using get() due to performance issues
+        tt <- dt[, min(mod____), keyby = .(age, qimd, sex, year)]
+        setnames(dt, "mod____", i)
+
+        lutbl <- tt[, {
+          # because some combinations are missing
+          l <- lapply(.SD, unique)
+          setDT(expand.grid(l))
+        }, .SDcols = c("age", "qimd", "sex", "year")]
+        absorb_dt(lutbl, tt)
+
+        setnames(lutbl, c("qimd", "V1"), c("qimd_sc", nc))
+
+        lookup_dt(dt, lutbl, exclude_col = nc) # row_sel not appropriate here
+      }
+
+    }
+
+    return(invisible(dt))
+  }
+}
+
+
 
 #' @export
 run_scenario <-
@@ -1834,8 +2162,6 @@ run_scenario <-
     invisible(output)
   }
 
-#' @export
-set_social <- function() {}
 
 
 #' @export

@@ -12,7 +12,7 @@ LazyData: true
 NeedsCompilation: yes
 Byte-Compile: yes
 Imports: Rcpp (>= 1.0.2),
-         data.table (>= 1.12.2),
+         data.table (>= 1.14.0),
          fst (>= 0.9.0),
          dqrng,
          CKutils, 
@@ -25,5 +25,7 @@ Imports: Rcpp (>= 1.0.2),
          shinythemes,
          foreach
 LinkingTo: Rcpp, 
-           dqrng
+           dqrng,
+           sitmo,
+           data.table
 RoxygenNote: 7.1.1

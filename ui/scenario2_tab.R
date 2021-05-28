@@ -1239,14 +1239,14 @@ fluidRow(
     )
   )),
   wellPanel(fluidRow(
-    ## Misc Policies ----
-    h5("Miscellaneous Policies"),
-    h6("FILLME"),
+    ## Social Policies ----
+    h5("Social Policies"),
+    h6("Note: these policies may override some of the changes set above"),
     HTML("<br> <br/> "),
     column(6,
       sliderInput(
         "qimd_one_slider_sc2",
-        "Reassign QIMD 1 to QIMD...",
+        "Reassign QIMD 1 (most deprived) to QIMD...",
         1, 5, 1, 1,
         sep = "",
         ticks = FALSE,
@@ -1255,7 +1255,7 @@ fluidRow(
       %>%
         shinyInput_label_embed(
           icon("info") %>%
-            bs_embed_popover(title = "FILLME")
+            bs_embed_popover(title = "Assign QIMD 1 to a different one")
         ),
       sliderInput(
         "qimd_two_slider_sc2",
@@ -1268,7 +1268,7 @@ fluidRow(
       %>%
         shinyInput_label_embed(
           icon("info") %>%
-            bs_embed_popover(title = "FILLME")
+            bs_embed_popover(title = "Assign QIMD 2 to a different one")
         ),
       sliderInput(
         "qimd_three_slider_sc2",
@@ -1281,7 +1281,7 @@ fluidRow(
       %>%
         shinyInput_label_embed(
           icon("info") %>%
-            bs_embed_popover(title = "FILLME")
+            bs_embed_popover(title = "Assign QIMD 3 to a different one")
         ),
       sliderInput(
         "qimd_four_slider_sc2",
@@ -1294,11 +1294,11 @@ fluidRow(
       %>%
         shinyInput_label_embed(
           icon("info") %>%
-            bs_embed_popover(title = "FILLME")
+            bs_embed_popover(title = "Assign QIMD 4 to a different one")
         ),
       sliderInput(
         "qimd_five_slider_sc2",
-        "Reassign QIMD 5 to QIMD...",
+        "Reassign QIMD 5 (least deprived) to QIMD...",
         1, 5, 5, 1,
         sep = "",
         ticks = FALSE,
@@ -1307,28 +1307,58 @@ fluidRow(
       %>%
         shinyInput_label_embed(
           icon("info") %>%
-            bs_embed_popover(title = "FILLME")
+            bs_embed_popover(title = "Assign QIMD 5 to a different one")
         )
 
     ),
-    column(3,
+    column(6,
       switchInput(
         "qimd_fatalities_checkbox_sc2",
         "Should QIMD reassignment affect case fatalities?",
         value = FALSE,
         onLabel = "Yes",
-        offLabel = "Now",
+        offLabel = "No",
         labelWidth = "100%"
       )
       %>%
         shinyInput_label_embed(
           icon("info") %>%
-            bs_embed_popover(title = "FILLME")
-        )
-    ),
-    column(3
+            bs_embed_popover(title = "Should QIMD reassignment affect disease case fatalities?")
+        ),
 
-    )
+      checkboxGroupButtons("qimd_risk_factors_checkbox_sc2",
+        "Which risk factors should be affected by the changes in QIMD?",
+        c("Smoking" = "smok",
+          "Environmental Tobacco Smoking" = "ets",
+          "Fruit & Veg" = "fv",
+          "Alcohol" = "alc",
+          "Physical Activity" = "pa",
+          "BMI" = "bmi",
+          "SBP" = "sbp",
+          "Cholesterol" = "tchol"),
+        selected = c("smok",
+          "ets",
+          "fv",
+          "alc",
+          "pa",
+          "bmi" ,
+          "sbp",
+          "tchol"),
+        direction = "vertical",
+        status = "default",
+        checkIcon = list(
+          yes = icon("check-square"),
+          no = icon("square-o")
+        ),
+        justified = TRUE,
+        individual = FALSE
+        )
+      %>%
+        shinyInput_label_embed(
+          icon("info") %>%
+            bs_embed_popover(title = "Which risk factors should be affected by the changes in QIMD?")
+        )
+    ) # end column
   ))
 ),
 

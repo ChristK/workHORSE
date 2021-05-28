@@ -1191,7 +1191,7 @@ SynthPop <-
             # Smoking simulation ----
             message("Smoking simulation")
 
-            # Assign smok_status when pid_mrk == true (the first year an individul enters the simulation (with lags))
+            # Assign smok_status when pid_mrk == true (the first year an individual enters the simulation (with lags))
             tbl <-
               read_fst("./lifecourse_models/smok_status_table.fst",
                        as.data.table = TRUE)
@@ -1218,7 +1218,7 @@ SynthPop <-
             dt[, rankstat_smok_quit_yrs := NULL]
             dt[, (col_nam) := NULL]
 
-            # Assign smok_dur_ex when pid_mrk == true (the first year an individul enters the simulation)
+            # Assign smok_dur_ex when pid_mrk == true (the first year an individual enters the simulation)
             tbl <-
               read_fst("./lifecourse_models/smok_dur_ex_table.fst",
                        as.data.table = TRUE)
@@ -1485,9 +1485,9 @@ SynthPop <-
                  smok_cig > 19, smoke_cat := 4L]
 
             dt[, c(
-              "rankstat_smok",
-              "rankstat_smok_cig_curr",
-              "rankstat_smok_cig_ex",
+              # "rankstat_smok",
+              # "rankstat_smok_cig_curr",
+              # "rankstat_smok_cig_ex",
               "prb_smok_incid",
               "prb_smok_cess",
               "smok_status_ref"
@@ -1881,9 +1881,10 @@ SynthPop <-
                      "LAD11NM",
                      "tds_quintile",
                      "imd",
-                     "sha",
-                     "CCG17CDH",
-                     "pid_mrk")
+                     # "sha", # NEEDED for social scenarios
+                     # "pid_mrk",
+                     "CCG17CDH"
+                     )
             dt[, (nam) := NULL]
 
             message("Writing primer to disk")

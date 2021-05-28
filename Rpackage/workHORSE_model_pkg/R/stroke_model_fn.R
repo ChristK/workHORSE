@@ -273,8 +273,9 @@ stroke_model <-
       dt[year == design_$sim_prm$init_year_fromGUI & stroke_dgn > 1L, stroke_dgn_sc := stroke_dgn]
 
       # Estimate case fatality
-      dt[, prb_stroke_mrtl_sc := prb_stroke_mrtl]
-}
+      if (!"prb_stroke_mrtl_sc" %in% names(dt))
+        set(dt, NULL, "prb_stroke_mrtl_sc", dt$prb_stroke_mrtl)
+    }
 
     if (timing) print(proc.time() - ptm)
   }

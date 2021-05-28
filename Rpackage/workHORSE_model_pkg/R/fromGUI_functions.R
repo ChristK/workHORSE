@@ -474,36 +474,41 @@ fromGUI_scenario_parms <- function(scenario_nam, parameters_dt) {
                       input_names %flike% "structural_chol_slider",
                     as.numeric(value1)/100]
 
-    # Misc policies
-    l$sc_str_qimd1_change <-
+    # Social policies
+    l$sc_soc_qimd1_change <-
       parameters_dt[scenario == scenario_nam &
           input_names %flike% "qimd_one_slider",
-        as.numeric(value1)]
+        as.integer(value1)]
 
-    l$sc_str_qimd2_change <-
+    l$sc_soc_qimd2_change <-
       parameters_dt[scenario == scenario_nam &
           input_names %flike% "qimd_two_slider",
-        as.numeric(value1)]
+        as.integer(value1)]
 
-    l$sc_str_qimd3_change <-
+    l$sc_soc_qimd3_change <-
       parameters_dt[scenario == scenario_nam &
           input_names %flike% "qimd_three_slider",
-        as.numeric(value1)]
+        as.integer(value1)]
 
-    l$sc_str_qimd4_change <-
+    l$sc_soc_qimd4_change <-
       parameters_dt[scenario == scenario_nam &
           input_names %flike% "qimd_four_slider",
-        as.numeric(value1)]
+        as.integer(value1)]
 
-    l$sc_str_qimd5_change <-
+    l$sc_soc_qimd5_change <-
       parameters_dt[scenario == scenario_nam &
           input_names %flike% "qimd_five_slider",
-        as.numeric(value1)]
+        as.integer(value1)]
 
-    l$sc_str_qimd_fatality_change <-
+    l$sc_soc_qimd_fatality_change <-
       parameters_dt[scenario == scenario_nam &
           input_names %flike% "qimd_fatalities_checkbox",
         as.logical(value1)]
+
+    l$sc_soc_qimd_rf_change <-
+      parameters_dt[scenario == scenario_nam &
+          input_names %flike% "qimd_risk_factors_checkbox",
+        as.character(value1)]
 
     # Ensemble logic
     l$sc_ens_is <- FALSE

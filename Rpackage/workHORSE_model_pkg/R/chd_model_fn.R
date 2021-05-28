@@ -22,18 +22,18 @@
 
 #' @export
 chd_model <-
-  function(
-    scenario_nam,
+  function(scenario_nam,
     mc,
     dt,
     design_,
     diagnosis_prb = 1,
     timing = TRUE) {
-
     message("Loading CHD (I20-I25) model...")
-    if (timing) ptm <- proc.time()
+    if (timing)
+      ptm <- proc.time()
 
-    if (!nzchar(scenario_nam)) { # first run for scenario ""
+    if (!nzchar(scenario_nam)) {
+      # first run for scenario ""
       # Lagged exposures
       exps_tolag <-
         grep(
@@ -48,16 +48,22 @@ chd_model <-
       }
 
     } else {
-
       exps_tolag <-
         c(paste0(
           c(
-            "active_days_", "alcohol_", "bmi_", "sbp_", "tchol_", "smok_status_",
+            "active_days_",
+            "alcohol_",
+            "bmi_",
+            "sbp_",
+            "tchol_",
+            "smok_status_",
             "t2dm_prvl_"
           ),
           "sc"
         ),
-          "ets_curr_xps", "fruit_curr_xps", "veg_curr_xps")
+          "ets_curr_xps",
+          "fruit_curr_xps",
+          "veg_curr_xps")
 
       exps_nam <-
         gsub("_curr_xps$|_sc$",
@@ -238,32 +244,34 @@ chd_model <-
       setnafill(dt, "c", 0, cols = "p0_chd")
       rm(chdparf)
     }
-    if (!nzchar(scenario_nam)) { # first run for scenario ""
-    # Estimate CHD incidence prbl -------------------------------
-    #cat("Estimating CHD incidence without diabetes...\n\n")
-    set(dt, NULL, "prb_chd_incd_not2dm", 0)
-    dt[, prb_chd_incd_not2dm :=
-        p0_chd * tobacco_rr * ets_rr * sbp_rr * tchol_rr * bmi_rr *
-        fv_rr * pa_rr * ethnicity_rr * alcohol_rr] # Remember no t2dm as this will be a multiplier
-    dt[, (grep("_rr$", names(dt), value = TRUE)) := NULL]
+    if (!nzchar(scenario_nam)) {
+      # first run for scenario ""
+      # Estimate CHD incidence prbl -------------------------------
+      #cat("Estimating CHD incidence without diabetes...\n\n")
+      set(dt, NULL, "prb_chd_incd_not2dm", 0)
+      dt[, prb_chd_incd_not2dm :=
+          p0_chd * tobacco_rr * ets_rr * sbp_rr * tchol_rr * bmi_rr *
+          fv_rr * pa_rr * ethnicity_rr * alcohol_rr] # Remember no t2dm as this will be a multiplier
+      dt[, (grep("_rr$", names(dt), value = TRUE)) := NULL]
 
-    # Assume a probability of diagnosis ----
-    # hist(rnbinom(1e4, 1, diagnosis_prb), 100) # the distribution of the number
-    # of years until diagnosis
-    set(dt, NULL, "prb_chd_dgn", diagnosis_prb)
+      # Assume a probability of diagnosis ----
+      # hist(rnbinom(1e4, 1, diagnosis_prb), 100) # the distribution of the number
+      # of years until diagnosis
+      set(dt, NULL, "prb_chd_dgn", diagnosis_prb)
 
-    set(dt, NULL, "chd_dgn", 0L)
-    dt[chd_prvl > 0, chd_dgn := clamp(chd_prvl - 5L, 0, 100)]
+      set(dt, NULL, "chd_dgn", 0L)
+      dt[chd_prvl > 0, chd_dgn := clamp(chd_prvl - 5L, 0, 100)]
 
-    # Estimate case fatality ----
-    absorb_dt(dt, get_disease_epi_mc(mc, "chd", "f", "v", design_$sim_prm$stochastic))
-    setnames(dt, "fatality", "prb_chd_mrtl")
+      # Estimate case fatality ----
+      absorb_dt(dt,
+        get_disease_epi_mc(mc, "chd", "f", "v", design_$sim_prm$stochastic))
+      setnames(dt, "fatality", "prb_chd_mrtl")
 
-     } else {
-
+    } else {
       set(dt, NULL, "chd_prvl_sc", 0L)
       dt[year < design_$sim_prm$init_year_fromGUI, chd_prvl_sc := chd_prvl]
-      dt[year == design_$sim_prm$init_year_fromGUI & chd_prvl > 1L, chd_prvl_sc := chd_prvl]
+      dt[year == design_$sim_prm$init_year_fromGUI &
+          chd_prvl > 1L, chd_prvl_sc := chd_prvl]
 
       # Estimate CHD incidence prbl
       #cat("Estimating CHD incidence without diabetes...\n\n")
@@ -279,12 +287,14 @@ chd_model <-
 
       set(dt, NULL, "chd_dgn_sc", 0L)
       dt[year < design_$sim_prm$init_year_fromGUI, chd_dgn_sc := chd_dgn]
-      dt[year == design_$sim_prm$init_year_fromGUI & chd_dgn > 1L, chd_dgn_sc := chd_dgn]
+      dt[year == design_$sim_prm$init_year_fromGUI &
+          chd_dgn > 1L, chd_dgn_sc := chd_dgn]
 
       # Estimate case fatality
-      dt[, prb_chd_mrtl_sc := prb_chd_mrtl]
-     }
+      if (!"prb_chd_mrtl_sc" %in% names(dt))
+        set(dt, NULL, "prb_chd_mrtl_sc", dt$prb_chd_mrtl)
+    }
 
-    if (timing) print(proc.time() - ptm)
+    if (timing)
+      print(proc.time() - ptm)
   }
-
