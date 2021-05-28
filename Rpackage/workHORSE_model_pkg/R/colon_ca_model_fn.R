@@ -22,8 +22,7 @@
 
 #' @export
 colon_ca_model <-
-  function(
-    scenario_nam,
+  function(scenario_nam,
     mc,
     dt,
     design_,
@@ -33,28 +32,34 @@ colon_ca_model <-
     if (timing)
       ptm <- proc.time()
 
-    if (!nzchar(scenario_nam)) { # first run for scenario ""
+    if (!nzchar(scenario_nam)) {
+      # first run for scenario ""
 
       # Calculate pack years
       dt[, smok_packyrs_curr_xps := smok_cig_curr_xps * smok_dur_curr_xps / 20]
 
       # Lagged exposures
-      exps_tolag <- grep("^smok_pack|^active_|^bmi_|^alcohol_|^t2dm_prvl_curr_xps",
-        names(dt), value = TRUE)
+      exps_tolag <-
+        grep("^smok_pack|^active_|^bmi_|^alcohol_|^t2dm_prvl_curr_xps",
+          names(dt),
+          value = TRUE)
       exps_nam <-  gsub("_curr_xps$", "_lagged", exps_tolag)
       for (i in seq_along(exps_tolag)) {
         set(dt, NULL, exps_nam[i], dt[, shift_bypid(get(exps_tolag[i]), design_$lags_mc$cancer_lag, pid)])
       }
 
     } else {
-
       # Calculate pack years
       dt[, smok_packyrs_sc := smok_cig_sc * smok_dur_sc / 20]
 
       exps_tolag <-
         c(paste0(
           c(
-            "active_days_", "alcohol_", "bmi_", "smok_packyrs_", "t2dm_prvl_"
+            "active_days_",
+            "alcohol_",
+            "bmi_",
+            "smok_packyrs_",
+            "t2dm_prvl_"
           ),
           "sc"
         ))
@@ -126,8 +131,10 @@ colon_ca_model <-
       colon_caparf <-
         dt[between(age, design_$sim_prm$ageL, design_$sim_prm$ageH) &
             colon_ca_prvl == 0 & year == design_$sim_prm$init_year,
-          .(parf = 1 - 1 / (sum(packyears_rr * alcohol_rr * pa_rr * bmi_rr *
-              t2dm_rr) / .N)),
+          .(parf = 1 - 1 / (sum(
+            packyears_rr * alcohol_rr * pa_rr * bmi_rr *
+              t2dm_rr
+          ) / .N)),
           keyby = .(age, sex, qimd)]
       # colon_caparf[, parf := clamp(predict(loess(parf ~ age, span = 0.5))), by = .(sex, qimd)]
       # colon_caparf[, {
@@ -136,8 +143,10 @@ colon_ca_model <-
       # }
       # , keyby = .(sex, qimd)]
 
-      absorb_dt(colon_caparf,
-        get_disease_epi_mc(mc, "colon_ca", "i", "v", design_$sim_prm$stochastic))
+      absorb_dt(
+        colon_caparf,
+        get_disease_epi_mc(mc, "colon_ca", "i", "v", design_$sim_prm$stochastic)
+      )
       colon_caparf[, p0_colon_ca := incidence * (1 - parf)]
       # colon_caparf[, summary(p0_colon_ca)]
       colon_caparf[is.na(p0_colon_ca), p0_colon_ca := incidence]
@@ -147,7 +156,8 @@ colon_ca_model <-
       rm(colon_caparf)
     }
 
-    if (!nzchar(scenario_nam)) { # first run for scenario ""
+    if (!nzchar(scenario_nam)) {
+      # first run for scenario ""
 
       # Estimate colon_ca incidence prbl -------------------------------
       #cat("Estimating colon_ca incidence...\n\n")
@@ -170,17 +180,17 @@ colon_ca_model <-
 
       # Estimate case fatality ----
       absorb_dt(dt,
-                get_disease_epi_mc(mc, "colon_ca", "f", "v", design_$sim_prm$stochastic))
+        get_disease_epi_mc(mc, "colon_ca", "f", "v", design_$sim_prm$stochastic))
       setnames(dt, "fatality", "prb_colon_ca_mrtl")
 
 
       dt[, smok_packyrs_curr_xps := NULL]
     } else {
-
       set(dt, NULL, "colon_ca_prvl_sc", 0L)
       dt[year < design_$sim_prm$init_year_fromGUI, colon_ca_prvl_sc := colon_ca_prvl]
-      dt[year == design_$sim_prm$init_year_fromGUI & colon_ca_prvl > 1L,
-         colon_ca_prvl_sc := colon_ca_prvl]
+      dt[year == design_$sim_prm$init_year_fromGUI &
+          colon_ca_prvl > 1L,
+        colon_ca_prvl_sc := colon_ca_prvl]
 
       # Estimate colon cancer incidence prbl
       #cat("Estimating colon cancer incidence without diabetes...\n\n")
@@ -196,10 +206,12 @@ colon_ca_model <-
 
       set(dt, NULL, "colon_ca_dgn_sc", 0L)
       dt[year < design_$sim_prm$init_year_fromGUI, colon_ca_dgn_sc := colon_ca_dgn]
-      dt[year == design_$sim_prm$init_year_fromGUI & colon_ca_dgn >= 1L, colon_ca_dgn_sc := colon_ca_dgn]
+      dt[year == design_$sim_prm$init_year_fromGUI &
+          colon_ca_dgn >= 1L, colon_ca_dgn_sc := colon_ca_dgn]
 
       # Estimate case fatality
-      dt[, prb_colon_ca_mrtl_sc := prb_colon_ca_mrtl]
+      if (!"prb_colon_ca_mrtl_sc" %in% names(dt))
+        set(dt, NULL, "prb_colon_ca_mrtl_sc", dt$prb_colon_ca_mrtl)
 
       dt[, smok_packyrs_sc := NULL]
     }

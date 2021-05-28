@@ -122,6 +122,11 @@ my_qZISICHEL <- function(p, mu, sigma, nu, tau, lower_tail = TRUE, log_p = FALSE
 }
 
 #' @export
+my_pZISICHEL <- function(q, mu, sigma, nu, tau, lower_tail = TRUE, log_p = FALSE, n_cpu = 1L) {
+    .Call('_workHORSEmisc_my_pZISICHEL', PACKAGE = 'workHORSEmisc', q, mu, sigma, nu, tau, lower_tail, log_p, n_cpu)
+}
+
+#' @export
 carry_forward <- function(x, pid, y) {
     .Call('_workHORSEmisc_carry_forward', PACKAGE = 'workHORSEmisc', x, pid, y)
 }
@@ -154,6 +159,10 @@ hc_effect <- function(x, prb_of_continuation, pid) {
 #' @export
 fbound <- function(x, a, b) {
     .Call('_workHORSEmisc_fbound', PACKAGE = 'workHORSEmisc', x, a, b)
+}
+
+dtsubset <- function(x, rows, cols) {
+    .Call('_workHORSEmisc_dtsubset', PACKAGE = 'workHORSEmisc', x, rows, cols)
 }
 
 #' @export
@@ -202,6 +211,11 @@ simsmok <- function(df, pr_relapse, relapse_cutoff) {
 }
 
 #' @export
+simsmok_sc <- function(df, pr_relapse, relapse_cutoff, row_sel) {
+    invisible(.Call('_workHORSEmisc_simsmok_sc', PACKAGE = 'workHORSEmisc', df, pr_relapse, relapse_cutoff, row_sel))
+}
+
+#' @export
 simsmok_postcalibration <- function(df) {
     invisible(.Call('_workHORSEmisc_simsmok_postcalibration', PACKAGE = 'workHORSEmisc', df))
 }
@@ -209,6 +223,11 @@ simsmok_postcalibration <- function(df) {
 #' @export
 simsmok_cig <- function(df) {
     invisible(.Call('_workHORSEmisc_simsmok_cig', PACKAGE = 'workHORSEmisc', df))
+}
+
+#' @export
+simsmok_cig_sc <- function(df, row_sel) {
+    invisible(.Call('_workHORSEmisc_simsmok_cig_sc', PACKAGE = 'workHORSEmisc', df, row_sel))
 }
 
 #' @export

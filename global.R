@@ -29,32 +29,17 @@ if (!require(CKutils)) {
   library(CKutils)
 }
 
-qsave(
-  fileSnapshot(
-    "./Rpackage/workHORSE_model_pkg/",
-    timestamp = NULL, # tempfile("timestamp"),
-    md5sum = TRUE,
-    recursive = TRUE
-  ),
-  output_dir(".workHORSE_model_pkg_snapshot.qs")
-)
+options(rgl.useNULL = TRUE)  # suppress error by demography in rstudio server
+dependencies(yaml::read_yaml("./dependencies.yaml"))
 
 snapshot <- # TODO add logic when .workHORSE_model_pkg_snapshot.qs missing
-  changedFiles(qread(output_dir(".workHORSE_model_pkg_snapshot.qs")))
+  changedFiles(qread("./Rpackage/.workHORSE_model_pkg_snapshot.qs"))
 
 if (!require(workHORSEmisc) ||
     any(nzchar(snapshot$added),
       nzchar(snapshot$deleted),
       nzchar(snapshot$changed))) {
-  qsave(
-    fileSnapshot(
-      "./Rpackage/workHORSE_model_pkg/",
-      timestamp = NULL,
-      # tempfile("timestamp"),
-      md5sum = TRUE
-    ),
-    output_dir(".workHORSE_model_pkg_snapshot.qs")
-  )
+
 
   if (!require(remotes))
     install.packages("remotes")
@@ -64,10 +49,19 @@ if (!require(workHORSEmisc) ||
     force = TRUE,
     upgrade = "never")
   library(workHORSEmisc)
+
+  qsave(
+    fileSnapshot(
+      "./Rpackage/workHORSE_model_pkg/",
+      timestamp = NULL,
+      # tempfile("timestamp"),
+      md5sum = TRUE,
+      recursive = TRUE
+    ),
+    "./Rpackage/.workHORSE_model_pkg_snapshot.qs"
+  )
 }
 
-options(rgl.useNULL = TRUE)  # suppress error by demography in rstudio server
-dependencies(yaml::read_yaml("./dependencies.yaml"))
 
 design <- Design$new("./simulation/sim_design.yaml")
 

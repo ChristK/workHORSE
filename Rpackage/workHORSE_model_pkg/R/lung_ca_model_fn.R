@@ -18,8 +18,7 @@
 
 #' @export
 lung_ca_model <-
-  function(
-    scenario_nam,
+  function(scenario_nam,
     mc,
     dt,
     design_,
@@ -31,7 +30,8 @@ lung_ca_model <-
     # would be allowed
 
     message("Loading lung cancer (C33-C34) model...")
-    if (timing) ptm <- proc.time()
+    if (timing)
+      ptm <- proc.time()
 
     set(dt, NULL, "copd_forparf", 0L)
     if (!"p0_lung_ca" %in% names(dt)) {
@@ -39,27 +39,50 @@ lung_ca_model <-
       dt[year == design_$sim_prm$init_year, copd_forparf := fifelse(copd_prvl == 0L, 0L, 1L)]
     }
 
-    if (!nzchar(scenario_nam)) { # first run for scenario ""
+    if (!nzchar(scenario_nam)) {
+      # first run for scenario ""
       # Lagged exposures
       exps_tolag <- grep("^smok_.*_curr_xps$|^ets|^fruit|^bmi",
         names(dt), value = TRUE)
 
       exps_nam <-  gsub("_curr_xps$", "_lagged", exps_tolag)
-      exps_nam_calag <- grep("^smok_|^bmi_", exps_nam, value = TRUE, invert = TRUE)
-      exps_nam_6lag <- grep("^smok_|^bmi_", exps_nam, value = TRUE, invert = FALSE) # Fixed lag for PLCO
-      exps_tolag_calag <- grep("^smok_|^bmi_", exps_tolag, value = TRUE, invert = TRUE)
-      exps_tolag_6lag <- grep("^smok_|^bmi_", exps_tolag, value = TRUE, invert = FALSE) # Fixed lag for PLCO
+      exps_nam_calag <-
+        grep("^smok_|^bmi_",
+          exps_nam,
+          value = TRUE,
+          invert = TRUE)
+      exps_nam_6lag <-
+        grep("^smok_|^bmi_",
+          exps_nam,
+          value = TRUE,
+          invert = FALSE) # Fixed lag for PLCO
+      exps_tolag_calag <-
+        grep("^smok_|^bmi_",
+          exps_tolag,
+          value = TRUE,
+          invert = TRUE)
+      exps_tolag_6lag <-
+        grep("^smok_|^bmi_",
+          exps_tolag,
+          value = TRUE,
+          invert = FALSE) # Fixed lag for PLCO
 
       for (i in seq_along(exps_nam_calag)) {
-        set(dt, NULL, exps_nam_calag[i], dt[, shift_bypid(get(exps_tolag_calag[i]), design_$lags_mc$cancer_lag, pid)])
+        set(dt, NULL, exps_nam_calag[i], dt[, shift_bypid(get(exps_tolag_calag[i]),
+          design_$lags_mc$cancer_lag,
+          pid)])
       }
       for (i in seq_along(exps_nam_6lag)) {
         set(dt, NULL, exps_nam_6lag[i], dt[, shift_bypid(get(exps_tolag_6lag[i]), design_$lags_mc$plco_lag, pid)])
       }
     } else {
       exps_tolag <-
-        c(grep("^smok_.*_sc$", names(dt), value = TRUE),
-          "ets_curr_xps", "fruit_curr_xps", "bmi_curr_xps")
+        c(
+          grep("^smok_.*_sc$", names(dt), value = TRUE),
+          "ets_curr_xps",
+          "fruit_curr_xps",
+          "bmi_curr_xps"
+        )
       # NOTE bmi effect of HC is intentionally ignored here. Otherwise would mean
       # that reducing bmi increases lung cancer which is unlikely (see A. Renhan
       # sys review for possible explanation)
@@ -69,13 +92,31 @@ lung_ca_model <-
           "_lagged",
           exps_tolag)
 
-      exps_nam_calag <- grep("^smok_|^bmi_", exps_nam, value = TRUE, invert = TRUE)
-      exps_nam_6lag <- grep("^smok_|^bmi_", exps_nam, value = TRUE, invert = FALSE) # Fixed lag for PLCO
-      exps_tolag_calag <- grep("^smok_|^bmi_", exps_tolag, value = TRUE, invert = TRUE)
-      exps_tolag_6lag <- grep("^smok_|^bmi_", exps_tolag, value = TRUE, invert = FALSE) # Fixed lag for PLCO
+      exps_nam_calag <-
+        grep("^smok_|^bmi_",
+          exps_nam,
+          value = TRUE,
+          invert = TRUE)
+      exps_nam_6lag <-
+        grep("^smok_|^bmi_",
+          exps_nam,
+          value = TRUE,
+          invert = FALSE) # Fixed lag for PLCO
+      exps_tolag_calag <-
+        grep("^smok_|^bmi_",
+          exps_tolag,
+          value = TRUE,
+          invert = TRUE)
+      exps_tolag_6lag <-
+        grep("^smok_|^bmi_",
+          exps_tolag,
+          value = TRUE,
+          invert = FALSE) # Fixed lag for PLCO
 
       for (i in seq_along(exps_nam_calag)) {
-        set(dt, NULL, exps_nam_calag[i], dt[, shift_bypid(get(exps_tolag_calag[i]), design_$lags_mc$cancer_lag, pid)])
+        set(dt, NULL, exps_nam_calag[i], dt[, shift_bypid(get(exps_tolag_calag[i]),
+          design_$lags_mc$cancer_lag,
+          pid)])
       }
       for (i in seq_along(exps_nam_6lag)) {
         set(dt, NULL, exps_nam_6lag[i], dt[, shift_bypid(get(exps_tolag_6lag[i]), design_$lags_mc$plco_lag, pid)])
@@ -84,13 +125,16 @@ lung_ca_model <-
     # RR for tobacco from Tammemägi MC, et al. Evaluation of the lung cancer
     # risks at which to screen ever- and never-smokers: screening rules applied
     # to the PLCO and NLST cohorts. PLoS Med 2014;11:e1001764. Table S1
-    dt[year >= design_$sim_prm$init_year, c("lung_ca_forparf_rr", "lung_ca_nocopd_rr", "lung_ca_withcopd_rr") :=
+    dt[year >= design_$sim_prm$init_year, c("lung_ca_forparf_rr",
+      "lung_ca_nocopd_rr",
+      "lung_ca_withcopd_rr") :=
         lung_ca_rr(
           smok_status_lagged,
           smok_cig_lagged,
           smok_dur_lagged,
           smok_quit_yrs_lagged,
-          age - design_$lags_mc$plco_lag, # the age when the observation started. 6 years later is the event
+          age - design_$lags_mc$plco_lag,
+          # the age when the observation started. 6 years later is the event
           education,
           ethnicity,
           bmi_lagged,
@@ -98,7 +142,16 @@ lung_ca_model <-
           history_of_ca,
           fam_lung_ca
         )]
-    setnafill(dt, "c", 1, cols = c("lung_ca_forparf_rr", "lung_ca_nocopd_rr", "lung_ca_withcopd_rr"))
+    setnafill(
+      dt,
+      "c",
+      1,
+      cols = c(
+        "lung_ca_forparf_rr",
+        "lung_ca_nocopd_rr",
+        "lung_ca_withcopd_rr"
+      )
+    )
     # dt[, summary(lung_ca_forparf_rr)]
     # dt[, summary(lung_ca_nocopd_rr)]
     # dt[, summary(lung_ca_withcopd_rr)]
@@ -155,8 +208,10 @@ lung_ca_model <-
       # }
       # , keyby = .(sex, qimd)]
 
-      absorb_dt(lung_caparf,
-        get_disease_epi_mc(mc, "lung_ca", "i", "v", design_$sim_prm$stochastic))
+      absorb_dt(
+        lung_caparf,
+        get_disease_epi_mc(mc, "lung_ca", "i", "v", design_$sim_prm$stochastic)
+      )
       lung_caparf[, p0_lung_ca := incidence * (1 - parf)]
       # lung_caparf[, summary(p0_lung_ca)]
       lung_caparf[is.na(p0_lung_ca), p0_lung_ca := incidence]
@@ -167,35 +222,35 @@ lung_ca_model <-
     }
 
     if (!nzchar(scenario_nam)) {
-    # Estimate lung cancer incidence prbl -------------------------------
-    #cat("Estimating lung cancer incidence...\n\n")
-    set(dt, NULL, "prb_lung_ca_incd_nocopd", 0)
-    dt[, prb_lung_ca_incd_nocopd :=
-        p0_lung_ca * lung_ca_nocopd_rr * ets_rr * fruit_rr] # Remember no copd as this will be a multiplier
-    dt[, lung_ca_incd_copd_mltp := lung_ca_withcopd_rr/lung_ca_nocopd_rr]
-    # TODO check that multiplier is OK to remain the same for all scenarios
+      # Estimate lung cancer incidence prbl -------------------------------
+      #cat("Estimating lung cancer incidence...\n\n")
+      set(dt, NULL, "prb_lung_ca_incd_nocopd", 0)
+      dt[, prb_lung_ca_incd_nocopd :=
+          p0_lung_ca * lung_ca_nocopd_rr * ets_rr * fruit_rr] # Remember no copd as this will be a multiplier
+      dt[, lung_ca_incd_copd_mltp := lung_ca_withcopd_rr / lung_ca_nocopd_rr]
+      # TODO check that multiplier is OK to remain the same for all scenarios
 
-    dt[, (grep("_rr$", names(dt), value = TRUE)) := NULL]
+      dt[, (grep("_rr$", names(dt), value = TRUE)) := NULL]
 
-    # Assume a probability of diagnosis ----
-    # probability to diagnosis every year
-    # hist(rnbinom(1e4, 1, diagnosis_prb), 100) # the distribution of the number of years until diagnosis
-    set(dt, NULL, "prb_lung_ca_dgn", diagnosis_prb)
+      # Assume a probability of diagnosis ----
+      # probability to diagnosis every year
+      # hist(rnbinom(1e4, 1, diagnosis_prb), 100) # the distribution of the number of years until diagnosis
+      set(dt, NULL, "prb_lung_ca_dgn", diagnosis_prb)
 
-    set(dt, NULL, "lung_ca_dgn", 0L)
-    dt[lung_ca_prvl > 0, lung_ca_dgn := clamp(lung_ca_prvl - 5L, 0, 100)]
+      set(dt, NULL, "lung_ca_dgn", 0L)
+      dt[lung_ca_prvl > 0, lung_ca_dgn := clamp(lung_ca_prvl - 5L, 0, 100)]
 
-    # Estimate case fatality ----
-    absorb_dt(dt,
-              get_disease_epi_mc(mc, "lung_ca", "f", "v", design_$sim_prm$stochastic))
-    setnames(dt, "fatality", "prb_lung_ca_mrtl")
+      # Estimate case fatality ----
+      absorb_dt(dt,
+        get_disease_epi_mc(mc, "lung_ca", "f", "v", design_$sim_prm$stochastic))
+      setnames(dt, "fatality", "prb_lung_ca_mrtl")
 
 
     } else {
-
       set(dt, NULL, "lung_ca_prvl_sc", 0L)
       dt[year < design_$sim_prm$init_year_fromGUI, lung_ca_prvl_sc := lung_ca_prvl]
-      dt[year == design_$sim_prm$init_year_fromGUI & lung_ca_prvl > 1L, lung_ca_prvl_sc := lung_ca_prvl]
+      dt[year == design_$sim_prm$init_year_fromGUI &
+          lung_ca_prvl > 1L, lung_ca_prvl_sc := lung_ca_prvl]
 
       # Estimate lung cancer incidence prbl
       #cat("Estimating lung cancer incidence without diabetes...\n\n")
@@ -210,12 +265,15 @@ lung_ca_model <-
 
       set(dt, NULL, "lung_ca_dgn_sc", 0L)
       dt[year < design_$sim_prm$init_year_fromGUI, lung_ca_dgn_sc := lung_ca_dgn]
-      dt[year == design_$sim_prm$init_year_fromGUI & lung_ca_dgn > 1L, lung_ca_dgn_sc := lung_ca_dgn]
+      dt[year == design_$sim_prm$init_year_fromGUI &
+          lung_ca_dgn > 1L, lung_ca_dgn_sc := lung_ca_dgn]
 
       # Estimate case fatality
-      dt[, prb_lung_ca_mrtl_sc := prb_lung_ca_mrtl]
-}
+      if (!"prb_lung_ca_mrtl_sc" %in% names(dt))
+        set(dt, NULL, "prb_lung_ca_mrtl_sc", dt$prb_lung_ca_mrtl)
+    }
     dt[, copd_forparf := NULL]
 
-    if (timing) print(proc.time() - ptm)
+    if (timing)
+      print(proc.time() - ptm)
   }

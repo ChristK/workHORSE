@@ -54,7 +54,6 @@ starts_from_1 <- function(tbl, on, i, min_lookup) {
 lookup_dt <- function(tbl,
   lookup_tbl,
   merge = TRUE,
-  # If true keycols are deleted from the lookup tbl
   exclude_col = NULL,
   check_lookup_tbl_validity = FALSE) {
   # algo assumes all keys are factors or integers that start from 1 and increase
@@ -70,10 +69,11 @@ lookup_dt <- function(tbl,
   nam_x <- names(tbl)
   nam_i <- names(lookup_tbl)
   on <- sort(setdiff(intersect(nam_x, nam_i), exclude_col))
-  return_cols <- setdiff(nam_i, on)
+  return_cols_nam <- setdiff(nam_i, on)
+  return_cols <- which(nam_i %in% return_cols_nam)
 
   if (length(on) == 0L) stop("No common keys in the two tables")
-  if (length(on) == length(nam_i)) stop("No value cols identified in lookup_tbl. Most likely all column names in lookup_tbl are present in tbl")
+  if (length(on) == length(nam_i)) stop("No value cols identified in lookup_tbl. Most likely all column names in lookup_tbl are present in tbl. Consider using arg exclude_col")
 
   if (check_lookup_tbl_validity) is_valid_lookup_tbl(lookup_tbl, on)
 
@@ -103,11 +103,11 @@ lookup_dt <- function(tbl,
 
   # core algo
   rownum <-
-    starts_from_1(tbl, on, 1L, min_lookup) * cardinality_prod[[1]]
+    as.integer(starts_from_1(tbl, on, 1L, min_lookup) * cardinality_prod[[1L]])
   if (length(on) > 1L) {
     for (i in 2:length(on)) {
-      rownum <- rownum -
-        (cardinality[[i]] - starts_from_1(tbl, on, i, min_lookup)) * cardinality_prod[[i]]
+      rownum <- as.integer(rownum -
+          (cardinality[[i]] - starts_from_1(tbl, on, i, min_lookup)) * cardinality_prod[[i]])
     }
   }
 
@@ -120,9 +120,10 @@ lookup_dt <- function(tbl,
     # for (j in return_cols) {
     #   set(tbl, NULL, j, subset_vec(lookup_tbl[[j]], as.integer(rownum)))
     #   } # Slower!
-    tbl[, (return_cols) := dtsubset(lookup_tbl, rownum, return_cols)]
+    tbl[, (return_cols_nam) := dtsubset(lookup_tbl, rownum, return_cols)]
+    return(invisible(tbl))
   } else {
-    invisible(dtsubset(lookup_tbl, rownum, return_cols))
+    return(invisible(dtsubset(lookup_tbl, rownum, return_cols)))
     # tbl[, (return_cols) := ss(lookup_tbl, rownum, return_cols)]
     # settransform(tbl, ss(lookup_tbl, rownum, return_cols)) # Not by reference
   }
@@ -134,7 +135,11 @@ is_valid_lookup_tbl <- function(lookup_tbl, keycols) {
   if (any(duplicated(lookup_tbl, by = keycols)))
     stop("Lookup table need to have unique combination of key columns!") # test unique keycols
 
+  expected_rows <- 1
+  # l <- list()
   for (j in keycols) {
+    expected_rows <- uniqueN(lookup_tbl[[j]]) * expected_rows
+    # l[[j]] <- unique(lookup_tbl[[j]])
     # check type of keys
     if (typeof(lookup_tbl[[j]]) != "integer")
       stop(
@@ -146,7 +151,7 @@ is_valid_lookup_tbl <- function(lookup_tbl, keycols) {
       )
 
     # check integer keys have all integer values between min and max
-    if (class(lookup_tbl[[j]]) == "integer") {
+    if (is.integer(lookup_tbl[[j]])) {
       x <- sort.int(lookup_tbl[[j]])
       x <- x - shift(x, 1, fill = first(x))
       if (max(x) > 1L)
@@ -160,6 +165,9 @@ is_valid_lookup_tbl <- function(lookup_tbl, keycols) {
     }
 
   }
+
+  if (nrow(lookup_tbl) != expected_rows) stop(paste0("If all possible combinations of key columns would be present in the lookup table it should have ", expected_rows, " rows. This table has ", nrow(lookup_tbl), " rows."))
+
   return(TRUE)
 }
 

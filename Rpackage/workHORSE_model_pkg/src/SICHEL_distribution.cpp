@@ -37,7 +37,7 @@ NumericVector my_cdfSICHEL(const IntegerVector& y,
                            const NumericVector& sigma,
                            const NumericVector& nu) {
   int ny = y.length();
-  NumericVector ans(ny);
+  NumericVector ans = no_init(ny);
   int i, j, lyp1;
   //double alpha[*ny], cvec[*ny];
   double sumT, lbes, cvec, alpha;
@@ -170,7 +170,7 @@ NumericVector my_dSICHEL(const IntegerVector& x,
   // TODO recycle if unequal lengths
 
   const int n = x.length();
-  NumericVector logfy(n);
+  NumericVector logfy = no_init(n);
   double cvec = 0.0;
   double alpha = 0.0;
   double lbes = 0.0;
@@ -389,7 +389,7 @@ IntegerVector my_qSICHEL(      NumericVector p,
   }
   return QQQ;
 }
-// fast! and not restrivted by max_value
+// fast! and not restricted by max_value
 //' @export
 // [[Rcpp::export]]
 IntegerVector my_qZISICHEL(          NumericVector  p,
@@ -429,6 +429,48 @@ IntegerVector my_qZISICHEL(          NumericVector  p,
 
   return my_qSICHEL(pnew, mu, sigma, nu);
 }
+
+
+// fast! and not restricted by max_value
+//' @export
+// [[Rcpp::export]]
+NumericVector my_pZISICHEL(          NumericVector  q,
+  const NumericVector& mu,
+  const NumericVector& sigma,
+  const NumericVector& nu,
+  const NumericVector& tau,
+  const bool& lower_tail = true,
+  const bool& log_p = false,
+  const int& n_cpu = 1)
+{
+  // TODO implement recycling with rep_len()
+  if (q.length() != mu.length() || mu.length() != sigma.length() ||
+    sigma.length() != nu.length() || nu.length() != tau.length()
+  ) stop("Distribution parameters must be of same length");
+
+  const int n = q.length();
+  NumericVector cdf = no_init(n);
+
+  omp_set_num_threads(n_cpu); // Use n_cpu threads for all
+  // consecutive parallel regions
+#pragma omp parallel for default(shared)
+  for (int i = 0; i < n; i++)
+  {
+    if (q[i] < 0.0) stop("q must be >=0");
+    if (mu[i] <= 0.0) stop("mu must be greater than 0");
+    if (sigma[i] <= 0.0) stop("sigma must be greater than 0");
+    if (tau[i] <= 0.0 || tau[i] >= 1.0) stop("tau must be between 0 and 1");
+
+    cdf[i] = my_pSICHEL_scalar(q[i], mu[i], sigma[i], nu[i]);
+    cdf[i] = tau[i] + (1.0 - tau[i]) * cdf[i];
+
+    if (!lower_tail) cdf[i] = 1.0 - cdf[i];
+    if (log_p) cdf[i] = log(cdf[i]);
+  }
+
+  return cdf;
+}
+
 
 // /*** R
 // # N <- 1e4
