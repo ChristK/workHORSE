@@ -709,16 +709,16 @@ output$cep1 <- renderPlotly({
 output$cep_anim <- renderPlotly({
 
   if (input$health_econ_perspective_checkbox == "Societal perspective") {
-    tt <- out_proc()[year == max(year),
-      .(net_utility_cml, cost_cml = societal_cost_cml, mc,
+    tt <- out_proc()[,
+      .(net_utility_cml, cost_cml = societal_cost_cml, mc, year,
         friendly_name = factor(friendly_name))]
   } else if (input$health_econ_perspective_checkbox == "Health and social care perspective") {
-    tt <- out_proc()[year == max(year),
-      .(net_utility_cml, cost_cml = total_hscp_cost_cml, mc,
+    tt <- out_proc()[,
+      .(net_utility_cml, cost_cml = total_hscp_cost_cml, mc, year,
         friendly_name = factor(friendly_name))]
   } else if (input$health_econ_perspective_checkbox == "Healthcare perspective") {
-    tt <- out_proc()[year == max(year),
-      .(net_utility_cml, cost_cml = total_hcp_cost_cml, mc,
+    tt <- out_proc()[,
+      .(net_utility_cml, cost_cml = total_hcp_cost_cml, mc, year,
         friendly_name = factor(friendly_name))]
   }
 
