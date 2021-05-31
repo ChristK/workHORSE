@@ -2,6 +2,7 @@
 ## Adapted from WORKHORSE by Dr Chris Kypridemos
 ## Vincy Huang
 ## 25 May 2021
+## File path <- Rpackage > R > SynthPop_class.R
 
 ## workHORSE is an implementation of the IMPACTncd framework, developed by Chris
 ## Kypridemos with contributions from Peter Crowther (Melandra Ltd), Maria
@@ -74,7 +75,7 @@ SynthPop <-
       #' @param mc_ The Monte Carlo iteration of the synthetic population. Each
       #'   integer generates a unique synthetic population. If `mc = 0` an
       #'   object with an empty synthpop is initiated.
-      #' @param design_ A \code{\link[IMPACThintmisc]{Design}} object.
+      #' @param design_ A \code{\link[workHORSEmisc]{Design}} object.
       #' @param synthpop_dir_ The directory where 'SynthPop' objects are stored.
       #'   The synthpop file in \code{\link[fst]{fst-package}} format. If
       #'   `filename` already exists, then the synthpop is loaded from there.
@@ -317,7 +318,7 @@ SynthPop <-
             "qs",
             "fst",
             "CKutils",
-            "IMPACThintmisc",
+            "workHORSEmisc",
             "data.table"
           ),
           .export = NULL,
@@ -674,8 +675,8 @@ SynthPop <-
               # names(sort(table(as.character(dt$CCG17CDH)))[1]) # if more than one ccgs
             }
             
-            # Generate the cohorts of 30 year old to enter every year ----
-            message("Generate the cohorts of 30 year old")
+            # Generate the cohorts of 15 year old to enter every year ----
+            message("Generate the cohorts of 15 year old")
             
             # new
             tt <- dt[age == design_$sim_prm$ageL, .N]
@@ -954,6 +955,7 @@ SynthPop <-
             tbl <-
               read_fst("./lifecourse_models/smok_quit_yrs_table.fst",
                        as.data.table = TRUE)
+            # change to my cessation table
             col_nam <-
               setdiff(names(tbl), intersect(names(dt), names(tbl)))
             absorb_dt(dt, tbl)
