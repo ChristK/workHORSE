@@ -57,7 +57,7 @@ deployed in any operating system that is supported by [Docker](www.docker.com).
     your Internet connection).
 
 ``` bash
-sudo docker pull chriskypri/workhorse-app
+sudo docker pull chriskypri/workhorse-app:HF-REAL
 ```
 
 1.  Create docker volume for storing synthetic population data.
@@ -69,7 +69,7 @@ sudo docker volume create workhorse-volume
 1.  Run docker image:
 
 ``` bash
-sudo docker run --mount source=workhorse-volume,target=/mnt/storage_fast/synthpop -p 9898:9898 -it chriskypri/workhorse-app
+sudo docker run --mount source=workhorse-volume,target=/mnt/storage_fast/synthpop -p 9898:9898 -it chriskypri/workhorse-app:HF-REAL
 ```
 
 1.  Now you should be able to run the WorkHORSE app by opening web browser and
