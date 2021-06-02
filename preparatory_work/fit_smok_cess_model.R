@@ -150,6 +150,9 @@ smok_cess_model$data <- copy(dt)
 
 qsave(smok_cess_model, "./lifecourse_models/smok_cess_model.qs", preset = "high")
 
+smok_cess_model <- qload("./lifecourse_models/smok_cess_model.qs")
+
+
 print("Model saved")
 
 trms <- all.vars(formula(smok_cess_model))[-1] # -1 excludes dependent var
