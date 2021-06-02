@@ -7,10 +7,10 @@ export_xps: no
 'n': 100000
 n_synthpop_aggregation: 2 # number of synthpops to aggregate together
 n_primers: 10 # better be some multiple of n_synthpop_aggregation
-init_year_long: 2003
-sim_horizon_max: 11 # population projections do not support longer horizon
+init_year_long: 2013
+sim_horizon_max: 60 # population projections do not support longer horizon
 ageL: 15
-ageH: 90
+ageH: 89
 cvd_lag: 4
 copd_lag: 5
 cancer_lag: 9
@@ -29,7 +29,7 @@ validation: no # or yes. Note, no true/false
 max_prvl_for_outputs: 2 # duration 1 is incidence and 2 is prevalence
 iteration_n_max: 1000
 output_dir: ./output/
-synthpop_dir: /mnt/storage_fast/synthpop
+synthpop_dir: /mnt/storage_fast/synthpop/hint
 scenarios: ''
 cols_for_output:
 - pid # NEED TO be 1st
