@@ -22,7 +22,7 @@
 # file.remove(list.files("./output/", full.names = TRUE, recursive = TRUE))
 
 cat("Initialising workHORSE model...\n\n")
-if (interactive() && !require(CKutils)) {
+if (interactive() && !nzchar(system.file(package = "CKutils"))) {
   if (!nzchar(system.file(package = "remotes"))) install.packages("remotes")
   remotes::install_github("ChristK/CKutils", force = TRUE, upgrade = "never")
 }
@@ -36,13 +36,13 @@ if (interactive()) {
     # TODO add logic when .workHORSE_model_pkg_snapshot.qs missing
     changedFiles(qread("./Rpackage/.workHORSE_model_pkg_snapshot.qs"))
 
-  if (!require(workHORSEmisc) |
+  if (!nzchar(system.file(package = "workHORSEmisc")) |
       any(nzchar(snapshot$added),
         nzchar(snapshot$deleted),
         nzchar(snapshot$changed))) {
-    if (nzchar(system.file(package = "remotes")))
+    if (!nzchar(system.file(package = "remotes")))
       install.packages("remotes")
-    if (nzchar(system.file(package = "roxygen2")))
+    if (!nzchar(system.file(package = "roxygen2")))
       roxygen2::roxygenise("./Rpackage/workHORSE_model_pkg/", clean = TRUE)
     remotes::install_local("./Rpackage/workHORSE_model_pkg/",
       force = TRUE,
