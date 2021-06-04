@@ -42,7 +42,7 @@ if (interactive()) {
         nzchar(snapshot$changed))) {
     if (!nzchar(system.file(package = "remotes")))
       install.packages("remotes")
-    if (!nzchar(system.file(package = "roxygen2")))
+    if (nzchar(system.file(package = "roxygen2")))
       roxygen2::roxygenise("./Rpackage/workHORSE_model_pkg/", clean = TRUE)
     remotes::install_local("./Rpackage/workHORSE_model_pkg/",
       force = TRUE,
