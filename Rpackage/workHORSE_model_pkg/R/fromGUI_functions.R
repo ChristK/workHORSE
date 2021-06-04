@@ -474,7 +474,7 @@ fromGUI_scenario_parms <- function(scenario_nam, parameters_dt) {
                       input_names %flike% "structural_chol_slider",
                     as.numeric(value1)/100]
 
-    # Social policies
+    # Social policies ----
     l$sc_soc_qimd1_change <-
       parameters_dt[scenario == scenario_nam &
           input_names %flike% "qimd_one_slider",
@@ -500,9 +500,14 @@ fromGUI_scenario_parms <- function(scenario_nam, parameters_dt) {
           input_names %flike% "qimd_five_slider",
         as.integer(value1)]
 
-    l$sc_soc_qimd_fatality_change <-
+    l$sc_soc_qimd_disease_fatality_change <-
       parameters_dt[scenario == scenario_nam &
-          input_names %flike% "qimd_fatalities_checkbox",
+          input_names %flike% "qimd_disease_fatalities_checkbox",
+        as.logical(value1)]
+
+    l$sc_soc_qimd_nonmodelled_fatality_change <-
+      parameters_dt[scenario == scenario_nam &
+          input_names %flike% "qimd_nonmodelled_fatality_checkbox",
         as.logical(value1)]
 
     l$sc_soc_qimd_rf_change <-
@@ -510,7 +515,7 @@ fromGUI_scenario_parms <- function(scenario_nam, parameters_dt) {
           input_names %flike% "qimd_risk_factors_checkbox",
         as.character(value1)]
 
-    # Ensemble logic
+    # Ensemble logic ----
     l$sc_ens_is <- FALSE
     l$sc_ens_parallel_is <- FALSE
     l$sc_ens_serial_is <- FALSE

@@ -1313,8 +1313,8 @@ fluidRow(
     ),
     column(6,
       switchInput(
-        "qimd_fatalities_checkbox_sc8",
-        "Should QIMD reassignment affect case fatalities?",
+        "qimd_disease_fatalities_checkbox_sc8",
+        "Should QIMD reassignment affect diseases case fatalities?",
         value = FALSE,
         onLabel = "Yes",
         offLabel = "No",
@@ -1325,7 +1325,19 @@ fluidRow(
           icon("info") %>%
             bs_embed_popover(title = "Should QIMD reassignment affect disease case fatalities?")
         ),
-
+      switchInput(
+        "qimd_nonmodelled_fatality_checkbox_sc8",
+        "Should QIMD reassignment affect nonmodelled case fatality?",
+        value = FALSE,
+        onLabel = "Yes",
+        offLabel = "No",
+        labelWidth = "100%"
+      )
+      %>%
+        shinyInput_label_embed(
+          icon("info") %>%
+            bs_embed_popover(title = "Should QIMD reassignment affect nonmodelled diseases case fatalitys?")
+        ),
       checkboxGroupButtons("qimd_risk_factors_checkbox_sc8",
         "Which risk factors should be affected by the changes in QIMD?",
         c("Smoking" = "smok",

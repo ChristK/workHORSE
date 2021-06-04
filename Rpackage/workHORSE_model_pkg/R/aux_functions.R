@@ -1046,9 +1046,9 @@ set_eligible <- function(scenario_parms, dt, hlp, env = parent.frame()) {
   if (!scenario_parms$sc_eligib_noone) {
     if (!scenario_parms$sc_ens_parallel_is) {
       # if not parallel ensemble (following works OK with serial)
-      dt[between(year + 2000L,
-                 scenario_parms$sc_init_year,
-                 scenario_parms$sc_last_year) &
+      dt[between(year,
+                 scenario_parms$sc_init_year - 2000L,
+                 scenario_parms$sc_last_year - 2000L) &
            between(age,
                    scenario_parms$sc_eligib_age[[1]],
                    scenario_parms$sc_eligib_age[[2]]) &
@@ -1063,9 +1063,9 @@ set_eligible <- function(scenario_parms, dt, hlp, env = parent.frame()) {
            stroke_dgn == 0L,
          (colnam) := 1L]
     } else { # if parallel ensemble
-      dt[between(year + 2000L,
-                 scenario_parms$sc_init_year,
-                 scenario_parms$sc_last_year) &
+      dt[between(year,
+                 scenario_parms$sc_init_year - 2000L,
+                 scenario_parms$sc_last_year - 2000L) &
            between(age,
                    scenario_parms$sc_eligib_age[[1]],
                    scenario_parms$sc_eligib_age[[2]]) &
@@ -1228,7 +1228,7 @@ set_invitees <- function(scenario_parms, dt, hlp, env = parent.frame()) {
     tt5[is.na(mu), mu := 0] # i.e. for freq 5 and prb 0.25
 
     tt <- rbind(tt1, tt2, tt3, tt4, tt5)
-    tt <- tt[between(year + 2000L, scenario_parms$sc_init_year, scenario_parms$sc_last_year)]
+    tt <- tt[between(year, scenario_parms$sc_init_year - 2000L, scenario_parms$sc_last_year - 2000L)]
 
     ttcost <-
       data.table(
@@ -1271,7 +1271,7 @@ set_invitees <- function(scenario_parms, dt, hlp, env = parent.frame()) {
     }
     tt[, mu := clamp(mu / elig)]
     tt[is.na(mu), mu := 0] # i.e. for freq 5 and prb 0.25
-    tt <- tt[between(year + 2000L, scenario_parms$sc_init_year, scenario_parms$sc_last_year)]
+    tt <- tt[between(year, scenario_parms$sc_init_year - 2000L, scenario_parms$sc_last_year - 2000L)]
 
     ttcost <- data.table(1L, scenario_parms$sc_invit_qimdall_cost)
     setnames(ttcost, c(colnam, colnam_cost))
@@ -1429,7 +1429,7 @@ set_px <- function(scenario_parms, dt, mc, design_) {
   if (!colnam_bio %in% names(dt)) dt[, (colnam_bio) := tchol_curr_xps]
   dt[statin_px_sc == 1L &
        # statin_px_curr_xps == 0L & # Assume GP titrates treatment
-       year + 2000L >= scenario_parms$sc_init_year,
+       year >= scenario_parms$sc_init_year - 2000L,
      (colnam_bio) := tchol_curr_xps * (1 - atorv_eff * statin_adherence)]
 
   # for bpmed
@@ -1467,7 +1467,7 @@ set_px <- function(scenario_parms, dt, mc, design_) {
   if (!colnam_bio %in% names(dt)) dt[, (colnam_bio) := sbp_curr_xps]
   dt[bpmed_px_sc == 1L &
        # bpmed_curr_xps == 0L & # Assume GP titrates treatment
-       year + 2000L >= scenario_parms$sc_init_year,
+       year >= scenario_parms$sc_init_year - 2000L,
      (colnam_bio) := sbp_curr_xps - clamp((sbp_curr_xps - 135) *
          bpmed_adherence, 0, 1e3)]
   # Assume that antihtn medication can potentially achieve sbp 135 for all. Not
@@ -1490,7 +1490,7 @@ set_lifestyle <-
     if (!colnam %in% names(dt))        dt[, (colnam) := active_days_curr_xps]
     if (!colnam_cost %in% names(dt))   set(dt, NULL, colnam_cost, 0)
     dt[attendees_sc == 1L, hc_eff_pa := rbinom(.N, 1, scenario_parms$sc_ls_papct)]
-    dt[hc_eff_pa == 1L & year + 2000L >= scenario_parms$sc_init_year,
+    dt[hc_eff_pa == 1L & year >= scenario_parms$sc_init_year - 2000L,
        (colnam_cost) := scenario_parms$sc_ls_pa_cost_ind]
     # Cost only the year of referral
     dt[,
@@ -1506,7 +1506,7 @@ set_lifestyle <-
     if (!colnam_cost %in% names(dt)) set(dt, NULL, colnam_cost, 0)
     dt[attendees_sc == 1L &
          bmi_curr_xps > 30, hc_eff_wm := rbinom(.N, 1, scenario_parms$sc_ls_wghtpct)]
-    dt[hc_eff_wm == 1L  & year + 2000L >= scenario_parms$sc_init_year,
+    dt[hc_eff_wm == 1L  & year >= scenario_parms$sc_init_year - 2000L,
        (colnam_cost) := scenario_parms$sc_ls_wghtloss_cost_ind]
     # Cost only the year of referral
     dt[,
@@ -1522,7 +1522,7 @@ set_lifestyle <-
     if (!colnam_cost %in% names(dt)) set(dt, NULL, colnam_cost, 0)
     dt[attendees_sc == 1L &
          alcohol_curr_xps >= 16, hc_eff_al := rbinom(.N, 1, scenario_parms$sc_ls_alcoholpct)]
-    dt[hc_eff_al == 1L & year + 2000L >= scenario_parms$sc_init_year,
+    dt[hc_eff_al == 1L & year >= scenario_parms$sc_init_year - 2000L,
        (colnam_cost) := scenario_parms$sc_ls_alcoholreduc_cost_ind]
     # Cost only the year of referral
     dt[,
@@ -1545,7 +1545,7 @@ set_lifestyle <-
     if (!colnam_cost %in% names(dt)) set(dt, NULL, colnam_cost, 0)
     dt[attendees_sc == 1L & smok_status_curr_xps == "4",
        hc_eff_sm := rbinom(.N, 1, scenario_parms$sc_ls_smkcess)]
-    dt[hc_eff_sm == 1L  & year + 2000L >= scenario_parms$sc_init_year,
+    dt[hc_eff_sm == 1L  & year >= scenario_parms$sc_init_year - 2000L,
        (colnam_cost) := scenario_parms$sc_ls_smkcess_cost_ind]
     # Cost only the year of referral
 
@@ -1588,9 +1588,9 @@ set_structural <-
   function(scenario_parms, dt, design) {
     if (any(scenario_parms[grepl("^sc_str_", names(scenario_parms))] != 0)) {
       row_sel <-
-        dt[between(year + 2000L,
-          scenario_parms$sc_init_year,
-          scenario_parms$sc_last_year) &
+        dt[between(year,
+          scenario_parms$sc_init_year - 2000L,
+          scenario_parms$sc_last_year - 2000L) &
             dead == FALSE, which = TRUE]
     }
 
@@ -1608,8 +1608,8 @@ set_structural <-
 
       if (scenario_parms$sc_str_smk_change < 0) {
 
-        dt[between(year + 2000L, scenario_parms$sc_init_year,
-                   scenario_parms$sc_last_year) &
+        dt[between(year, scenario_parms$sc_init_year - 2000L,
+                   scenario_parms$sc_last_year - 2000L) &
              dead == FALSE & smok_status_sc == "4",
            hc_eff := rbinom(.N, 1, -scenario_parms$sc_str_smk_change)]
 
@@ -1627,8 +1627,8 @@ set_structural <-
       if (scenario_parms$sc_str_smk_change > 0) {
         # calculate policy effect with those quit smoking recently be more
         # likely to relapse
-        tt <- dt[between(year + 2000L, scenario_parms$sc_init_year,
-                   scenario_parms$sc_last_year) &
+        tt <- dt[between(year, scenario_parms$sc_init_year - 2000L,
+                   scenario_parms$sc_last_year - 2000L) &
              dead == FALSE, .("ex"   = sum(smok_status_sc == "3"),
                               "curr" = sum(smok_status_sc == "4")), keyby = year]
         tt[, impacted := round(curr * scenario_parms$sc_str_smk_change)]
@@ -1639,14 +1639,14 @@ set_structural <-
 
         dt[tt, `:=`(impacted = i.impacted,
                     ex = i.ex), on = "year"]
-        dt[between(year + 2000L, scenario_parms$sc_init_year,
-                   scenario_parms$sc_last_year) &
+        dt[between(year, scenario_parms$sc_init_year - 2000L,
+                   scenario_parms$sc_last_year - 2000L) &
              dead == FALSE & smok_status_sc == "3",
            rid := 1:.N, by = year]
         dt[, hc_eff := 0L]
-        tt <- dt[between(year + 2000L,
-                         scenario_parms$sc_init_year,
-                         scenario_parms$sc_last_year) &
+        tt <- dt[between(year,
+                         scenario_parms$sc_init_year - 2000L,
+                         scenario_parms$sc_last_year - 2000L) &
                    dead == FALSE & smok_status_sc == "3",
                  .(rid = sample_int_expj(first(ex), first(impacted),
                                          (smok_quit_yrs_sc + 1) ^
@@ -1778,11 +1778,12 @@ set_social <- function(scenario_parms, dt, design) {
 
 
     row_sel <- # Indices of eligible rows
-      dt[between(year + 2000L,
-        scenario_parms$sc_init_year,
-        scenario_parms$sc_last_year) &
+      dt[between(year,
+        scenario_parms$sc_init_year - 2000L,
+        scenario_parms$sc_last_year - 2000L) &
           # dead == FALSE & # NOTE this is appropriate
           qimd != qimd_sc, which = TRUE]
+
 
     # smoking ----
     # Assumes that from the smoking initiation/cessation/relapse probabilities
@@ -2042,13 +2043,20 @@ set_social <- function(scenario_parms, dt, design) {
     }
 
     # case fatality ----
-    if (scenario_parms$sc_soc_qimd_fatality_change) {
+    if (scenario_parms$sc_soc_qimd_disease_fatality_change) {
       nam <- names(dt)
-      nam <-
-        c(grep("^prb_.*\\_mrtl$", nam, value = TRUE),
-          "p0_nonmodelled")
+      nam <- grep("^prb_.*\\_mrtl$", nam, value = TRUE)
 
       for (i in nam) {
+        if (grepl("chd|stroke", i)) lag <- design$lags_mc$cvd_lag
+        else if (grepl("copd", i)) lag <- design$lags_mc$copd_lag
+        else if (grepl("_ca_mrtl$", i)) lag <- design$lags_mc$cancer_lag
+
+        dt[, qimd_sc_lagged := # for lagged case fatalities
+            fifelse(year >= scenario_parms$sc_init_year - 2000L + lag,
+              qimd_sc,
+              qimd)]
+
         nc <- paste0(i, "_sc")
         setnames(dt, i, "mod____") # to avoid using get() due to performance issues
         tt <- dt[, min(mod____), keyby = .(age, qimd, sex, year)]
@@ -2061,12 +2069,40 @@ set_social <- function(scenario_parms, dt, design) {
         }, .SDcols = c("age", "qimd", "sex", "year")]
         absorb_dt(lutbl, tt)
 
-        setnames(lutbl, c("qimd", "V1"), c("qimd_sc", nc))
+        setnames(lutbl, c("qimd", "V1"), c("qimd_sc_lagged", nc))
 
         lookup_dt(dt, lutbl, exclude_col = nc) # row_sel not appropriate here
+        dt[, ("qimd_sc_lagged") := NULL]
       }
 
     }
+
+        if (scenario_parms$sc_soc_qimd_nonmodelled_fatality_change) {
+          i <-  "p0_nonmodelled"
+          lag <- design$lags_mc$nonmodelled_lag
+
+          dt[, qimd_sc_lagged := # for lagged case fatalities
+              fifelse(year >= scenario_parms$sc_init_year - 2000L + lag,
+                qimd_sc,
+                qimd)]
+
+          nc <- paste0(i, "_sc")
+          setnames(dt, i, "mod____") # to avoid using get() due to performance issues
+          tt <- dt[, min(mod____), keyby = .(age, qimd, sex, year)]
+          setnames(dt, "mod____", i)
+
+          lutbl <- tt[, {
+            # because some combinations are missing
+            l <- lapply(.SD, unique)
+            setDT(expand.grid(l))
+          }, .SDcols = c("age", "qimd", "sex", "year")]
+          absorb_dt(lutbl, tt)
+
+          setnames(lutbl, c("qimd", "V1"), c("qimd_sc_lagged", nc))
+
+          lookup_dt(dt, lutbl, exclude_col = nc) # row_sel not appropriate here
+          dt[, ("qimd_sc_lagged") := NULL]
+        }
 
     return(invisible(dt))
   }
