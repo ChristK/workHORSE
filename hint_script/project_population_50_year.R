@@ -15,4 +15,13 @@ plan(multicore)
 # load data 
 population_before_2041 <- read.fst("./ONS_data/pop_size/pop_proj.fst", as.data.table = TRUE)
 
-# fit model to pedict till 2071
+# train model ####
+population_train <- copy(population_before_2041)
+population_train[, sex := factor(sex, levels = c("men", "women"), labels = c("men", "women"))]
+
+model_population<- glm(pops ~ age + sex + year + LAD17CD , family = gaussian, data = population_train)
+qsave(model_population, "./preparatory_work/marginal_distr_smok_quit_yrs.qs")
+
+# pedict till 2071 ####
+population_predict <- CJ(age = unique(population_train$age), sex = unique(population_train$sex), 
+              year = 2042: 2071)
