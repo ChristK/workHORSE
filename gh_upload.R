@@ -6,7 +6,8 @@ repo <- "ChristK/workHORSE"
 pb_track(c("disease_epidemiology/disease_epi_l.fst",
   "lifecourse_models/*.fst",
   "simulation/health_econ/informal_care_costs_l.fst",
-  "simulation/health_econ/productivity_costs_l.fst"
+  "simulation/health_econ/productivity_costs_l.fst",
+  "hint_script/*.qs"
 ))
 
 pb_upload(pb_track(), repo = repo, tag = tag)
