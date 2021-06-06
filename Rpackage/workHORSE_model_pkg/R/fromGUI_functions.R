@@ -513,7 +513,7 @@ fromGUI_scenario_parms <- function(scenario_nam, parameters_dt) {
     l$sc_soc_qimd_rf_change <-
       parameters_dt[scenario == scenario_nam &
           input_names %flike% "qimd_risk_factors_checkbox",
-        as.character(value1)]
+        unlist(value)]
 
     # Ensemble logic ----
     l$sc_ens_is <- FALSE

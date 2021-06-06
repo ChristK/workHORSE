@@ -554,7 +554,25 @@ get_disease_epi_mc <-
 
 # get disease disease epi parameters for mc
 
+# Extract causal pathways from RR list
+#' @export
+get_causal_paths <- function(RR) {
+  exposures <- sapply(RR, `[[`, "name", USE.NAMES = FALSE)
+  # tobacco_lung_ca RR is a function and handled separately
+  exposures <- c(exposures, "tobacco")
+  outcomes <- sapply(RR, `[[`, "outcome", USE.NAMES = FALSE)
+  outcomes <- c(outcomes, "lung_ca")
 
+  out <- list()
+  out$dt <- data.table(exposures, outcomes, key = "exposures")
+  out$by_outcome <- unstack(out$dt, exposures ~ outcomes)
+  out$by_exps <- unstack(out$dt, outcomes ~ exposures)
+  out$matrix <- as.matrix(table(exposures, outcomes))
+  out
+}
+
+# causal_paths <- get_causal_paths(RR)
+# causal_paths$by_outcome$chd
 
 #' @export
 get_lifetable_all <-
@@ -1757,7 +1775,6 @@ set_social <- function(scenario_parms, dt, design) {
     scenario_parms$sc_soc_qimd5_change == 5L
   )) {
     return(invisible(dt))
-
   } else {
     # if any relevant scenario input
 
@@ -2043,14 +2060,88 @@ set_social <- function(scenario_parms, dt, design) {
     }
 
     # case fatality ----
-    if (scenario_parms$sc_soc_qimd_disease_fatality_change) {
-      nam <- names(dt)
-      nam <- grep("^prb_.*\\_mrtl$", nam, value = TRUE)
 
-      for (i in nam) {
-        if (grepl("chd|stroke", i)) lag <- design$lags_mc$cvd_lag
-        else if (grepl("copd", i)) lag <- design$lags_mc$copd_lag
-        else if (grepl("_ca_mrtl$", i)) lag <- design$lags_mc$cancer_lag
+    if (any(
+      scenario_parms$sc_soc_qimd_disease_fatality_change,
+      scenario_parms$sc_soc_qimd_nonmodelled_fatality_change
+    ) &&
+        length(scenario_parms$sc_soc_qimd_rf_change) > 0L) {
+
+      # only affect case fatalities for diseases which are linked to the selected exposures
+      tt <-
+        data.table(
+          exposures = c(
+            "tobacco",
+            "packyears",
+            "ets",
+            "fv",
+            "fruit",
+            "alcohol",
+            "pa",
+            "sbp",
+            "bmi",
+            "tchol"
+          ),
+          short_exps = c(
+            "tob",
+            "tob",
+            "ets",
+            "fv",
+            "fv",
+            "alc",
+            "pa",
+            "sbp",
+            "bmi",
+            "tchol"
+          )
+        )
+      tt <- tt[short_exps %in% scenario_parms$sc_soc_qimd_rf_change]
+
+      causal_paths <- get_causal_paths(RR)
+      affected_diseases <-
+        causal_paths$dt[exposures %in% tt$exposures, unique(outcomes)]
+
+      if (scenario_parms$sc_soc_qimd_disease_fatality_change) {
+        nam <- affected_diseases[affected_diseases != "nonmodelled"]
+        nam <- paste0("prb_", nam, "_mrtl")
+
+        for (i in nam) {
+          if (grepl("chd|stroke", i)) {
+            lag <- design$lags_mc$cvd_lag
+          } else if (grepl("copd", i)) {
+            lag <- design$lags_mc$copd_lag
+          } else if (grepl("_ca_mrtl$", i)) {
+            lag <- design$lags_mc$cancer_lag
+          }
+
+          dt[, qimd_sc_lagged := # for lagged case fatalities
+              fifelse(year >= (scenario_parms$sc_init_year - 2000L + lag),
+                qimd_sc,
+                qimd)]
+
+          nc <- paste0(i, "_sc")
+          setnames(dt, i, "mod____") # to avoid using get() due to performance issues
+          tt <- dt[, min(mod____), keyby = .(age, qimd, sex, year)]
+          setnames(dt, "mod____", i)
+
+          lutbl <- tt[, {
+            # because some combinations are missing
+            l <- lapply(.SD, unique)
+            setDT(expand.grid(l))
+          }, .SDcols = c("age", "qimd", "sex", "year")]
+          absorb_dt(lutbl, tt)
+
+          setnames(lutbl, c("qimd", "V1"), c("qimd_sc_lagged", nc))
+
+          lookup_dt(dt, lutbl, exclude_col = nc) # row_sel not appropriate here
+          dt[, ("qimd_sc_lagged") := NULL]
+        } # for loop
+      } # if diseases fatalities in scenario
+
+      if (scenario_parms$sc_soc_qimd_nonmodelled_fatality_change &&
+          "nonmodelled" %in% affected_diseases) {
+        i <- "p0_nonmodelled"
+        lag <- design$lags_mc$nonmodelled_lag
 
         dt[, qimd_sc_lagged := # for lagged case fatalities
             fifelse(year >= scenario_parms$sc_init_year - 2000L + lag,
@@ -2074,35 +2165,7 @@ set_social <- function(scenario_parms, dt, design) {
         lookup_dt(dt, lutbl, exclude_col = nc) # row_sel not appropriate here
         dt[, ("qimd_sc_lagged") := NULL]
       }
-
     }
-
-        if (scenario_parms$sc_soc_qimd_nonmodelled_fatality_change) {
-          i <-  "p0_nonmodelled"
-          lag <- design$lags_mc$nonmodelled_lag
-
-          dt[, qimd_sc_lagged := # for lagged case fatalities
-              fifelse(year >= scenario_parms$sc_init_year - 2000L + lag,
-                qimd_sc,
-                qimd)]
-
-          nc <- paste0(i, "_sc")
-          setnames(dt, i, "mod____") # to avoid using get() due to performance issues
-          tt <- dt[, min(mod____), keyby = .(age, qimd, sex, year)]
-          setnames(dt, "mod____", i)
-
-          lutbl <- tt[, {
-            # because some combinations are missing
-            l <- lapply(.SD, unique)
-            setDT(expand.grid(l))
-          }, .SDcols = c("age", "qimd", "sex", "year")]
-          absorb_dt(lutbl, tt)
-
-          setnames(lutbl, c("qimd", "V1"), c("qimd_sc_lagged", nc))
-
-          lookup_dt(dt, lutbl, exclude_col = nc) # row_sel not appropriate here
-          dt[, ("qimd_sc_lagged") := NULL]
-        }
 
     return(invisible(dt))
   }
