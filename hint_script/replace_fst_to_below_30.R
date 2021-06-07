@@ -169,6 +169,7 @@ write_fst(newdata, file_fst , 100L) # export .fst
 print(paste0("Table saved ", file_fst))
 #}
 
+## chd duration 6
 
 ## ckd 7 ####
 file_qs <- all_file_qs[7]
@@ -190,10 +191,79 @@ print(paste0("Table saved ", file_fst))
 #}
 
 
+## dm_dgn 9####
+file_qs <- all_file_qs[9]
+file_fst <- file_name_fst[9]
+model <- qread(file_qs)
+#origin_table <- read_fst(path = file_fst, as.data.table = TRUE)
+# generate fst
+trms <- all.vars(formula(model))[-1] # -1 excludes dependent var
+newdata <- CJ(year = 3:73, age_int = 15:89, 
+              sex = unique(model$data$sex), 
+              qimd = unique(model$data$qimd),
+              ethnicity = unique(model$data$ethnicity), 
+              sha = unique(model$data$sha),
+              bmi = unique(round(clamp(model$data$bmi, 18, 50), -1))
+) # create completed dataset
+newdata[, age := scale(age_int, 62.5, 13.3)]
+newdata <- split(newdata, by = "year") # process by year to make small job
+newdata <-
+  future_lapply(newdata, function(x)
+    x[, c("mu") := predictAll(model, .SD, data = model$data), .SDcols = trms]) # predict mu
+newdata <- rbindlist(newdata) # bind all years
+#setattr(newdata, "distribution", distr_nam) # ISSUE here: object 'distr_nam' not found
+newdata[, age := age_int]
+newdata[, age_int := NULL]
 
+# write .fst file
+write_fst(newdata, file_fst , 100L) # export .fst
+print(paste0("Table saved ", file_fst))
 
+## dm_dur 10 ####
+file_qs <- all_file_qs[10]
+file_fst <- file_name_fst[10]
+model <- qread(file_qs)
+trms <- all.vars(formula(model))[-1] # -1 excludes dependent var
+newdata <- CJ(age_int = 15:89, sex = unique(model$data$sex))
+newdata[, age := scale(age_int, 62.5, 13.3)]
+newdata <- split(newdata, by = "sex")
 
+newdata <- # assignment necessary! Copies of data.tables are happening
+  future_lapply(newdata, function(x)
+    x[, c("mu", "sigma") := predictAll(model, .SD, data = model$data), .SDcols = trms])
+newdata <- rbindlist(newdata)
+newdata[, age := age_int]
+newdata[, age_int := NULL]
 
+# write .fst file
+write_fst(newdata, file_fst , 100L) # export .fst
+print(paste0("Table saved ", file_fst))
+## dm 11 with warning ####
+file_qs <- all_file_qs[11]
+file_fst <- file_name_fst[11]
+model <- qread(file_qs)
+#origin_table <- read_fst(path = file_fst, as.data.table = TRUE)
+# generate fst
+trms <- all.vars(formula(model))[-1] # -1 excludes dependent var
+newdata <- CJ(year = 3:73, age_int = 15:89, 
+              sex = unique(model$data$sex), 
+              qimd = unique(model$data$qimd),
+              ethnicity = unique(model$data$ethnicity), 
+              bmi = unique(round(clamp(model$data$bmi, 18, 50)))
+) # create completed dataset
+newdata[, age := scale(age_int, 51.6, 16.6)]
+newdata <- split(newdata, by = "ethnicity")
+newdata <-
+  future_lapply(newdata, function(x)
+    x[, c("mu") := predictAll(model, .SD, data = model$data), .SDcols = trms]) # predict mu
+newdata <- rbindlist(newdata) # bind all years
+#setattr(newdata, "distribution", distr_nam) # ISSUE here: object 'distr_nam' not found
+newdata[, age := age_int]
+newdata[, age_int := NULL]
+
+# write .fst file
+write_fst(newdata, file_fst , 100L) # export .fst
+print(paste0("Table saved ", file_fst))
 
 ## education imputation 12 ####
 file_qs <- all_file_qs[12]
@@ -249,14 +319,14 @@ write_fst(newdata, file_fst , 100L) # export .fst
 print(paste0("Table saved ", file_fst))
 #}
 
-## ethnicity 14 (can't run) ####
+## ethnicity 14 ####
 file_qs <- all_file_qs[14]
 file_fst <- file_name_fst[14]
 model <- qread(file_qs)
 #origin_table <- read_fst(path = file_fst, as.data.table = TRUE)
 # generate fst
 trms <- all.vars(formula(model))[-1] # -1 excludes dependent var
-newdata <- CJ(year = 3:73, age_int = 15:89, sex = unique(model$data$sex), qimd = unique(model$data$qimd),
+newdata <- CJ(year = 3:73, age = 15:89, sex = unique(model$data$sex), qimd = unique(model$data$qimd),
               sha = unique(model$data$sha))
 newdata[, (levels(model$data$ethnicity)) := data.table(matrixStats::rowCumsums(predict(model, type = "p", newdata = .SD))), .SDcols = trms]
 
@@ -320,7 +390,29 @@ newdata[, age_int := NULL]
 write_fst(newdata, file_fst , 100L) # export .fst
 print(paste0("Table saved ", file_fst))
 #}
-
+## frt 17 ####
+file_qs <- all_file_qs[17]
+file_fst <- file_name_fst[17]
+model <- qread(file_qs)
+# generate fst
+trms <- all.vars(formula(model))[-1] # -1 excludes dependent var
+newdata <- CJ(year = 3:73, age_int = 15:89, 
+              sex = unique(model$data$sex), 
+              qimd = unique(model$data$qimd),
+              ethnicity = unique(model$data$ethnicity), 
+              sha = unique(model$data$sha)
+) # create completed dataset
+newdata[, age := scale(age_int, 50.6, 17.4)]
+newdata <- split(newdata, by = "year") # process by year to make small job
+newdata <- # assignment necessary! Copies of data.tables are happening
+  future_lapply(newdata, function(x)
+    x[, c("mu", "sigma", "nu", "tau") := predictAll(model, .SD, data = model$data), .SDcols = trms]) # predict mu, sigma, nu, tau
+newdata <- rbindlist(newdata) # bind all years
+#setattr(newdata, "distribution", distr_nam) # ISSUE here: object 'distr_nam' not found
+newdata[, age := age_int]
+newdata[, age_int := NULL]
+# write .fst file
+write_fst(newdata, file_fst , 100L) # export .fst
 ## hdl 18 ####
 file_qs <- all_file_qs[18]
 file_fst <- file_name_fst[18]
@@ -375,6 +467,8 @@ print(paste0("Table saved ", file_fst))
 
 
 
+
+## predm 20
 ## sbp 21 ####
 file_qs <- all_file_qs[21]
 file_fst <- file_name_fst[21]
@@ -575,7 +669,6 @@ print(paste0("Table saved ", file_fst))
 
 # Problems 
 # scale(age_int, XX) is diff
-# CJ has smoke_status: alcohol[3],
 
 ## quit_years 28 ####
 # read file
@@ -609,18 +702,72 @@ print(paste0("Table saved ", file_fst))
 file_qs <- all_file_qs[29]
 file_fst <- file_name_fst[29]
 model <- qread(file_qs)
-origin_table <- read_fst(path = file_fst, as.data.table = TRUE)
 
 # generate fst
 trms <- all.vars(formula(model))[-1] # -1 excludes dependent var
 newdata <- CJ(year = 3:73, age_int = 15:89, 
-              sex = unique(origin_table$sex), 
-              qimd = unique(origin_table$qimd),
-              ethnicity = unique(origin_table$ethnicity), 
-              sha = unique(origin_table$sha)
+              sex = unique(model$data$sex), 
+              qimd = unique(model$data$qimd),
+              ethnicity = unique(model$data$ethnicity), 
+              sha = unique(model$data$sha)
 ) # create completed dataset
 
 newdata[, age := scale(age_int, 50.7, 17.4)]
+newdata <- split(newdata, by = "year")
+
+newdata <- # assignment necessary! Copies of data.tables are happening
+  future_lapply(newdata, function(x)
+    x[, c("mu", "sigma", "nu") := predictAll(model, .SD, data = model$data), .SDcols = trms])
+newdata <- rbindlist(newdata) # bind all years
+#setattr(newdata, "distribution", distr_nam) # ISSUE here: object 'distr_nam' not found
+newdata[, age := age_int]
+newdata[, age_int := NULL]
+# write .fst file
+write_fst(newdata, file_fst , 100L) # export .fst
+print(paste0("Table saved ", file_fst))
+
+## statin 30 ####
+file_qs <- all_file_qs[30]
+file_fst <- file_name_fst[30]
+model <- qread(file_qs)
+
+# generate fst
+trms <- all.vars(formula(model))[-1] # -1 excludes dependent var
+newdata <- CJ(year = 3:73, age_int = 15:89, 
+              sex = unique(model$data$sex), 
+              qimd = unique(model$data$qimd),
+              ethnicity = unique(model$data$ethnicity), 
+              sha = unique(model$data$sha),
+              tchol = seq(2, 12, 1)
+) # create completed dataset
+newdata[, age := scale(age_int, 52.4, 16.6)]
+newdata <- split(newdata, by = "year") # process by year to make small job
+newdata <-
+  future_lapply(newdata, function(x)
+    x[, c("mu") := predictAll(model, .SD, data = model$data), .SDcols = trms]) # predict mu
+newdata <- rbindlist(newdata) # bind all years
+#setattr(newdata, "distribution", distr_nam) # ISSUE here: object 'distr_nam' not found
+newdata[, age := age_int]
+newdata[, age_int := NULL]
+
+# write .fst file
+write_fst(newdata, file_fst , 100L) # export .fst
+print(paste0("Table saved ", file_fst))
+## veg ####
+file_qs <- all_file_qs[33]
+file_fst <- file_name_fst[]
+model <- qread(file_qs)
+
+# generate fst
+trms <- all.vars(formula(model))[-1] # -1 excludes dependent var
+newdata <- CJ(year = 3:73, age_int = 15:89, 
+              sex = unique(model$data$sex), 
+              qimd = unique(model$data$qimd),
+              ethnicity = unique(model$data$ethnicity), 
+              sha = unique(model$data$sha)
+) # create completed dataset
+
+newdata[, age := scale(age_int, 50.6, 17.4)]
 newdata <- split(newdata, by = "year")
 
 newdata <- # assignment necessary! Copies of data.tables are happening
