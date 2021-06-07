@@ -750,29 +750,28 @@ SynthPop <-
             dt[, c(
               "rank_education",
               "rank_income",
-              # "rank_pa",
-              # "rank_fruit",
-              # "rank_veg",
+              "rank_pa",
+              "rank_fruit",
+              "rank_veg",
               "rankstat_smok",
               "rankstat_smok_quit_yrs",
               "rankstat_smok_dur_ex",
               "rankstat_smok_dur_curr",
               "rankstat_smok_cig_ex",
               "rankstat_smok_cig_curr",
-              "rank_ets"
-              #,
-              # "rank_alcohol",
-              # "rank_bmi",
-              # "rank_sbp",
-              # "rank_bpmed",
-              # "rank_tchol",
-              # "rank_hdl",
-              # "rankstat_af_dgn",
-              # "rankstat_famcvd",
-              # "rank_t2dm",
-              # "rankstat_t2dm_dgn",
-              # "rank_statin_px",
-              # "rankstat_ckd"
+              "rank_ets",
+              "rank_alcohol",
+              "rank_bmi",
+              "rank_sbp",
+              "rank_bpmed",
+              "rank_tchol",
+              "rank_hdl",
+              "rankstat_af_dgn",
+              "rankstat_famcvd",
+              "rank_t2dm",
+              "rankstat_t2dm_dgn",
+              "rank_statin_px",
+              "rankstat_ckd"
             ) := rank_mtx]
             
             rm(rank_mtx)
@@ -895,46 +894,46 @@ SynthPop <-
             )]
             dt[, rank_income := NULL]
             
-            # # Generate active days ----
-            # message("Generate active days")
-            
-            # tbl <-
-            #   read_fst("./lifecourse_models/active_days_table.fst",
-            #            as.data.table = TRUE)
-            # nam <- intersect(names(dt), names(tbl))
-            # dt[tbl, active_days := (rank_pa > pa0) + (rank_pa > pa1) + (rank_pa > pa2) +
-            #      (rank_pa > pa3) + (rank_pa > pa4) + (rank_pa > pa5) + (rank_pa > pa6),
-            #    on = nam]
-            # dt[, rank_pa := NULL]
-            # # dt[, active_days := factor(active_days, levels = 0:7)]
-            # 
-            # # Generate fruit consumption (ZISICHEL) ----
-            # message("Generate fruit consumption")
-            # 
-            # tbl <-
-            #   read_fst("./lifecourse_models/frtpor_table.fst", as.data.table = TRUE)
-            # col_nam <-
-            #   setdiff(names(tbl), intersect(names(dt), names(tbl)))
-            # absorb_dt(dt, tbl)
-            # dt[, fruit :=
-            #      my_qZISICHEL(rank_fruit,
-            #                   mu, sigma, nu, tau, n_cpu = design_$sim_prm$n_cpu) * 80L]  # g/d
-            # dt[, (col_nam) := NULL]
-            # dt[, rank_fruit := NULL]
-            # 
-            # # Generate veg consumption (DEL) ----
-            # message("Generate veg consumption")
-            # 
-            # tbl <-
-            #   read_fst("./lifecourse_models/vegpor_table.fst", as.data.table = TRUE)
-            # col_nam <-
-            #   setdiff(names(tbl), intersect(names(dt), names(tbl)))
-            # absorb_dt(dt, tbl)
-            # dt[, veg :=
-            #      my_qDEL(rank_veg, mu, sigma, nu, n_cpu = design_$sim_prm$n_cpu) * 80L]  # g/d
-            # dt[, (col_nam) := NULL]
-            # dt[, rank_veg := NULL]
-            
+            # Generate active days ----
+            message("Generate active days")
+
+            tbl <-
+              read_fst("./lifecourse_models/active_days_table.fst",
+                       as.data.table = TRUE)
+            nam <- intersect(names(dt), names(tbl))
+            dt[tbl, active_days := (rank_pa > pa0) + (rank_pa > pa1) + (rank_pa > pa2) +
+                 (rank_pa > pa3) + (rank_pa > pa4) + (rank_pa > pa5) + (rank_pa > pa6),
+               on = nam]
+            dt[, rank_pa := NULL]
+            # dt[, active_days := factor(active_days, levels = 0:7)]
+
+            # Generate fruit consumption (ZISICHEL) ----
+            message("Generate fruit consumption")
+
+            tbl <-
+              read_fst("./lifecourse_models/frtpor_table.fst", as.data.table = TRUE)
+            col_nam <-
+              setdiff(names(tbl), intersect(names(dt), names(tbl)))
+            absorb_dt(dt, tbl)
+            sdt[, fruit :=
+                 my_qZISICHEL(rank_fruit,
+                              mu, sigma, nu, tau, n_cpu = design_$sim_prm$n_cpu) * 80L]  # g/d
+            dt[, (col_nam) := NULL]
+            dt[, rank_fruit := NULL]
+
+            # Generate veg consumption (DEL) ----
+            message("Generate veg consumption")
+
+            tbl <-
+              read_fst("./lifecourse_models/vegpor_table.fst", as.data.table = TRUE)
+            col_nam <-
+              setdiff(names(tbl), intersect(names(dt), names(tbl)))
+            absorb_dt(dt, tbl)
+            dt[, veg :=
+                 my_qDEL(rank_veg, mu, sigma, nu, n_cpu = design_$sim_prm$n_cpu) * 80L]  # g/d
+            dt[, (col_nam) := NULL]
+            dt[, rank_veg := NULL]
+
             # Smoking simulation ----
             message("Smoking simulation")
             
