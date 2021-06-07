@@ -666,7 +666,6 @@ write_fst(newdata, file_fst , 100L) # export .fst
 print(paste0("Table saved ", file_fst))
 
 ## 
-
 # Problems 
 # scale(age_int, XX) is diff
 
@@ -753,9 +752,9 @@ newdata[, age_int := NULL]
 # write .fst file
 write_fst(newdata, file_fst , 100L) # export .fst
 print(paste0("Table saved ", file_fst))
-## veg ####
+## veg 33 ####
 file_qs <- all_file_qs[33]
-file_fst <- file_name_fst[]
+file_fst <- file_name_fst[33]
 model <- qread(file_qs)
 
 # generate fst
