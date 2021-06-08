@@ -884,16 +884,18 @@ SynthPop <-
             tbl <-
               read_fst("./lifecourse_models/income_table.fst", as.data.table = TRUE)
             nam <- intersect(names(dt), names(tbl))
+            
             dt[tbl, income := (rank_income > inc1) + (rank_income > inc2) +
                  (rank_income > inc3) + (rank_income > inc4) + 1L,
                on = nam]
+            
             dt[, income := factor(
               income,
               levels = 1:5,
               labels = c("1 Highest", "2", "3", "4", "5 Lowest")
             )]
             dt[, rank_income := NULL]
-            
+              
             # Generate active days ----
             message("Generate active days")
 
@@ -910,335 +912,343 @@ SynthPop <-
             # Generate fruit consumption (ZISICHEL) ----
             message("Generate fruit consumption")
 
-            # tbl <-
-            #   read_fst("./lifecourse_models/frtpor_table.fst", as.data.table = TRUE)
-            # col_nam <-
-            #   setdiff(names(tbl), intersect(names(dt), names(tbl)))
-            # absorb_dt(dt, tbl)
-            # sdt[, fruit :=
-            #      my_qZISICHEL(rank_fruit,
-            #                   mu, sigma, nu, tau, n_cpu = design_$sim_prm$n_cpu) * 80L]  # g/d
-            # dt[, (col_nam) := NULL]
-            # dt[, rank_fruit := NULL]
+            tbl <-
+              read_fst("./lifecourse_models/frtpor_table.fst", as.data.table = TRUE)
+            col_nam <-
+              setdiff(names(tbl), intersect(names(dt), names(tbl)))
 
+            absorb_dt(dt, tbl)
+
+            dt[, fruit :=
+                 my_qZISICHEL(rank_fruit,
+                              mu, sigma, nu, tau, n_cpu = design_$sim_prm$n_cpu) * 80L]  # g/d
+
+            dt[, (col_nam) := NULL]
+            dt[, rank_fruit := NULL]
+            
             # Generate veg consumption (DEL) ----
             message("Generate veg consumption")
 
-            # tbl <-
-            #   read_fst("./lifecourse_models/vegpor_table.fst", as.data.table = TRUE)
-            # col_nam <-
-            #   setdiff(names(tbl), intersect(names(dt), names(tbl)))
-            # absorb_dt(dt, tbl)
+            tbl <-
+              read_fst("./lifecourse_models/vegpor_table.fst", as.data.table = TRUE)
+            col_nam <-
+              setdiff(names(tbl), intersect(names(dt), names(tbl)))
+            absorb_dt(dt, tbl)
+            dt[, veg :=
+                 my_qDEL(rank_veg, mu, sigma, nu, n_cpu = design_$sim_prm$n_cpu) * 80L]  # g/d
             # dt[, veg :=
-            #      my_qDEL(rank_veg, mu, sigma, nu, n_cpu = design_$sim_prm$n_cpu) * 80L]  # g/d
-            # dt[, (col_nam) := NULL]
-            # dt[, rank_veg := NULL]
+            #      qDEL(rank_veg, mu, sigma, nu) * 80L]  # g/d #DEL gives ERROR - is this correct?
+            dt[, (col_nam) := NULL]
+            dt[, rank_veg := NULL]
 
             # Smoking simulation ----
             message("Smoking simulation")
             
             # # Assign smok_status when pid_mrk == true (the first year an individul enters the simulation (with lags))
-            # tbl <-
-            #   read_fst("./lifecourse_models/smok_status_table.fst",
-            #            as.data.table = TRUE)
-            # col_nam <-
-            #   setdiff(names(tbl), intersect(names(dt), names(tbl)))
-            # absorb_dt(dt, tbl) # source(global.R)
-            # dt[, smok_status_ref := my_qMN4(rankstat_smok, mu, sigma, nu)] # for calibration
-            # dt[(pid_mrk), smok_status := smok_status_ref]
-            # dt[, (col_nam) := NULL]
-            # dt[, rankstat_smok := dqrunif(.N)] # this is now used for simsmoke. There shouldn't be correlated any more (colname hardcoded in C++ code).
-            # 
-            # # Assign smok_quit_yrs when pid_mrk == true (the first year an individual enters the simulation)
-            # # I could use these estimates for calibration but I need to calculate mortality first
-            # tbl <-
-            #   read_fst("./lifecourse_models/smok_quit_yrs_table.fst",
-            #            as.data.table = TRUE)
-            # # change to my cessation table
-            # col_nam <-
-            #   setdiff(names(tbl), intersect(names(dt), names(tbl)))
-            # absorb_dt(dt, tbl)
-            # set(dt, NULL, "smok_quit_yrs", 0L)
-            # dt[(pid_mrk) &
-            #      smok_status %in% 2:3,
-            #    smok_quit_yrs := my_qDPO(rankstat_smok_quit_yrs, mu, sigma)]
-            # dt[, rankstat_smok_quit_yrs := NULL]
-            # dt[, (col_nam) := NULL]
-            # 
-            # # Assign smok_dur_ex when pid_mrk == true (the first year an individul enters the simulation)
-            # tbl <-
-            #   read_fst("./lifecourse_models/smok_dur_ex_table.fst",
-            #            as.data.table = TRUE)
-            # col_nam <-
-            #   setdiff(names(tbl), intersect(names(dt), names(tbl)))
-            # absorb_dt(dt, tbl)
-            # set(dt, NULL, "smok_dur", 0L)
-            # dt[(pid_mrk) &
-            #      smok_status %in% 2:3, smok_dur := my_qDPO(rankstat_smok_dur_ex, mu, sigma)]
-            # dt[, rankstat_smok_dur_ex := NULL]
-            # dt[, (col_nam) := NULL]
-            # 
-            # # Assign smok_dur_curr when pid_mrk == true (the first year an individual enters the simulation)
-            # tbl <-
-            #   read_fst("./lifecourse_models/smok_dur_curr_table.fst",
-            #            as.data.table = TRUE)
-            # col_nam <-
-            #   setdiff(names(tbl), intersect(names(dt), names(tbl)))
-            # absorb_dt(dt, tbl)
-            # dt[(pid_mrk) &
-            #      smok_status == 4, smok_dur := as.integer(round(qNBI(rankstat_smok_dur_curr, mu, sigma)))]
-            # dt[, rankstat_smok_dur_curr := NULL]
-            # dt[, (col_nam) := NULL]
-            # 
-            # # Ensure smoking histories start from age 12
-            # dt[age - smok_quit_yrs < 12L, smok_quit_yrs := age - 12L]
-            # dt[age - smok_dur < 12L, smok_dur := age - 12L]
-            # dt[age - smok_dur - smok_quit_yrs < 12L ,
-            #    `:=`(smok_dur = as.integer(smok_dur / ((
-            #      smok_dur + smok_quit_yrs
-            #    ) / (age - 12L))),
-            #    smok_quit_yrs = as.integer(smok_quit_yrs / ((
-            #      smok_dur + smok_quit_yrs
-            #    ) / (age - 12L))))]
-            # 
-            # # Assign smok_incid probabilities
-            # tbl <-
-            #   read_fst("./lifecourse_models/smok_incid_table.fst",
-            #            as.data.table = TRUE)
-            # col_nam <-
-            #   setdiff(names(tbl), intersect(names(dt), names(tbl)))
-            # absorb_dt(dt, tbl)
-            # setnames(dt, "mu", "prb_smok_incid")
-            # 
-            # # Assign smok_cessation probabilities
-            # tbl <-
-            #   read_fst("./lifecourse_models/smok_cess_table.fst",
-            #            as.data.table = TRUE)
-            # col_nam <-
-            #   setdiff(names(tbl), intersect(names(dt), names(tbl)))
-            # absorb_dt(dt, tbl)
-            # setnames(dt, "mu", "prb_smok_cess")
-            # 
-            # # Handle smok_relapse probabilities
-            # tbl <-
-            #   read_fst("./lifecourse_models/smok_relapse_table.fst",
-            #            as.data.table = TRUE)
-            # tbl <-
-            #   dcast(tbl, sex + qimd ~ smok_quit_yrs, value.var = "pr")
-            # nam <- tbl[, paste0(sex, " ", qimd)]
-            # tbl <-
-            #   as.matrix(tbl[, mget(paste0(1:15))], rownames = nam)
-            # 
-            # simsmok(dt, tbl, design_$sim_prm$smoking_relapse_limit)
-            # # dt[!(pid_mrk), table(smok_status)]
-            # # dt[pid == 1, plot(year, smok_status, ylim = c(0, 4))]
-            # # dt[pid == 10, .(age, smok_status, smok_quit_yrs, smok_dur)]
-            # # dt[, sum(smok_status == 4)/.N, keyby = year]
-            # 
-            # if (design_$sim_prm$simsmok_calibration) {
-            #   # calculate dif between ref (multinom) and simsmok
-            #   # I will further calibrate to better match HSE
-            #   resample <-
-            #     function(x, ...)
-            #       x[sample.int(length(x), ...)]
-            #   obs <-
-            #     dt[smok_status == 1L, .(nsa = .N), keyby = .(year, age, sex, qimd)] # ? add sha/ethn
-            #   ref <-
-            #     dt[smok_status_ref == 1L, .(nsr = .N), keyby = .(year, age, sex, qimd)] # ? add sha/ethn
-            #   absorb_dt(ref, obs)
-            #   setnafill(ref, "c", 0L, cols = "nsa")
-            #   ref[, `:=`(dif = nsr - nsa,
-            #              nsr = NULL,
-            #              nsa = NULL)]
-            #   # Further calibrate to match better with HSE
-            #   ref[sex == "men" &
-            #         rbinom(.N, 1L, 0.9) == 1L, dif := dif - 2L]
-            #   ref[sex == "men" &
-            #         rbinom(.N, 1L, 1 * clamp((year - min(year)) / 10, 0, 1)) == 1L, dif := dif + 2L]
-            #   ref[sex == "women" &
-            #         rbinom(.N, 1L, 0.2) == 1L, dif := dif - 1L]
-            #   ref[age < 49 &
-            #         rbinom(.N, 1L, 0.5) == 1L, dif := dif + 1L]
-            #   ref[age < 49 &
-            #         sex == "men" &
-            #         qimd == "3" &
-            #         rbinom(.N, 1L, 0.5) == 1L, dif := dif - 1L]
-            #   ref[age < 49 &
-            #         sex == "women" &
-            #         qimd %in% c("4", "5 least deprived") &
-            #         rbinom(.N, 1L, 0.4) == 1L, dif := dif - 1L]
-            #   ref[between(age, 50, 69) &
-            #         rbinom(.N, 1L, 0.2) == 1L, dif := dif + 1L]
-            #   ref[between(age, 50, 69) &
-            #         sex == "women" &
-            #         qimd == "5 least deprived" &
-            #         rbinom(.N, 1L, 0.4) == 1L, dif := dif + 1L]
-            #   ref[between(age, 70, 89) &
-            #         rbinom(.N, 1L, 0.4) == 1L, dif := dif + 1L]
-            #   ref[between(age, 70, 89) &
-            #         sex == "men" &
-            #         qimd %in% c("1 most deprived", "2") &
-            #         rbinom(.N, 1L, 0.4) == 1L, dif := dif - 1L]
-            #   ref[between(age, 70, 89) &
-            #         sex == "women" &
-            #         qimd %in% c("4d", "2") &
-            #         rbinom(.N, 1L, 0.4) == 1L, dif := dif + 1L]
-            #   absorb_dt(dt, ref)
-            #   
-            #   # when not enough never smokers convert those ex smokers with the longer quit years
-            #   tt <-
-            #     dt[smok_status %in% 2:3, .(year, age, sex, qimd, pid, smok_quit_yrs, dif)]
-            #   setnafill(tt, "c", 0, cols = "dif")
-            #   tt[dif < 0, dif := 0L]
-            #   setkey(tt, year, age, sex, qimd, smok_quit_yrs)
-            #   pid_to_conv <-
-            #     tt[dif > 0, .(pid = tail(pid, max(dif))), keyby = .(year, age, sex, qimd)]
-            #   dt[pid_to_conv, on = .(year, pid), `:=`(
-            #     smok_status = 1L,
-            #     smok_quit_yrs = 0L,
-            #     smok_dur = 0L,
-            #     smok_cig = 0L
-            #   )]
-            #   
-            #   # when too many never smokers convert to smok status 2 (occasional)
-            #   tt <-
-            #     dt[smok_status %in% 1, .(year, age, sex, qimd, pid, dif)]
-            #   setnafill(tt, "c", 0, cols = "dif")
-            #   tt[dif > 0, dif := 0L]
-            #   tt[, dif := -dif]
-            #   setkey(tt, year, age, sex, qimd)
-            #   # Ensure there are enough people to sample from
-            #   ttt <-
-            #     tt[, .(lpid = length(pid), mdif =  max(dif)), by = .(year, age, sex, qimd)][mdif >
-            #                                                                                   lpid, ]
-            #   tt[ttt, on = .NATURAL, dif := i.lpid]
-            #   pid_to_conv <-
-            #     tt[dif > 0, .(pid = resample(pid, max(dif))), keyby = .(year, age, sex, qimd)]
-            #   dt[pid_to_conv, on = .(year, pid), `:=`(
-            #     smok_status = 2L,
-            #     smok_quit_yrs = dt[smok_status == 2L, median(smok_quit_yrs)],
-            #     smok_dur = dt[smok_status == 2L, median(smok_dur)],
-            #     smok_cig = 1L
-            #   )]
-            #   dt[, dif := NULL]
-            #   
-            #   # Same logic for active smokers
-            #   # I will further calibrate to better match HSE
-            #   # calculate dif between ref (multinom) and simsmok
-            #   obs <-
-            #     dt[smok_status == 4L, .(nsa = .N), keyby = .(year, age, sex, qimd)] # ? add sha/ethn
-            #   ref <-
-            #     dt[smok_status_ref == 4L, .(nsr = .N), keyby = .(year, age, sex, qimd)] # ? add sha/ethn
-            #   absorb_dt(ref, obs)
-            #   setnafill(ref, "c", 0, cols = "nsa")
-            #   ref[, `:=`(dif = nsr - nsa,
-            #              nsr = NULL,
-            #              nsa = NULL)]
-            #   # Further calibrate to match better with HSE
-            #   ref[sex == "men" &
-            #         rbinom(.N, 1L, 0.3) == 1L, dif := dif - 1L]
-            #   ref[sex == "women" &
-            #         qimd != "1 most deprived" &
-            #         qimd != "5 least deprived" &
-            #         rbinom(.N, 1L, 0.8) == 1L, dif := dif - 1L]
-            #   ref[qimd == "1 most deprived" &
-            #         rbinom(.N, 1L, 0.5) == 1L, dif := dif + 1L]
-            #   ref[qimd == "5 least deprived" &
-            #         rbinom(.N, 1L, 0.6) == 1L, dif := dif - 1L] # - reduces
-            #   absorb_dt(dt, ref)
-            #   
-            #   # when not enough active smokers convert those ex smokers with the shortest quit years
-            #   tt <-
-            #     dt[smok_status == 3L, .(year, age, sex, qimd, pid, smok_quit_yrs, dif)]
-            #   setnafill(tt, "c", 0, cols = "dif")
-            #   tt[dif < 0, dif := 0L]
-            #   setkey(tt, year, age, sex, qimd, smok_quit_yrs)
-            #   pid_to_conv <-
-            #     tt[dif > 0, .(pid = head(pid, max(dif))), keyby = .(year, age, sex, qimd)]
-            #   dt[pid_to_conv, on = .(year, pid),
-            #      `:=`(
-            #        smok_status = 4L,
-            #        smok_quit_yrs = 0L,
-            #        smok_dur = smok_dur + 1
-            #      )] # TODO fix smoking duration
-            #   
-            #   # when too many never smokers convert to smok status 3
-            #   tt <-
-            #     dt[smok_status == 4L, .(year, age, sex, qimd, pid, dif)]
-            #   setnafill(tt, "c", 0, cols = "dif")
-            #   tt[dif > 0, dif := 0L]
-            #   tt[, dif := -dif]
-            #   setkey(tt, year, age, sex, qimd)
-            #   # Ensure there are enough people to sample from
-            #   ttt <-
-            #     tt[, .(lpid = length(pid), mdif =  max(dif)), by = .(year, age, sex, qimd)][mdif >
-            #                                                                                   lpid,]
-            #   tt[ttt, on = .NATURAL, dif := i.lpid]
-            #   pid_to_conv <-
-            #     tt[dif > 0, .(pid = resample(pid, max(dif))), keyby = .(year, age, sex, qimd)]
-            #   dt[pid_to_conv, on = .(year, pid), `:=`(smok_status = 3L, smok_quit_yrs = 1L)]
-            #   dt[, dif := NULL]
-            #   
-            #   rm(tt, ttt, obs, ref, pid_to_conv)
-            # }
-            # 
-            # # Assign smok_cig_curr when pid_mrk == true (the first year an individual enters the simulation)
-            # set(dt, NULL, "smok_cig", 0L)
-            # 
-            # tbl <-
-            #   read_fst("./lifecourse_models/smok_cig_curr_table.fst",
-            #            as.data.table = TRUE)
-            # col_nam <-
-            #   setdiff(names(tbl), intersect(names(dt), names(tbl)))
-            # absorb_dt(dt, tbl)
-            # dt[smok_status == 4L,
-            #    smok_cig := qZINBI(rankstat_smok_cig_curr, mu, sigma, nu)]
-            # dt[, (col_nam) := NULL]
-            # 
-            # # Assign smok_cig_ex when pid_mrk == true (the first year an individual enters the simulation)
-            # # dt[smok_status == 2, smok_cig := 1L]
-            # 
-            # 
-            # tbl <-
-            #   read_fst("./lifecourse_models/smok_cig_ex_table.fst",
-            #            as.data.table = TRUE)
-            # col_nam <-
-            #   setdiff(names(tbl), intersect(names(dt), names(tbl)))
-            # absorb_dt(dt, tbl)
-            # dt[(pid_mrk) &
-            #      smok_status == 3L,
-            #    smok_cig := my_qZABNB(rankstat_smok_cig_ex,
-            #                          mu,
-            #                          sigma,
-            #                          nu,
-            #                          tau,
-            #                          n_cpu = design_$sim_prm$n_cpu)]
-            # dt[, (col_nam) := NULL]
-            # 
-            # simsmok_cig(dt) # carry forward smok_cig if smok_status == 3
-            # dt[smok_cig == 0L & smok_status > 1L, smok_cig := 1L]
-            # 
-            # if (design_$sim_prm$simsmok_calibration)
-            #   simsmok_postcalibration(dt) # need to be post cig simulation
-            # 
-            # dt[, smok_status := factor(smok_status)]
-            # # needed for QRisk and QDrisk
-            # dt[, smoke_cat := 0L]
-            # dt[smok_status == "3", smoke_cat := 1L]
-            # dt[smok_status == "4", smoke_cat := 3L]
-            # dt[smok_status == "4" &
-            #      smok_cig < 10, smoke_cat := 2L]
-            # dt[smok_status == "4" &
-            #      smok_cig > 19, smoke_cat := 4L]
-            # 
-            # dt[, c(
-            #   "rankstat_smok",
-            #   "rankstat_smok_cig_curr",
-            #   "rankstat_smok_cig_ex",
-            #   "prb_smok_incid",
-            #   "prb_smok_cess",
-            #   "smok_status_ref"
-            # ) := NULL]
+            tbl <-
+              read_fst("./lifecourse_models/smok_status_table.fst",
+                       as.data.table = TRUE)
+            col_nam <-
+              setdiff(names(tbl), intersect(names(dt), names(tbl)))
+            absorb_dt(dt, tbl) 
+            dt[, smok_status_ref := my_qMN4(rankstat_smok, mu, sigma, nu)] # for calibration
+            dt[(pid_mrk), smok_status := smok_status_ref]
+            dt[, (col_nam) := NULL]
+            dt[, rankstat_smok := dqrunif(.N)] # this is now used for simsmoke. There shouldn't be correlated any more (colname hardcoded in C++ code).
+
+            # Assign smok_quit_yrs when pid_mrk == true (the first year an individual enters the simulation)
+            # I could use these estimates for calibration but I need to calculate mortality first
+            tbl <-
+              read_fst("./lifecourse_models/smok_quit_yrs_table.fst",
+                       as.data.table = TRUE)
+            # change to my cessation table
+            col_nam <-
+              setdiff(names(tbl), intersect(names(dt), names(tbl)))
+            absorb_dt(dt, tbl)
+            set(dt, NULL, "smok_quit_yrs", 0L)
+            dt[(pid_mrk) &
+                 smok_status %in% 2:3,
+               smok_quit_yrs := my_qDPO(rankstat_smok_quit_yrs, mu, sigma)]
+            dt[, rankstat_smok_quit_yrs := NULL]
+            dt[, (col_nam) := NULL]
+
+            # Assign smok_dur_ex when pid_mrk == true (the first year an individul enters the simulation)
+            tbl <-
+              read_fst("./lifecourse_models/smok_dur_ex_table.fst",
+                       as.data.table = TRUE)
+            col_nam <-
+              setdiff(names(tbl), intersect(names(dt), names(tbl)))
+            tbl$smok_status <- as.integer(tbl$smok_status)
+            absorb_dt(dt, tbl)
+
+            set(dt, NULL, "smok_dur", 0L)
+            dt[(pid_mrk) &
+                 smok_status %in% 2:3, smok_dur := my_qDPO(rankstat_smok_dur_ex, mu, sigma)]
+            
+            dt[, rankstat_smok_dur_ex := NULL]
+            dt[, (col_nam) := NULL]
+
+            # Assign smok_dur_curr when pid_mrk == true (the first year an individual enters the simulation)
+            tbl <-
+              read_fst("./lifecourse_models/smok_dur_curr_table.fst",
+                       as.data.table = TRUE)
+            col_nam <-
+              setdiff(names(tbl), intersect(names(dt), names(tbl)))
+            absorb_dt(dt, tbl)
+            dt[(pid_mrk) &
+                 smok_status == 4, smok_dur := as.integer(round(qNBI(rankstat_smok_dur_curr, mu, sigma)))]
+            dt[, rankstat_smok_dur_curr := NULL]
+            dt[, (col_nam) := NULL]
+
+            # Ensure smoking histories start from age 12
+            dt[age - smok_quit_yrs < 12L, smok_quit_yrs := age - 12L]
+            dt[age - smok_dur < 12L, smok_dur := age - 12L]
+            dt[age - smok_dur - smok_quit_yrs < 12L ,
+               `:=`(smok_dur = as.integer(smok_dur / ((
+                 smok_dur + smok_quit_yrs
+               ) / (age - 12L))),
+               smok_quit_yrs = as.integer(smok_quit_yrs / ((
+                 smok_dur + smok_quit_yrs
+               ) / (age - 12L))))]
+
+            # Assign smok_incid probabilities
+            tbl <-
+              read_fst("./lifecourse_models/smok_incid_table.fst",
+                       as.data.table = TRUE)
+            col_nam <-
+              setdiff(names(tbl), intersect(names(dt), names(tbl)))
+            absorb_dt(dt, tbl)
+            setnames(dt, "mu", "prb_smok_incid")
+
+            # Assign smok_cessation probabilities
+            tbl <-
+              read_fst("./lifecourse_models/smok_cess_table.fst",
+                       as.data.table = TRUE)
+            col_nam <-
+              setdiff(names(tbl), intersect(names(dt), names(tbl)))
+            absorb_dt(dt, tbl)
+            setnames(dt, "mu", "prb_smok_cess")
+
+            # Handle smok_relapse probabilities
+            tbl <-
+              read_fst("./lifecourse_models/smok_relapse_table.fst",
+                       as.data.table = TRUE)
+            tbl <-
+              dcast(tbl, sex + qimd ~ smok_quit_yrs, value.var = "pr")
+            nam <- tbl[, paste0(sex, " ", qimd)]
+            tbl <-
+              as.matrix(tbl[, mget(paste0(1:15))], rownames = nam)
+
+            simsmok(dt, tbl, design_$sim_prm$smoking_relapse_limit)
+            # dt[!(pid_mrk), table(smok_status)]
+            # dt[pid == 1, plot(year, smok_status, ylim = c(0, 4))]
+            # dt[pid == 10, .(age, smok_status, smok_quit_yrs, smok_dur)]
+            # dt[, sum(smok_status == 4)/.N, keyby = year]
+
+            if (design_$sim_prm$simsmok_calibration) {
+              # calculate dif between ref (multinom) and simsmok
+              # I will further calibrate to better match HSE
+              resample <-
+                function(x, ...)
+                  x[sample.int(length(x), ...)]
+              obs <-
+                dt[smok_status == 1L, .(nsa = .N), keyby = .(year, age, sex, qimd)] # ? add sha/ethn
+              ref <-
+                dt[smok_status_ref == 1L, .(nsr = .N), keyby = .(year, age, sex, qimd)] # ? add sha/ethn
+              absorb_dt(ref, obs)
+              setnafill(ref, "c", 0L, cols = "nsa")
+              ref[, `:=`(dif = nsr - nsa,
+                         nsr = NULL,
+                         nsa = NULL)]
+              # Further calibrate to match better with HSE
+              ref[sex == "men" &
+                    rbinom(.N, 1L, 0.9) == 1L, dif := dif - 2L]
+              ref[sex == "men" &
+                    rbinom(.N, 1L, 1 * clamp((year - min(year)) / 10, 0, 1)) == 1L, dif := dif + 2L]
+              ref[sex == "women" &
+                    rbinom(.N, 1L, 0.2) == 1L, dif := dif - 1L]
+              ref[age < 49 &
+                    rbinom(.N, 1L, 0.5) == 1L, dif := dif + 1L]
+              ref[age < 49 &
+                    sex == "men" &
+                    qimd == "3" &
+                    rbinom(.N, 1L, 0.5) == 1L, dif := dif - 1L]
+              ref[age < 49 &
+                    sex == "women" &
+                    qimd %in% c("4", "5 least deprived") &
+                    rbinom(.N, 1L, 0.4) == 1L, dif := dif - 1L]
+              ref[between(age, 50, 69) &
+                    rbinom(.N, 1L, 0.2) == 1L, dif := dif + 1L]
+              ref[between(age, 50, 69) &
+                    sex == "women" &
+                    qimd == "5 least deprived" &
+                    rbinom(.N, 1L, 0.4) == 1L, dif := dif + 1L]
+              ref[between(age, 70, 89) &
+                    rbinom(.N, 1L, 0.4) == 1L, dif := dif + 1L]
+              ref[between(age, 70, 89) &
+                    sex == "men" &
+                    qimd %in% c("1 most deprived", "2") &
+                    rbinom(.N, 1L, 0.4) == 1L, dif := dif - 1L]
+              ref[between(age, 70, 89) &
+                    sex == "women" &
+                    qimd %in% c("4d", "2") &
+                    rbinom(.N, 1L, 0.4) == 1L, dif := dif + 1L]
+              absorb_dt(dt, ref)
+
+              # when not enough never smokers convert those ex smokers with the longer quit years
+              tt <-
+                dt[smok_status %in% 2:3, .(year, age, sex, qimd, pid, smok_quit_yrs, dif)]
+              setnafill(tt, "c", 0, cols = "dif")
+              tt[dif < 0, dif := 0L]
+              setkey(tt, year, age, sex, qimd, smok_quit_yrs)
+              pid_to_conv <-
+                tt[dif > 0, .(pid = tail(pid, max(dif))), keyby = .(year, age, sex, qimd)]
+              dt[pid_to_conv, on = .(year, pid), `:=`(
+                smok_status = 1L,
+                smok_quit_yrs = 0L,
+                smok_dur = 0L,
+                smok_cig = 0L
+              )]
+
+              # when too many never smokers convert to smok status 2 (occasional)
+              tt <-
+                dt[smok_status %in% 1, .(year, age, sex, qimd, pid, dif)]
+              setnafill(tt, "c", 0, cols = "dif")
+              tt[dif > 0, dif := 0L]
+              tt[, dif := -dif]
+              setkey(tt, year, age, sex, qimd)
+              # Ensure there are enough people to sample from
+              ttt <-
+                tt[, .(lpid = length(pid), mdif =  max(dif)), by = .(year, age, sex, qimd)][mdif >
+                                                                                              lpid, ]
+              tt[ttt, on = .NATURAL, dif := i.lpid]
+              pid_to_conv <-
+                tt[dif > 0, .(pid = resample(pid, max(dif))), keyby = .(year, age, sex, qimd)]
+              dt[pid_to_conv, on = .(year, pid), `:=`(
+                smok_status = 2L,
+                smok_quit_yrs = dt[smok_status == 2L, median(smok_quit_yrs)],
+                smok_dur = dt[smok_status == 2L, median(smok_dur)],
+                smok_cig = 1L
+              )]
+              dt[, dif := NULL]
+
+              # Same logic for active smokers
+              # I will further calibrate to better match HSE
+              # calculate dif between ref (multinom) and simsmok
+              obs <-
+                dt[smok_status == 4L, .(nsa = .N), keyby = .(year, age, sex, qimd)] # ? add sha/ethn
+              ref <-
+                dt[smok_status_ref == 4L, .(nsr = .N), keyby = .(year, age, sex, qimd)] # ? add sha/ethn
+              absorb_dt(ref, obs)
+              setnafill(ref, "c", 0, cols = "nsa")
+              ref[, `:=`(dif = nsr - nsa,
+                         nsr = NULL,
+                         nsa = NULL)]
+              # Further calibrate to match better with HSE
+              ref[sex == "men" &
+                    rbinom(.N, 1L, 0.3) == 1L, dif := dif - 1L]
+              ref[sex == "women" &
+                    qimd != "1 most deprived" &
+                    qimd != "5 least deprived" &
+                    rbinom(.N, 1L, 0.8) == 1L, dif := dif - 1L]
+              ref[qimd == "1 most deprived" &
+                    rbinom(.N, 1L, 0.5) == 1L, dif := dif + 1L]
+              ref[qimd == "5 least deprived" &
+                    rbinom(.N, 1L, 0.6) == 1L, dif := dif - 1L] # - reduces
+              absorb_dt(dt, ref)
+
+              # when not enough active smokers convert those ex smokers with the shortest quit years
+              tt <-
+                dt[smok_status == 3L, .(year, age, sex, qimd, pid, smok_quit_yrs, dif)]
+              setnafill(tt, "c", 0, cols = "dif")
+              tt[dif < 0, dif := 0L]
+              setkey(tt, year, age, sex, qimd, smok_quit_yrs)
+              pid_to_conv <-
+                tt[dif > 0, .(pid = head(pid, max(dif))), keyby = .(year, age, sex, qimd)]
+              dt[pid_to_conv, on = .(year, pid),
+                 `:=`(
+                   smok_status = 4L,
+                   smok_quit_yrs = 0L,
+                   smok_dur = smok_dur + 1
+                 )] # TODO fix smoking duration
+
+              # when too many never smokers convert to smok status 3
+              tt <-
+                dt[smok_status == 4L, .(year, age, sex, qimd, pid, dif)]
+              setnafill(tt, "c", 0, cols = "dif")
+              tt[dif > 0, dif := 0L]
+              tt[, dif := -dif]
+              setkey(tt, year, age, sex, qimd)
+              # Ensure there are enough people to sample from
+              ttt <-
+                tt[, .(lpid = length(pid), mdif =  max(dif)), by = .(year, age, sex, qimd)][mdif >
+                                                                                              lpid,]
+              tt[ttt, on = .NATURAL, dif := i.lpid]
+              pid_to_conv <-
+                tt[dif > 0, .(pid = resample(pid, max(dif))), keyby = .(year, age, sex, qimd)]
+              dt[pid_to_conv, on = .(year, pid), `:=`(smok_status = 3L, smok_quit_yrs = 1L)]
+              dt[, dif := NULL]
+
+              rm(tt, ttt, obs, ref, pid_to_conv)
+            }
+
+            # Assign smok_cig_curr when pid_mrk == true (the first year an individual enters the simulation)
+            set(dt, NULL, "smok_cig", 0L)
+
+            tbl <-
+              read_fst("./lifecourse_models/smok_cig_curr_table.fst",
+                       as.data.table = TRUE)
+            col_nam <-
+              setdiff(names(tbl), intersect(names(dt), names(tbl)))
+            absorb_dt(dt, tbl)
+            dt[smok_status == 4L,
+               smok_cig := qZINBI(rankstat_smok_cig_curr, mu, sigma, nu)]
+            dt[, (col_nam) := NULL]
+
+            # Assign smok_cig_ex when pid_mrk == true (the first year an individual enters the simulation)
+            # dt[smok_status == 2, smok_cig := 1L]
+
+
+            tbl <-
+              read_fst("./lifecourse_models/smok_cig_ex_table.fst",
+                       as.data.table = TRUE)
+            col_nam <-
+              setdiff(names(tbl), intersect(names(dt), names(tbl)))
+            absorb_dt(dt, tbl)
+            dt[(pid_mrk) &
+                 smok_status == 3L,
+               smok_cig := my_qZABNB(rankstat_smok_cig_ex,
+                                     mu,
+                                     sigma,
+                                     nu,
+                                     tau,
+                                     n_cpu = design_$sim_prm$n_cpu)]
+            dt[, (col_nam) := NULL]
+
+            simsmok_cig(dt) # carry forward smok_cig if smok_status == 3
+            dt[smok_cig == 0L & smok_status > 1L, smok_cig := 1L]
+
+            if (design_$sim_prm$simsmok_calibration)
+              simsmok_postcalibration(dt) # need to be post cig simulation
+
+            dt[, smok_status := factor(smok_status)]
+            # needed for QRisk and QDrisk
+            dt[, smoke_cat := 0L]
+            dt[smok_status == "3", smoke_cat := 1L]
+            dt[smok_status == "4", smoke_cat := 3L]
+            dt[smok_status == "4" &
+                 smok_cig < 10, smoke_cat := 2L]
+            dt[smok_status == "4" &
+                 smok_cig > 19, smoke_cat := 4L]
+
+            dt[, c(
+              "rankstat_smok",
+              "rankstat_smok_cig_curr",
+              "rankstat_smok_cig_ex",
+              "prb_smok_incid",
+              "prb_smok_cess",
+              "smok_status_ref"
+            ) := NULL]
             
             # Generate ETS (BI) ----
             message("Generate ETS")
@@ -1259,14 +1269,15 @@ SynthPop <-
             # Generate alcohol (ZINBI) ----
             message("Generate alcohol")
 
-            # tbl <-
-            #   read_fst("./lifecourse_models/alcohol_table.fst", as.data.table = TRUE)
-            # col_nam <-
-            #   setdiff(names(tbl), intersect(names(dt), names(tbl)))
-            # absorb_dt(dt, tbl)
-            # dt[, alcohol := as.integer(qZINBI(rank_alcohol, mu, sigma, nu))]
-            # dt[, rank_alcohol := NULL]
-            # dt[, (col_nam) := NULL]
+            tbl <-
+              read_fst("./lifecourse_models/alcohol_table.fst", as.data.table = TRUE)
+            col_nam <-
+              setdiff(names(tbl), intersect(names(dt), names(tbl)))
+           
+            absorb_dt(dt, tbl)
+            dt[, alcohol := as.integer(qZINBI(rank_alcohol, mu, sigma, nu))]
+            dt[, rank_alcohol := NULL]
+            dt[, (col_nam) := NULL]
 
             # Generate BMI (BCPEo) ----
             message("Generate BMI")
@@ -1327,15 +1338,16 @@ SynthPop <-
 
             # NOTE this very highly correlated with hdl level (~0.76) and
             #  highly to tchol (~-0.47). The latter is captured by the correlated RNs
-            # tbl <-
-            #   read_fst("./lifecourse_models/hdl_to_tchol_table.fst",
-            #            as.data.table = TRUE)
-            # col_nam <-
-            #   setdiff(names(tbl), intersect(names(dt), names(tbl)))
-            # absorb_dt(dt, tbl)
-            # dt[, tchol_hdl_ratio := 1 / qGB1(rank_hdl, mu, sigma, nu, tau)]
-            # dt[, rank_hdl := NULL]
-            # dt[, (col_nam) := NULL]
+            
+            tbl <-
+              read_fst("./lifecourse_models/hdl_to_tchol_table.fst",
+                       as.data.table = TRUE)
+            col_nam <-
+              setdiff(names(tbl), intersect(names(dt), names(tbl)))
+            absorb_dt(dt, tbl)
+            dt[, tchol_hdl_ratio := 1 / qGB1(rank_hdl, mu, sigma, nu, tau)]
+            dt[, rank_hdl := NULL]
+            dt[, (col_nam) := NULL]
 
             # Generate statins medication (BI) -----
             message("Generate statins medication")
@@ -1431,9 +1443,11 @@ SynthPop <-
             tbl <-
               read_fst("./lifecourse_models/ckd_table.fst", as.data.table = TRUE)
             nam <- intersect(names(dt), names(tbl))
+           
             dt[tbl, ckd_prvl := (rankstat_ckd > ckd0) + (rankstat_ckd > ckd1) +
                  (rankstat_ckd > ckd2) + (rankstat_ckd > ckd3) + 1L,
                on = nam]
+           
             dt[, ckd5_prvl := fifelse(ckd_prvl == 5L, 1L, 0L)]
             dt[, rankstat_ckd := NULL]
 
@@ -1509,6 +1523,7 @@ SynthPop <-
             col_nam <-
               setdiff(names(tbl), intersect(names(dt), names(tbl)))
             absorb_dt(dt, tbl)
+           
             dt[, t2dm_dgn := as.integer(rankstat_t2dm_dgn < mu)]
             dt[, (col_nam) := NULL]
 
@@ -1617,7 +1632,8 @@ SynthPop <-
             setnames(dt, exps_tolag, exps_nam)
 
             # Ensure pid does not overlap for files from different mc
-            if (max(dt$pid + (mc_ - 1L) * new_n) < .Machine$integer.max) {
+            if 
+            (max(dt$pid + (mc_ - 1L) * new_n) < .Machine$integer.max) {
               dt[, pid := as.integer(pid + (mc_ - 1L) * new_n)]
             }
 
@@ -1673,12 +1689,15 @@ SynthPop <-
           setkey(dt, pid, year)
           dt[, pid_mrk := mk_new_simulant_markers(pid)]
           
+          browser()
+          
           finalise_synthpop(
             mc_aggr,
             dt,
             design_$sim_prm,
             design_$lags_mc
           )
+          
           
           generate_rns(
             mc_, # NOT mc_aggr
@@ -1803,6 +1822,7 @@ SynthPop <-
           tt <-
             dt[, .(from = min(rn), to = max(rn)), keyby = .(pid)]
           write_fst(tt, filename_$indxfile, 90L)
+         
           
           # rm(dt, tt)
           
