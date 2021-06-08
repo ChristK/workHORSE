@@ -30,7 +30,7 @@ model <- qread(file_qs)
 #origin_table <- read_fst(path = file_fst, as.data.table = TRUE)
 # generate fst
 trms <- all.vars(formula(model))[-1] # -1 excludes dependent var
-newdata <- CJ(year = 3:73, age_int = 15:89, 
+newdata <- CJ(year = 3:73, age_int = 5:89, 
               sex = unique(model$data$sex), 
               qimd = unique(model$data$qimd),
               ethnicity = unique(model$data$ethnicity), 
@@ -50,6 +50,8 @@ newdata[, c("age_int", "pa7") := NULL]
 # write .fst file
 write_fst(newdata, file_fst , 100L) # export .fst
 print(paste0("Table saved ", file_fst))
+remove(newdata)
+gc()
 #}
 
 ## af dgn 2 ####
@@ -58,7 +60,7 @@ file_fst <- file_name_fst[2]
 model <- qread(file_qs)
 # generate fst
 trms <- all.vars(formula(model))[-1] # -1 excludes dependent var
-newdata <- CJ(year = 3:73, age_int = 15:89, 
+newdata <- CJ(year = 3:73, age_int = 5:89, 
               sex = unique(model$data$sex), 
               qimd = unique(model$data$qimd),
               ethnicity = unique(model$data$ethnicity), 
@@ -77,6 +79,8 @@ newdata[, age_int := NULL]
 # write .fst file
 write_fst(newdata, file_fst , 100L) # export .fst
 print(paste0("Table saved ", file_fst))
+remove(newdata)
+gc()
 #}
 
 ## alcohol 3 ####
@@ -86,7 +90,7 @@ model <- qread(file_qs)
 #origin_table <- read_fst(path = file_fst, as.data.table = TRUE)
 # generate fst
 trms <- all.vars(formula(model))[-1] # -1 excludes dependent var
-newdata <- CJ(year = 3:73, age_int = 15:89, 
+newdata <- CJ(year = 3:73, age_int = 5:89, 
               sex = unique(model$data$sex), 
               qimd = unique(model$data$qimd),
               ethnicity = unique(model$data$ethnicity), 
@@ -107,6 +111,8 @@ newdata[, age_int := NULL]
 # write .fst file
 write_fst(newdata, file_fst , 100L) # export .fst
 print(paste0("Table saved ", file_fst))
+remove(newdata)
+gc()
 #}
 
 ## bmi 4 ####
@@ -116,7 +122,7 @@ model <- qread(file_qs)
 #origin_table <- read_fst(path = file_fst, as.data.table = TRUE)
 # generate fst
 trms <- all.vars(formula(model))[-1] # -1 excludes dependent var
-newdata <- CJ(year = 3:73, age_int = 15:89, 
+newdata <- CJ(year = 3:73, age_int = 5:89, 
               sex = unique(model$data$sex), 
               qimd = unique(model$data$qimd),
               ethnicity = unique(model$data$ethnicity), 
@@ -138,6 +144,8 @@ newdata[, age_int := NULL]
 # write .fst file
 write_fst(newdata, file_fst , 100L) # export .fst
 print(paste0("Table saved ", file_fst))
+remove(newdata)
+gc()
 #}
 
 ## bmi med 5 ####
@@ -147,7 +155,7 @@ model <- qread(file_qs)
 #origin_table <- read_fst(path = file_fst, as.data.table = TRUE)
 # generate fst
 trms <- all.vars(formula(model))[-1] # -1 excludes dependent var
-newdata <- CJ(year = 3:73, age_int = 15:89, 
+newdata <- CJ(year = 3:73, age_int = 5:89, 
               sex = unique(model$data$sex), 
               qimd = unique(model$data$qimd),
               ethnicity = unique(model$data$ethnicity), 
@@ -167,6 +175,8 @@ newdata[, age_int := NULL]
 # write .fst file
 write_fst(newdata, file_fst , 100L) # export .fst
 print(paste0("Table saved ", file_fst))
+remove(newdata)
+gc()
 #}
 
 ## chd duration 6
@@ -178,7 +188,7 @@ model <- qread(file_qs)
 #origin_table <- read_fst(path = file_fst, as.data.table = TRUE)
 # generate fst
 trms <- all.vars(formula(model))[-1] # -1 excludes dependent var
-newdata <- CJ(age_int = 15:89) #
+newdata <- CJ(age_int = 5:89) #
 newdata[, age := scale(age_int, 52.2, 16.4)]
 newdata[, c(paste0("ckd", 0:4)) := data.table(rowCumsums(predict(model, type = "p", newdata = .SD))), .SDcols = trms]
 
@@ -188,6 +198,8 @@ newdata[, c("age_int", "ckd4") := NULL]
 # write .fst file
 write_fst(newdata, file_fst , 100L) # export .fst
 print(paste0("Table saved ", file_fst))
+remove(newdata)
+gc()
 #}
 
 
@@ -198,7 +210,7 @@ model <- qread(file_qs)
 #origin_table <- read_fst(path = file_fst, as.data.table = TRUE)
 # generate fst
 trms <- all.vars(formula(model))[-1] # -1 excludes dependent var
-newdata <- CJ(year = 3:73, age_int = 15:89, 
+newdata <- CJ(year = 3:73, age_int = 5:89, 
               sex = unique(model$data$sex), 
               qimd = unique(model$data$qimd),
               ethnicity = unique(model$data$ethnicity), 
@@ -218,13 +230,15 @@ newdata[, age_int := NULL]
 # write .fst file
 write_fst(newdata, file_fst , 100L) # export .fst
 print(paste0("Table saved ", file_fst))
+remove(newdata)
+gc()
 
 ## dm_dur 10 ####
 file_qs <- all_file_qs[10]
 file_fst <- file_name_fst[10]
 model <- qread(file_qs)
 trms <- all.vars(formula(model))[-1] # -1 excludes dependent var
-newdata <- CJ(age_int = 15:89, sex = unique(model$data$sex))
+newdata <- CJ(age_int = 5:89, sex = unique(model$data$sex))
 newdata[, age := scale(age_int, 62.5, 13.3)]
 newdata <- split(newdata, by = "sex")
 
@@ -245,7 +259,7 @@ model <- qread(file_qs)
 #origin_table <- read_fst(path = file_fst, as.data.table = TRUE)
 # generate fst
 trms <- all.vars(formula(model))[-1] # -1 excludes dependent var
-newdata <- CJ(year = 3:73, age_int = 15:89, 
+newdata <- CJ(year = 3:73, age_int = 5:89, 
               sex = unique(model$data$sex), 
               qimd = unique(model$data$qimd),
               ethnicity = unique(model$data$ethnicity), 
@@ -264,15 +278,17 @@ newdata[, age_int := NULL]
 # write .fst file
 write_fst(newdata, file_fst , 100L) # export .fst
 print(paste0("Table saved ", file_fst))
+remove(newdata)
+gc()
 
-## education imputation 12 ####
+## education imputation 12 - issue with file####
 file_qs <- all_file_qs[12]
 file_fst <- file_name_fst[12]
 model <- qread(file_qs)
 #origin_table <- read_fst(path = file_fst, as.data.table = TRUE)
 # generate fst
 trms <- all.vars(formula(model))[-1] # -1 excludes dependent var
-newdata <- CJ(year = 3:73, age_int = 15:89, 
+newdata <- CJ(year = 3:73, age_int = 5:89, 
               sex = unique(model$data$sex), 
               qimd = unique(model$data$qimd),
               ethnicity = unique(model$data$ethnicity), 
@@ -290,6 +306,8 @@ newdata[, c("age_int", "ed7") := NULL]
 # write .fst file
 write_fst(newdata, file_fst , 100L) # export .fst
 print(paste0("Table saved ", file_fst))
+remove(newdata)
+gc()
 #}
 
 ## education 13 ####
@@ -299,7 +317,7 @@ model <- qread(file_qs)
 #origin_table <- read_fst(path = file_fst, as.data.table = TRUE)
 # generate fst
 trms <- all.vars(formula(model))[-1] # -1 excludes dependent var
-newdata <- CJ(year = 3:73, age_int = 15:89, 
+newdata <- CJ(year = 3:73, age_int = 5:89, 
               sex = unique(model$data$sex), 
               qimd = unique(model$data$qimd),
               ethnicity = unique(model$data$ethnicity), 
@@ -317,6 +335,8 @@ newdata[, c("age_int", "ed7") := NULL]
 # write .fst file
 write_fst(newdata, file_fst , 100L) # export .fst
 print(paste0("Table saved ", file_fst))
+remove(newdata)
+gc()
 #}
 
 ## ethnicity 14 ####
@@ -326,29 +346,31 @@ model <- qread(file_qs)
 #origin_table <- read_fst(path = file_fst, as.data.table = TRUE)
 # generate fst
 trms <- all.vars(formula(model))[-1] # -1 excludes dependent var
-newdata <- CJ(year = 3:73, age = 15:89, sex = unique(model$data$sex), qimd = unique(model$data$qimd),
+newdata <- CJ(year = 3:73, age = 5:89, sex = unique(model$data$sex), qimd = unique(model$data$qimd),
               sha = unique(model$data$sha))
 newdata[, (levels(model$data$ethnicity)) := data.table(matrixStats::rowCumsums(predict(model, type = "p", newdata = .SD))), .SDcols = trms]
 
 # write .fst file
 write_fst(newdata, file_fst , 100L) # export .fst
 print(paste0("Table saved ", file_fst))
+remove(newdata)
+gc()
 #}
 
 ## ets 15 ####
 file_qs <- all_file_qs[15]
 file_fst <- file_name_fst[15]
 model <- qread(file_qs)
-origin_table <- read_fst(path = file_fst, as.data.table = TRUE)
+#origin_table <- read_fst(path = file_fst, as.data.table = TRUE)
 
 # generate fst
 trms <- all.vars(formula(model))[-1] # -1 excludes dependent var
-newdata <- CJ(year = 3:73, age_int = 15:89, 
-              sex = unique(origin_table$sex), 
-              qimd = unique(origin_table$qimd),
-              ethnicity = unique(origin_table$ethnicity), 
-              sha = unique(origin_table$sha),
-              smok_status = unique(origin_table$smok_status)
+newdata <- CJ(year = 3:73, age_int = 5:89, 
+              sex = unique(model$data$sex), 
+              qimd = unique(model$data$qimd),
+              ethnicity = unique(model$data$ethnicity), 
+              sha = unique(model$data$sha),
+              smok_status = unique(model$data$smok_status)
 ) # create completed dataset
 newdata[, age := scale(age_int, 50.8, 17.4)]
 newdata <- split(newdata, by = "year")
@@ -361,6 +383,8 @@ newdata[, c("age_int") := NULL]
 
 write_fst(newdata, file_fst , 100L) # export .fst
 print(paste0("Table saved ", file_fst))
+remove(newdata)
+gc()
 
 
 ## famcvd 16 ####
@@ -370,7 +394,7 @@ model <- qread(file_qs)
 #origin_table <- read_fst(path = file_fst, as.data.table = TRUE)
 # generate fst
 trms <- all.vars(formula(model))[-1] # -1 excludes dependent var
-newdata <- CJ(year = 3:73, age_int = 15:89, 
+newdata <- CJ(year = 3:73, age_int = 5:89, 
               sex = unique(model$data$sex), 
               qimd = unique(model$data$qimd),
               ethnicity = unique(model$data$ethnicity), 
@@ -389,6 +413,8 @@ newdata[, age_int := NULL]
 # write .fst file
 write_fst(newdata, file_fst , 100L) # export .fst
 print(paste0("Table saved ", file_fst))
+remove(newdata)
+gc()
 #}
 ## frt 17 ####
 file_qs <- all_file_qs[17]
@@ -396,7 +422,7 @@ file_fst <- file_name_fst[17]
 model <- qread(file_qs)
 # generate fst
 trms <- all.vars(formula(model))[-1] # -1 excludes dependent var
-newdata <- CJ(year = 3:73, age_int = 15:89, 
+newdata <- CJ(year = 3:73, age_int = 5:89, 
               sex = unique(model$data$sex), 
               qimd = unique(model$data$qimd),
               ethnicity = unique(model$data$ethnicity), 
@@ -413,13 +439,15 @@ newdata[, age := age_int]
 newdata[, age_int := NULL]
 # write .fst file
 write_fst(newdata, file_fst , 100L) # export .fst
+remove(newdata)
+gc()
 ## hdl 18 ####
 file_qs <- all_file_qs[18]
 file_fst <- file_name_fst[18]
 model <- qread(file_qs)
 # generate fst
 trms <- all.vars(formula(model))[-1] # -1 excludes dependent var
-newdata <- CJ(year = 3:73, age_int = 15:89, 
+newdata <- CJ(year = 3:73, age_int = 5:89, 
               sex = unique(model$data$sex), 
               qimd = unique(model$data$qimd),
               ethnicity = unique(model$data$ethnicity), 
@@ -437,20 +465,22 @@ newdata[, age_int := NULL]
 # write .fst file
 write_fst(newdata, file_fst , 100L) # export .fst
 print(paste0("Table saved ", file_fst))
+remove(newdata)
+gc()
+
 ## income 19 ####
 file_qs <- all_file_qs[19]
 file_fst <- file_name_fst[19]
 model <- qread(file_qs)
-origin_table <- read_fst(path = file_fst, as.data.table = TRUE)
 
 # generate fst
 trms <- all.vars(formula(model))[-1] # -1 excludes dependent var
-newdata <- CJ(age_int = 15:89, 
-              sex = unique(origin_table$sex), 
-              qimd = unique(origin_table$qimd),
-              ethnicity = unique(origin_table$ethnicity), 
-              sha = unique(origin_table$sha),
-              education = unique(origin_table$education)
+newdata <- CJ(age_int = 5:89, 
+              sex = unique(model$data$sex), 
+              qimd = unique(model$data$qimd),
+              ethnicity = unique(model$data$ethnicity), 
+              sha = unique(model$data$sha),
+              education = unique(model$data$education)
 ) # create completed dataset
 newdata[, age := scale(age_int, 49.96, 16.98)]
 newdata <- split(newdata, by = "education")
@@ -465,7 +495,8 @@ newdata[, c("age_int", "inc5") := NULL]
 write_fst(newdata, file_fst , 100L) # export .fst
 print(paste0("Table saved ", file_fst))
 
-
+remove(newdata)
+gc()
 
 
 ## predm 20
@@ -475,7 +506,7 @@ file_fst <- file_name_fst[21]
 model <- qread(file_qs)
 # generate fst
 trms <- all.vars(formula(model))[-1] # -1 excludes dependent var
-newdata <- CJ(year = 3:73, age_int = 15:89, 
+newdata <- CJ(year = 3:73, age_int = 5:89, 
               sex = unique(model$data$sex), 
               qimd = unique(model$data$qimd),
               ethnicity = unique(model$data$ethnicity), 
@@ -494,6 +525,9 @@ newdata[, age_int := NULL]
 # write .fst file
 write_fst(newdata, file_fst , 100L) # export .fst
 print(paste0("Table saved ", file_fst))
+remove(newdata)
+gc()
+
 ## cess_model 22 ####
 file_qs <- all_file_qs[22]
 file_fst <- file_name_fst[22]
@@ -501,7 +535,7 @@ model <- qread(file_qs)
 #origin_table <- read_fst(path = file_fst, as.data.table = TRUE)
 # generate fst
 trms <- all.vars(formula(model))[-1] # -1 excludes dependent var
-newdata <- CJ(year = 3:73, age_int = 15:89, 
+newdata <- CJ(year = 3:73, age_int = 5:89, 
               sex = unique(model$data$sex), 
               qimd = unique(model$data$qimd),
               ethnicity = unique(model$data$ethnicity), 
@@ -520,21 +554,23 @@ newdata[, age_int := NULL]
 # write .fst file
 write_fst(newdata, file_fst , 100L) # export .fst
 print(paste0("Table saved ", file_fst))
-#}
+remove(newdata)
+gc()
+
 
 ## cig_curr 23 ####
 file_qs <- all_file_qs[23]
 file_fst <- file_name_fst[23]
 model <- qread(file_qs)
-origin_table <- read_fst(path = file_fst, as.data.table = TRUE)
+#model$data <- read_fst(path = file_fst, as.data.table = TRUE)
 
 # generate fst
 trms <- all.vars(formula(model))[-1] # -1 excludes dependent var
-newdata <- CJ(year = 3:73, age_int = 15:89, 
-              sex = unique(origin_table$sex), 
-              qimd = unique(origin_table$qimd),
-              ethnicity = unique(origin_table$ethnicity), 
-              sha = unique(origin_table$sha)
+newdata <- CJ(year = 3:73, age_int = 5:89, 
+              sex = unique(model$data$sex), 
+              qimd = unique(model$data$qimd),
+              ethnicity = unique(model$data$ethnicity), 
+              sha = unique(model$data$sha)
 ) # create completed dataset
 
 newdata[, age := scale(age_int, 45, 15.3)]
@@ -551,20 +587,22 @@ newdata[, age_int := NULL]
 # write .fst file
 write_fst(newdata, file_fst , 100L) # export .fst
 print(paste0("Table saved ", file_fst))
+remove(newdata)
+gc()
 
 ## cig_ex 24 ####
 file_qs <- all_file_qs[24]
 file_fst <- file_name_fst[24]
 model <- qread(file_qs)
-origin_table <- read_fst(path = file_fst, as.data.table = TRUE)
+#origin_table <- read_fst(path = file_fst, as.data.table = TRUE)
 
 # generate fst
 trms <- all.vars(formula(model))[-1] # -1 excludes dependent var
-newdata <- CJ(year = 3:73, age_int = 15:89, 
-              sex = unique(origin_table$sex), 
-              qimd = unique(origin_table$qimd),
-              ethnicity = unique(origin_table$ethnicity), 
-              sha = unique(origin_table$sha)
+newdata <- CJ(year = 3:73, age_int = 5:89, 
+              sex = unique(model$data$sex), 
+              qimd = unique(model$data$qimd),
+              ethnicity = unique(model$data$ethnicity), 
+              sha = unique(model$data$sha)
 ) # create completed dataset
 newdata[, age := scale(age_int, 57.4, 16.6)]
 newdata <- split(newdata, by = "year") # process by year to make small job
@@ -579,20 +617,22 @@ newdata[, age_int := NULL]
 # write .fst file
 write_fst(newdata, file_fst , 100L) # export .fst
 print(paste0("Table saved ", file_fst))
+remove(newdata)
+gc()
 
 ## dur_curr 25####
 file_qs <- all_file_qs[25]
 file_fst <- file_name_fst[25]
 model <- qread(file_qs)
-origin_table <- read_fst(path = file_fst, as.data.table = TRUE)
+#model$data <- read_fst(path = file_fst, as.data.table = TRUE)
 
 # generate fst
 trms <- all.vars(formula(model))[-1] # -1 excludes dependent var
-newdata <- CJ(year = 3:73, age_int = 15:89, 
-              sex = unique(origin_table$sex), 
-              qimd = unique(origin_table$qimd),
-              ethnicity = unique(origin_table$ethnicity), 
-              sha = unique(origin_table$sha)
+newdata <- CJ(year = 3:73, age_int = 5:89, 
+              sex = unique(model$data$sex), 
+              qimd = unique(model$data$qimd),
+              ethnicity = unique(model$data$ethnicity), 
+              sha = unique(model$data$sha)
 ) # create completed dataset
 newdata[, age := scale(age_int, 45, 15.3)]
 newdata <- split(newdata, by = "year") # process by year to make small job
@@ -607,20 +647,22 @@ newdata[, age_int := NULL]
 # write .fst file
 write_fst(newdata, file_fst , 100L) # export .fst
 print(paste0("Table saved ", file_fst))
+remove(newdata)
+gc()
 
 ## dur_ex 26  ####
 file_qs <- all_file_qs[26]
 file_fst <- file_name_fst[26]
 model <- qread(file_qs)
-origin_table <- read_fst(path = file_fst, as.data.table = TRUE)
+#origin_table <- read_fst(path = file_fst, as.data.table = TRUE)
 
 # generate fst
 trms <- all.vars(formula(model))[-1] # -1 excludes dependent var
-newdata <- CJ(year = 3:73, age_int = 15:89, 
-              sex = unique(origin_table$sex), 
-              qimd = unique(origin_table$qimd),
-              ethnicity = unique(origin_table$ethnicity), 
-              sha = unique(origin_table$sha),
+newdata <- CJ(year = 3:73, age_int = 5:89, 
+              sex = unique(model$data$sex), 
+              qimd = unique(model$data$qimd),
+              ethnicity = unique(model$data$ethnicity), 
+              sha = unique(model$data$sha),
               smok_status = 2:3
 ) # create completed dataset
 newdata[, age := scale(age_int, 56.2, 17.0)]
@@ -637,19 +679,22 @@ newdata[, age_int := NULL]
 # write .fst file
 write_fst(newdata, file_fst , 100L) # export .fst
 print(paste0("Table saved ", file_fst))
+remove(newdata)
+gc()
+
 ## inci_model 27 ####
 file_qs <- all_file_qs[27]
 file_fst <- file_name_fst[27]
 model <- qread(file_qs)
-origin_table <- read_fst(path = file_fst, as.data.table = TRUE)
+#origin_table <- read_fst(path = file_fst, as.data.table = TRUE)
 
 # generate fst
 trms <- all.vars(formula(model))[-1] # -1 excludes dependent var
-newdata <- CJ(year = 3:73, age_int = 15:89, 
-              sex = unique(origin_table$sex), 
-              qimd = unique(origin_table$qimd),
-              ethnicity = unique(origin_table$ethnicity), 
-              sha = unique(origin_table$sha)
+newdata <- CJ(year = 3:73, age_int = 5:89, 
+              sex = unique(model$data$sex), 
+              qimd = unique(model$data$qimd),
+              ethnicity = unique(model$data$ethnicity), 
+              sha = unique(model$data$sha)
 ) # create completed dataset
 newdata[, age := scale(age_int, 51.7, 17.4)]
 newdata <- split(newdata, by = "year") # process by year to make small job
@@ -664,6 +709,8 @@ newdata[, age_int := NULL]
 # write .fst file
 write_fst(newdata, file_fst , 100L) # export .fst
 print(paste0("Table saved ", file_fst))
+remove(newdata)
+gc()
 
 ## 
 # Problems 
@@ -674,14 +721,14 @@ print(paste0("Table saved ", file_fst))
 file_qs <- all_file_qs[28]
 file_fst <- file_name_fst[28]
 model <- qread(file_qs)
-origin_table <- read_fst(path = file_fst, as.data.table = TRUE)
+#origin_table <- read_fst(path = file_fst, as.data.table = TRUE)
 # generate fst
 trms <- all.vars(formula(model))[-1] # -1 excludes dependent var
-newdata <- CJ(year = 3:73, age_int = 15:89, 
-              sex = unique(origin_table$sex), 
-              qimd = unique(origin_table$qimd),
-              ethnicity = unique(origin_table$ethnicity), 
-              sha = unique(origin_table$sha)
+newdata <- CJ(year = 3:73, age_int = 5:89, 
+              sex = unique(model$data$sex), 
+              qimd = unique(model$data$qimd),
+              ethnicity = unique(model$data$ethnicity), 
+              sha = unique(model$data$sha)
 ) # create completed dataset
 newdata[, age := scale(age_int, 56.2, 17.0)]
 newdata <- split(newdata, by = "year") # process by year to make small job
@@ -696,6 +743,8 @@ newdata[, age_int := NULL]
 # write .fst file
 write_fst(newdata, file_fst , 100L) # export .fst
 print(paste0("Table saved ", file_fst))
+remove(newdata)
+gc()
 
 ## smok_status 29 ####
 file_qs <- all_file_qs[29]
@@ -704,7 +753,7 @@ model <- qread(file_qs)
 
 # generate fst
 trms <- all.vars(formula(model))[-1] # -1 excludes dependent var
-newdata <- CJ(year = 3:73, age_int = 15:89, 
+newdata <- CJ(year = 3:73, age_int = 5:89, 
               sex = unique(model$data$sex), 
               qimd = unique(model$data$qimd),
               ethnicity = unique(model$data$ethnicity), 
@@ -724,6 +773,8 @@ newdata[, age_int := NULL]
 # write .fst file
 write_fst(newdata, file_fst , 100L) # export .fst
 print(paste0("Table saved ", file_fst))
+remove(newdata)
+gc()
 
 ## statin 30 ####
 file_qs <- all_file_qs[30]
@@ -732,7 +783,7 @@ model <- qread(file_qs)
 
 # generate fst
 trms <- all.vars(formula(model))[-1] # -1 excludes dependent var
-newdata <- CJ(year = 3:73, age_int = 15:89, 
+newdata <- CJ(year = 3:73, age_int = 5:89, 
               sex = unique(model$data$sex), 
               qimd = unique(model$data$qimd),
               ethnicity = unique(model$data$ethnicity), 
@@ -752,6 +803,9 @@ newdata[, age_int := NULL]
 # write .fst file
 write_fst(newdata, file_fst , 100L) # export .fst
 print(paste0("Table saved ", file_fst))
+
+remove(newdata)
+gc()
 ## veg 33 ####
 file_qs <- all_file_qs[33]
 file_fst <- file_name_fst[33]
@@ -759,7 +813,7 @@ model <- qread(file_qs)
 
 # generate fst
 trms <- all.vars(formula(model))[-1] # -1 excludes dependent var
-newdata <- CJ(year = 3:73, age_int = 15:89, 
+newdata <- CJ(year = 3:73, age_int = 5:89, 
               sex = unique(model$data$sex), 
               qimd = unique(model$data$qimd),
               ethnicity = unique(model$data$ethnicity), 
@@ -779,5 +833,7 @@ newdata[, age_int := NULL]
 # write .fst file
 write_fst(newdata, file_fst , 100L) # export .fst
 print(paste0("Table saved ", file_fst))
+remove(newdata)
+gc()
 
 
