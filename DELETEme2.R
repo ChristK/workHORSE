@@ -10,7 +10,7 @@ scenario_nam <- "sc2"
 mc_iter <- 1L
 
 design$get_lags(mc_iter)
-dt <- SynthPop$new(mc_iter, design)
+dt <- SynthPop$new(mc_iter, design) #run until ncc , with problems on 5(frt, veg, smok all, hdl, alcohol)
 dt0 <- SynthPop$new(0, design)
 
 basic_sc_nam <-
