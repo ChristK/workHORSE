@@ -190,7 +190,7 @@ model <- qread(file_qs)
 trms <- all.vars(formula(model))[-1] # -1 excludes dependent var
 newdata <- CJ(age_int = 5:89) #
 newdata[, age := scale(age_int, 52.2, 16.4)]
-newdata[, c(paste0("ckd", 0:4)) := data.table(rowCumsums(predict(model, type = "p", newdata = .SD))), .SDcols = trms]
+newdata[, c(paste0("ckd", 0:4)) := data.table(matrixStats::rowCumsums(predict(model, type = "p", newdata = .SD))), .SDcols = trms]
 
 newdata[, age := age_int]
 newdata[, c("age_int", "ckd4") := NULL]
@@ -806,6 +806,36 @@ print(paste0("Table saved ", file_fst))
 
 remove(newdata)
 gc()
+
+## tchol 32 ####
+file_qs <- all_file_qs[32]
+file_fst <- file_name_fst[32]
+model <- qread(file_qs)
+
+# generate fst
+trms <- all.vars(formula(model))[-1] # -1 excludes dependent var
+newdata <- CJ(year = 3:73, age_int = 5:89, 
+              sex = unique(model$data$sex), 
+              qimd = unique(model$data$qimd),
+              ethnicity = unique(model$data$ethnicity), 
+              sha = unique(model$data$sha)
+) # create completed dataset
+
+newdata[, age := scale(age_int, 52, 16.6)]
+newdata <- split(newdata, by = "year")
+newdata <- # assignment necessary! Copies of data.tables are happening
+  future_lapply(newdata, function(x)
+    x[, c("mu", "sigma", "nu", "tau") := predictAll(model, .SD, data = model$data), .SDcols = trms])
+newdata <- rbindlist(newdata) # bind all years
+#setattr(newdata, "distribution", distr_nam) # ISSUE here: object 'distr_nam' not found
+newdata[, age := age_int]
+newdata[, age_int := NULL]
+# write .fst file
+write_fst(newdata, file_fst , 100L) # export .fst
+print(paste0("Table saved ", file_fst))
+remove(newdata)
+gc()
+
 ## veg 33 ####
 file_qs <- all_file_qs[33]
 file_fst <- file_name_fst[33]
