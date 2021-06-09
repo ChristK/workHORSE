@@ -866,4 +866,107 @@ print(paste0("Table saved ", file_fst))
 remove(newdata)
 gc()
 
+# epi disease ####
+# #disease_after_20 <- read.csv("./disease_epidemiology/disease_epi.csv")
+# disease_after_20 <- fread("./disease_epidemiology/disease_epi.csv", stringsAsFactors = TRUE)
+# subset_disease <- disease_after_20[, -c("sex", "age", "qimd", "disease")]
+# # subset_disease <- disease_after_20[!names(disease_after_20) %in% c("sex", "age", "qimd", "disease")]
+# col_nam <- colnames(subset_disease)
+# disease_before_20 <- CJ(age = 5:19,
+#                     sex = unique(disease_after_20$sex),
+#                     qimd = unique(disease_after_20$qimd),
+#                     disease = unique(disease_after_20$disease))
+# disease_before_20[, col_nam] <- 0L 
+# setcolorder(disease_after_20, c("age", "sex", "qimd", "disease"))
+# disease_epi_l <- rbind(disease_before_20, disease_after_20)
+# disease_epi_l[is.na(disease_epi_l$in_case_fatality_rates), c("in_case_fatality_rates")] <- 0L
+# 
+# write_fst(disease_epi_l, "./disease_epidemiology/disease_epi_l.fst", 100L)
+# # create a table with row numbers for each mc -- QUESTION: do I need?
+# # disease_epi_l[, rn := .I]
+# # tt <- disease_epi_l[, .(from = min(rn), to = max(rn)), keyby = mc]
+# # write_fst(tt, "./disease_epidemiology/disease_epi_indx.fst", 100L)
+# print(paste0("Table saved ", "disease_epi"))
+# remove(newdata)
+# gc()
 
+
+disease_epi_after20 <- read.fst("./disease_epidemiology/disease_epi_l.fst", as.data.table = TRUE)
+disease_epi_20 <- disease_epi_after20[age == 20L]
+disease_epi_before_20 <- data.frame()
+for (i in 5:19) {
+  subset <- disease_epi_20
+  subset[, age := i]
+  disease_epi_before_20 <- rbind(disease_epi_before_20, subset)
+}
+disease_epi <- rbind(disease_epi_before_20, disease_epi_after20)
+summary(disease_epi)
+write_fst(disease_epi, "./lifecourse_models/disease_epi_l.fst", 100L)
+print(paste0("Table saved ", "disease_epi"))
+remove(disease_epi)
+gc()
+
+
+# cst_prvl ####
+cst_prvl_after_20 <- fread("./lifecourse_models/corticosteroids_prvl.csv", stringsAsFactors = TRUE)
+
+cst_prvl_after_20 <- as.data.table(cst_prvl_after_20)
+cst_prvl_20 <- cst_prvl_after_20[age == 20L]
+cst_prvl_before_20 <- data.frame()
+for (i in 5:19) {
+  subset <- cst_prvl_20
+  subset[, age := i]
+  cst_prvl_before_20 <- rbind(cst_prvl_before_20, subset)
+}
+cst_prvl <- rbind(cst_prvl_before_20, cst_prvl_after_20)
+write.csv(cst_prvl, "./lifecourse_models/corticosteroids_prvl.csv", row.names = FALSE)
+print(paste0("Table saved ", "cst_prvl"))
+remove(cst_prvl)
+gc()
+
+# chd duration ####
+chd_duration_after20 <- read.fst("./lifecourse_models/chd_duration_table.fst", as.data.table = TRUE)
+chd_duration_20 <- chd_duration_after20[age == 20L]
+chd_duration_before_20 <- data.frame()
+for (i in 5:19) {
+  subset <- chd_duration_20
+  subset[, age := i]
+  chd_duration_before_20 <- rbind(chd_duration_before_20, subset)
+}
+chd_duration <- rbind(chd_duration_before_20, chd_duration_after20)
+summary(chd_duration)
+write_fst(chd_duration, "./lifecourse_models/chd_duration_table.fst", 100L)
+print(paste0("Table saved ", "chd"))
+remove(chd_duration)
+gc()
+
+# stroke duration ####
+#stroke_duration_model <- qread("./lifecourse_models/stroke_duration_model.qs")
+stroke_duration_after20 <- read.fst("./lifecourse_models/stroke_duration_table.fst", as.data.table = TRUE)
+stroke_duration_20 <- stroke_duration_after20[age == 20L]
+stroke_duration_before_20 <- data.frame()
+for (i in 5:19) {
+  subset <- stroke_duration_20
+  subset[, age := i]
+  stroke_duration_before_20 <- rbind(stroke_duration_before_20, subset)
+}
+stroke_duration <- rbind(stroke_duration_before_20, stroke_duration_after20)
+write_fst(stroke_duration, "./lifecourse_models/stroke_duration_table.fst", 100L)
+print(paste0("Table saved ", "cst_prvl"))
+remove(newdata)
+gc()
+# copd duration ####
+copd_duration_after20 <- read.fst("./lifecourse_models/copd_duration_table.fst", as.data.table = TRUE)
+copd_duration_20 <- copd_duration_after20[age == 20L]
+copd_duration_before_20 <- data.frame()
+for (i in 5:19) {
+  subset <- copd_duration_20
+  subset[, age := i]
+  copd_duration_before_20 <- rbind(copd_duration_before_20, subset)
+}
+copd_duration <- rbind(copd_duration_before_20, copd_duration_after20)
+summary(copd_duration)
+write_fst(copd_duration, "./lifecourse_models/copd_duration_table.fst", 100L)
+print(paste0("Table saved ", "copd"))
+remove(copd_duration)
+gc()
