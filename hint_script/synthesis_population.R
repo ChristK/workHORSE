@@ -1487,7 +1487,7 @@ SynthPop <-
               "./lifecourse_models/corticosteroids_prvl.csv",
               stringsAsFactors = TRUE,
               colClasses = c("factor", "integer",
-                             "numeric"),
+                              "numeric"),
               key = c("sex", "age")
             )
             tt <- dqrunif(1L)
@@ -1689,15 +1689,12 @@ SynthPop <-
           setkey(dt, pid, year)
           dt[, pid_mrk := mk_new_simulant_markers(pid)]
           
-          browser()
-          
           finalise_synthpop(
             mc_aggr,
             dt,
-            design_$sim_prm,
-            design_$lags_mc
+            design_
           )
-          
+         
           
           generate_rns(
             mc_, # NOT mc_aggr
