@@ -1242,9 +1242,9 @@ SynthPop <-
                  smok_cig > 19, smoke_cat := 4L]
 
             dt[, c(
-              "rankstat_smok",
-              "rankstat_smok_cig_curr",
-              "rankstat_smok_cig_ex",
+              # "rankstat_smok",
+              # "rankstat_smok_cig_curr",
+              # "rankstat_smok_cig_ex",
               "prb_smok_incid",
               "prb_smok_cess",
               "smok_status_ref"
@@ -1644,9 +1644,10 @@ SynthPop <-
                      "LAD11NM",
                      "tds_quintile",
                      "imd",
-                     "sha",
-                     "CCG17CDH",
-                     "pid_mrk")
+                     #"sha",
+                     "CCG17CDH"
+                     #"pid_mrk"
+                     )
             dt[, (nam) := NULL]
             
             message("Writing primer to disk")
