@@ -57,7 +57,7 @@ tabPanel(
         "Period to simulate",
         2013,
         2071,
-        c(2020, 2071),
+        c(2021, 2071), # modified to 2021
         1,
         sep = "",
         ticks = FALSE
