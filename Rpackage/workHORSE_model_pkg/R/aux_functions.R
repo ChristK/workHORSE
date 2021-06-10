@@ -2213,10 +2213,51 @@ time_mark <- function(x, file_nam = output_dir("times.txt")) {
 }
 
 #' @export
+export_smok <- function(mc_,
+                        dt,
+                        write_to_disk = TRUE,
+                        filenam = "val_smk_output.csv",
+                        reweighted_to_hse = FALSE) {
+  to_agegrp(dt, 10L, 89L, "age", "agegrp10", to_factor = TRUE)
+  dt[, smok_never_smok_xps := fifelse(smok_status == "1", 1L, 0L)] # smok function
+  dt[, smok_active_smok_xps := fifelse(smok_status == "4", 1L, 0L)] # smok function
+  dt[, smok_intensity_smok_xps := smok_cig]
+  
+  xps <- grep("_smok_xps$", names(dt), value = TRUE)
+  
+  out_smok <- groupingsets(
+    dt,
+    j = lapply(.SD, mean),
+    by = c("year", "sex", "agegrp10", "qimd", "scenario"),
+    .SDcols = xps,
+    sets = list(
+      c("year", "sex", "agegrp10", "qimd", "scenario"),
+      c("year", "sex", "scenario"),
+      c("year", "agegrp10", "scenario"),
+      c("year", "qimd", "scenario"),
+      c("year", "scenario")
+    )
+  )[, `:=` (year = year + 2000L, mc = mc_)]
+  for (j in seq_len(ncol(out_smok)))
+    set(out_smok, which(is.na(out_smok[[j]])), j, "All")
+  dt[, c(
+    "agegrp10",
+    "smok_never_smok_xps",
+    "smok_active_smok_xps",
+    "smok_intensity_smok_xps"
+  ) := NULL]
+  
+  setkey(out_smok, year)
+  if (write_to_disk)
+    fwrite_safe(out_smok, output_dir(filenam))
+  invisible(out_smok)
+}
+
+#' @export
 export_xps <- function(mc_,
                        dt,
                        write_to_disk = TRUE,
-                       filenam = "val_xps_output.csv",
+                       filenam = "val_xps_output.csv", #smoking 
                        reweighted_to_hse = FALSE) {
   to_agegrp(dt, 20L, 89L, "age", "agegrp20", to_factor = TRUE)
   setnames(dt, "t2dm_prvl_curr_xps", "t2dm_prvl_original")
@@ -2225,22 +2266,13 @@ export_xps <- function(mc_,
   } else {
     dt[, t2dm_prvl_curr_xps := fifelse(t2dm_prvl_original == 0L, 0L, 1L)]
   }
-  dt[, smok_never_curr_xps := fifelse(smok_status_curr_xps == "1", 1L, 0L)]
-  dt[, smok_active_curr_xps := fifelse(smok_status_curr_xps == "4", 1L, 0L)]
-  if (reweighted_to_hse) {
-    wt <- read_fst("./synthpop/hse_sociodemographics.fst",
-                   as.data.table = TRUE)
-    absorb_dt(dt, wt)
-  } else {
-    dt[, hse_wt := 1]
-  }
-
+  
   xps <- grep("_curr_xps$", names(dt), value = TRUE)
   xps <- xps[-which(xps == "smok_status_curr_xps")]
   out_xps <- groupingsets(
     dt,
-    j = lapply(.SD, weighted.mean, hse_wt),
-    by = c("year", "sex", "agegrp20", "qimd"),
+    j = lapply(.SD, weighted.mean, hse_wt), # j = lapply(.SD, mean)
+    by = c("year", "sex", "agegrp20", "qimd"), #scenario (year, scenrio)
     .SDcols = xps,
     sets = list(
       c("year", "sex", "agegrp20", "qimd"),
@@ -2253,10 +2285,7 @@ export_xps <- function(mc_,
     set(out_xps, which(is.na(out_xps[[j]])), j, "All")
   dt[, c(
     "agegrp20",
-    "smok_never_curr_xps",
-    "smok_active_curr_xps",
     "t2dm_prvl_curr_xps",
-    "hse_wt"
   ) := NULL]
   setnames(dt, "t2dm_prvl_original", "t2dm_prvl_curr_xps")
 
