@@ -1,3 +1,9 @@
+
+## Adapted from WORKHORSE by Dr Chris Kypridemos
+## Vincy Huang
+## 25 May 2021
+## File path <- Rpackage > R > SynthPop_class.R
+
 ## workHORSE is an implementation of the IMPACTncd framework, developed by Chris
 ## Kypridemos with contributions from Peter Crowther (Melandra Ltd), Maria
 ## Guzman-Castillo, Amandine Robert, and Piotr Bandosz. This work has been
@@ -18,9 +24,6 @@
 ## along with this program; if not, see <http://www.gnu.org/licenses/> or write
 ## to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 ## Boston, MA 02110-1301 USA.
-
-
-
 # From
 # https://stackoverflow.com/questions/33424233/how-do-i-tell-an-r6-class-what-to-do-with-square-brackets
 # Allows data.table syntax to the R6class object directly. Assumes it has a
@@ -42,22 +45,22 @@
 SynthPop <-
   R6::R6Class(
     classname = "SynthPop",
-
+    
     # public ------------------------------------------------------------------
     public = list(
       #' @field mc The Monte Carlo iteration of the synthetic population. Every
       #'   integer generates a unique synthetic population.
       mc = NA,
-
+      
       #' @field metadata Metadata of the synthpop.
       metadata = NA,
-
+      
       #' @field pop The data.table that contains the life-course of simulants.
       #'   If the file exists, it is loaded from disk. If it doesn't, it is
       #'   first generated, then saved to disk, and then loaded from disk.
       pop = NA,
-
-
+      
+      
       #' @description Create a new SynthPop object.
       #' If a synthpop file in \code{\link[fst]{fst-package}} format already
       #' exists, then the synthpop is loaded from there. Otherwise it is
@@ -91,7 +94,7 @@ SynthPop <-
       initialize = function(mc_, design_) {
         stopifnot(length(mc_) == 1L, is.numeric(mc_), ceiling(mc_) >= 0L)
         stopifnot("Design" %in% class(design_))
-
+        
         mc_ <- ceiling(mc_)
         # Create synthpop_dir if it doesn't exists
         if (!dir.exists(design_$sim_prm$synthpop_dir)) {
@@ -99,21 +102,21 @@ SynthPop <-
           message(paste0("Directory ", design_$sim_prm$synthpop_dir,
                          " was created"))
         }
-
+        
         # get unique lsoas
-        # lsoas <- private$get_unique_LSOAs(design_)
-
-        private$checksum <- private$gen_checksum(design_)
-
+        lsoas <- private$get_unique_LSOAs(design_)
+        
+        private$checksum <- private$gen_checksum(design_, lsoas)
+        
         self$mc <- mc_
         private$design <- design_
         private$synthpop_dir <- design_$sim_prm$synthpop_dir
-
+        
         if (mc_ > 0) {
           private$filename <- private$gen_synthpop_filename(mc_,
                                                             private$checksum,
                                                             design_)
-
+          
           # logic for the synthpop load (excluding primers)
           files_exist <- sapply(private$filename[-4L], file.exists)
           if (all(!files_exist)) {
@@ -121,40 +124,28 @@ SynthPop <-
             # parallelism)
             private$gen_synthpop(mc_,
                                  private$filename,
-                                 design_)
-
+                                 design_,
+                                 lsoas)
+            
           } else if (file.exists(private$filename$metafile) &&
                      !all(files_exist)) {
             # Metafile exists but not all three files. It means that most likely
             # a generate_synthpop() is still running. So the function waits
             # until the file is created before it proceeds to load it. Note that
             # if this is not the case then the loop is infinite!!!
-            while (!all(sapply(private$filename, file.exists))) {
+            while (!all(sapply(private$filename, file.exists)))
               Sys.sleep(5)
-              if (design_$sim_prm$logs) {
-                message("Metafile exists without a synthpop file. Check for synthpop after 5 sec.")
-              }
-            }
+            
             # Ensure the file write is complete (size stable)
-            if (design_$sim_prm$logs) {
-              message("Synthpop file found.")
-            }
-
             sz1 <- file.size(private$filename$synthpop)
             Sys.sleep(3)
             sz2 <- file.size(private$filename$synthpop)
             while (sz1 != sz2) {
-              if (design_$sim_prm$logs) {
-                message("Synthpop file size increases.")
-              }
               sz1 <- file.size(private$filename$synthpop)
               Sys.sleep(3)
               sz2 <- file.size(private$filename$synthpop)
             }
-            if (design_$sim_prm$logs) {
-              message("Synthpop file stabilised.")
-            }
-
+            
           } else if (!file.exists(private$filename$metafile) &&
                      !all(files_exist)) {
             # Metafile doesn't exist but some other files exist. In this case
@@ -162,111 +153,82 @@ SynthPop <-
             self$delete_incomplete_synthpop()
             private$gen_synthpop(mc_,
                                  private$filename,
-                                 design_)
+                                 design_,
+                                 lsoas)
           }
           # No need to provision for case when all file present. The following
           # lines handle this case anyway
-
+          
           self$pop <-
             private$get_synthpop(mc_, private$filename, design_)
           self$metadata <- yaml::read_yaml(private$filename$metafile)
-
+          
           if (design_$sim_prm$logs)
             self$print()
         }
         invisible(self)
       },
-
+      
       #' @description
       #' Delete (all) synthpop files in the synthpop directory.
       #' @param mc_ If `mc_ = NULL`, delete all files in the synthpop directory.
       #'   If `mc_` is an integer vector delete the specific synthpop files
       #'   including the metadata and index files but spares primers.
-      #' @param spare_primer If `TRUE` primer files are not deleted.
-      #' @param check_checksum If  `TRUE` only delete files with the same
-      #'   checksum as the synthpop. Only relevant when `mc_ = NULL`.
       #' @return The invisible `SynthPop` object.
-      delete_synthpop = function(mc_, spare_primer = TRUE, check_checksum = TRUE) {
+      delete_synthpop = function(mc_) {
         if (is.null(mc_)) {
-          if (check_checksum) {
-            fl <- list.files(
-              private$synthpop_dir,
-              pattern = paste0("^synthpop_", private$checksum),
-              full.names = TRUE,
-              recursive = TRUE
-            )
-          } else {
-            fl <- list.files(
-              private$synthpop_dir,
-              full.names = TRUE,
-              recursive = TRUE
-            )
-          }
-
-          if (spare_primer)
-            fl <- grep("_primer.fst$", fl, invert = TRUE, value = TRUE)
-
-          file.remove(fl)
+          file.remove(list.files(
+            private$synthpop_dir,
+            full.names = TRUE,
+            recursive = TRUE
+          ))
         } else if (length(mc_) == 1L &&
                    is.numeric(mc_) && ceiling(mc_) > 0L) {
-          fl <- unlist(
+          file.remove(unlist(
             private$gen_synthpop_filename(mc_,
-              private$checksum,
-              private$design))
-          if (spare_primer) fl <- fl[1:3]
-          file.remove(fl)
-
+                                          private$checksum,
+                                          private$design)[1:3]
+          ))
+          
         } else if (length(mc_) > 1L &&
                    all(is.numeric(mc_)) && all(ceiling(mc_) > 0L)) {
-          fl <-
+          filnam <-
             lapply(mc_,
                    private$gen_synthpop_filename,
                    private$synthpop_dir,
                    private$checksum,
                    private$design)
-          fl <- unlist(fl)
-          if (spare_primer)
-            fl <- grep("_primer.fst$", fl, invert = TRUE, value = TRUE)
-          file.remove(fl)
-
+          filnam <- unlist(filnam)
+          filnam <- grep("_primer.fst$", filnam, invert = TRUE, value = TRUE)
+          file.remove(filnam)
+          
         } else
           message("mc_ need to be NULL or numeric. Nothing was deleted.")
-
+        
         return(invisible(self))
       },
-
+      
       #' @description
       #' Check that every synthpop file has a metafile and an index file. Delete
       #' any orphan files.
-      #' @param check_checksum If  `TRUE` only delete incomplete group files
-      #'   with the same checksum as the synthpop.
       #' @return The invisible `SynthPop` object.
       delete_incomplete_synthpop =
-        function(check_checksum = TRUE) {
-          if (check_checksum) {
-            f1 <- paste0("^synthpop_", private$checksum , ".*\\.fst$")
-            f2 <- paste0("^synthpop_", private$checksum , ".*_meta\\.yaml$")
-          } else {
-            f1 <- "^synthpop_.*\\.fst$"
-            f2 <- "^synthpop_.*_meta\\.yaml$"
-          }
-
-          files <-
-            list.files(private$synthpop_dir, f1)
+        function() {
+          files <- list.files(private$synthpop_dir, "^synthpop_.*\\.fst$")
           # remove indx and primer files
           files <-
             grep("_indx.fst$|_primer.fst", files, invert = TRUE, value = TRUE)
           files <- sub("\\.fst$", "", files)
           metafiles <-
-            list.files(private$synthpop_dir, f2)
+            list.files(private$synthpop_dir, "^synthpop_.*_meta\\.yaml$")
           metafiles <- sub("_meta\\.yaml$", "", metafiles)
-
+          
           to_remove <- setdiff(metafiles, files)
           if (length(to_remove) > 0) {
             to_remove <- paste0(to_remove, "_meta.yaml")
             file.remove(file.path(private$synthpop_dir, to_remove))
           }
-
+          
           to_remove <- setdiff(files, metafiles)
           if (length(to_remove) > 0) {
             to_remove2 <- paste0(to_remove, ".fst")
@@ -274,189 +236,41 @@ SynthPop <-
             to_remove3 <- paste0(to_remove, "_indx.fst")
             file.remove(file.path(private$synthpop_dir, to_remove3))
           }
-
+          
           return(invisible(self))
         },
-
-      #' @description
-      #' Check the integrity of (and optionally delete) .fst files by checking
-      #' their metadata are readable.
-      #' @param remove_malformed If `TRUE`, delete all malformed .fst files and
-      #'   their associated files.
-      #' @param check_checksum If  `TRUE` only check files with the same
-      #'   checksum as the synthpop.
-      #' @return The invisible `SynthPop` object.
-      check_integridy =
-        function(remove_malformed = FALSE,
-          check_checksum = TRUE) {
-          if (check_checksum) {
-            pat <- paste0("^synthpop_", private$checksum , ".*\\.fst$")
-          } else {
-            pat <- "^synthpop_.*\\.fst$"
-          }
-
-          files <-
-            list.files(private$synthpop_dir,
-              pat,
-              full.names = TRUE)
-          if (length(files) > 0L) {
-            malformed <- sapply(files, function(x) {
-              out <- try(metadata_fst(x), silent = TRUE)
-              out <- inherits(out, "try-error")
-              out
-            }, USE.NAMES = FALSE)
-
-
-            des <- sum(malformed)
-
-            if (remove_malformed) {
-              if (des == 0L) {
-                message(paste0(des, " malformed fst file(s)"))
-              } else {
-                # des != 0L
-                message(paste0(des, " malformed fst file(s)..."))
-                to_remove <- files[malformed]
-
-                # remove primers first
-                tr <- grep("_primer.fst$", to_remove, value = TRUE)
-                file.remove(tr[file.exists(tr)])
-                to_remove <-
-                  grep("_primer.fst$",
-                    to_remove,
-                    value = TRUE,
-                    invert = TRUE)
-
-                # then remove other files
-                to_remove <- gsub(".fst$", "", to_remove)
-                to_remove <- gsub("_indx$", "", to_remove)
-
-                # _meta.yaml
-                tr <- paste0(to_remove, "_meta.yaml")
-                file.remove(tr[file.exists(tr)])
-                # _indx.fst
-                tr <- paste0(to_remove, "_indx.fst")
-                file.remove(tr[file.exists(tr)])
-                # .fst
-                tr <-  paste0(to_remove, ".fst")
-                file.remove(tr[file.exists(tr)])
-
-                message("...now deleted!")
-              }
-
-            } else {
-              # remove_malformed = FALSE
-              message(paste0(des, " malformed fst file(s)"))
-            }
-          } else {
-            # if length(files) == 0
-            message("no .fst files found.")
-          }
-          return(invisible(self))
-        },
-
-
-
-
+      
       #' @description
       #' Count the synthpop files in a directory. It includes files without
       #' metafiles and index files.
       #' @return The invisible `SynthPop` object.
       count_synthpop =
         function() {
-          out <- list()
-          # folder size
-          files <-
-            list.files(private$synthpop_dir, full.names = TRUE)
-          if (length(files) > 0L) {
-            vect_size <- sapply(files, file.size)
-            out$`synthpop folder size (Gb)` <-
-              signif(sum(vect_size) / (1024 ^ 3), 4) # Gb
-
-            # synthpops with same checksum
-            files <- list.files(private$synthpop_dir,
-              paste0("^synthpop_", private$checksum , ".*\\.fst$"))
-            files <- # remove indx files
-              grep("_indx.fst$", files, invert = TRUE, value = TRUE)
-
-            out$`synthpop files with same checksum (excluding primers)` <-
-              sum(!grepl("_primer.fst$", files))
-
-            out$`synthpop primers with same checksum` <-
-              sum(grepl("_primer.fst$", files))
-
-            out$`synthpop indx files with same checksum` <-
-              length(list.files(
-                private$synthpop_dir,
-                paste0("^synthpop_", private$checksum , ".*_indx\\.fst$")
-              ))
-
-            out$`synthpop meta files with same checksum` <-
-              length(list.files(
-                private$synthpop_dir,
-                paste0("^synthpop_", private$checksum , ".*_meta\\.yaml$")
-              ))
-
-            # synthpops with any checksum
-            files <-
-              list.files(private$synthpop_dir, "^synthpop_.*\\.fst$")
-            files <- # remove indx files
-              grep("_indx.fst$", files, invert = TRUE, value = TRUE)
-
-            out$`synthpop files with any checksum (excluding primers)` <-
-              sum(!grepl("_primer.fst$", files))
-
-            out$`synthpop primers with any checksum` <-
-              sum(grepl("_primer.fst$", files))
-
-            out$`synthpop indx files with any checksum` <-
-              length(list.files(private$synthpop_dir, "^synthpop_.*_indx\\.fst$"))
-
-            out$`synthpop meta files with any checksum` <-
-              length(list.files(private$synthpop_dir, "^synthpop_.*_meta\\.yaml$"))
-
-
-            cat(paste0(names(out), ": ", out, "\n"))
-          } else {
-            # if length(files) == 0L
-            cat("no files found.")
-          }
+          files <- list.files(private$synthpop_dir, "^synthpop_.*\\.fst$")
+          files <- # remove indx files
+            grep("_indx.fst$", files, invert = TRUE, value = TRUE)
+          print(length(files))
           return(invisible(self))
         },
-
-      #' @description
-      #' Get the synthpop file paths.
-      #' @param x One of "all", "synthpop", "metafile", or "indxfile". Can be
-      #'   abbreviated.
-      #' @return The invisible `SynthPop` object.
-      get_checksum = function() {
-        out <- private$checksum
-        names(out) <- "Checksum"
-        cat(paste0(names(out), ": ", out))
-        invisible(self)
-      },
-
+      
       #' @description
       #' Get the synthpop file paths.
       #' @param x One of "all", "synthpop", "metafile", or "indxfile". Can be
       #'   abbreviated.
       #' @return The invisible `SynthPop` object.
       get_filename = function(x = c("all", "synthpop", "metafile", "indxfile", "primer")) {
-        if (self$mc == 0L) {
-          print("Not relevant because mc = 0L")
-        } else {
-          x <- match.arg(x)
-          switch(
-            x,
-            all      = print(private$filename),
-            synthpop = print(private$filename[["synthpop"]]),
-            metafile = print(private$filename[["metafile"]]),
-            indxfile = print(private$filename[["indxfile"]]),
-            primer   = print(private$filename[["primer"]])
-          )
-        }
+        x <- match.arg(x)
+        switch(
+          x,
+          all      = print(private$filename),
+          synthpop = print(private$filename[["synthpop"]]),
+          metafile = print(private$filename[["metafile"]]),
+          indxfile = print(private$filename[["indxfile"]]),
+          primer   = print(private$filename[["primer"]])
+        )
         invisible(self)
       },
-
+      
       #' @description
       #' Get the synthpop design.
       #' @return The invisible `SynthPop` object.
@@ -465,7 +279,7 @@ SynthPop <-
         # invisible(self)
         private$design
       },
-
+      
       #' @description
       #' Get the synthpop dir.
       #' @return The invisible `SynthPop` object.
@@ -473,7 +287,7 @@ SynthPop <-
         print(private$synthpop_dir)
         invisible(self)
       },
-
+      
       #' @description
       #' Generate synthpop files in parallel, using foreach, and writes them to
       #' disk. It skips files that are already on disk.
@@ -487,168 +301,99 @@ SynthPop <-
         stopifnot(all(is.numeric(mc_)), all(ceiling(mc_) > 0L))
         on.exit(self$delete_incomplete_synthpop(), add = TRUE)
         mc_ <- ceiling(mc_)
-
+        
         # get unique lsoas
         lsoas <- private$get_unique_LSOAs(private$design)
-
-        if (length(mc_) == 1L) {
-          foreach(
-            mc_iter = mc_,
-            .inorder = FALSE,
-            .verbose = FALSE,
-            .packages = c(
-              "R6",
-              "gamlss.dist",
-              # For distr in prevalence.R
-              "dqrng",
-              "qs",
-              "fst",
-              "CKutils",
-              "workHORSEmisc",
-              "data.table"
-            ),
-            .export = NULL,
-            .noexport = NULL # c("time_mark")
-          ) %do% {
-            data.table::setDTthreads(private$design$sim_prm$n_cpus)
-            fst::threads_fst(private$design$sim_prm$n_cpus)
-            filename <-
-              private$gen_synthpop_filename(mc_iter,
-                private$checksum,
-                private$design)
-
-            # logic for the synthpop load
-            files_exist <- sapply(filename[-4L], file.exists)
-            if (all(!files_exist)) {
-              # No files exist (ignores primer). Create the synthpop and store
-              # the file on disk
-              private$gen_synthpop(mc_iter,
-                filename,
-                private$design)
-
-            } else if (file.exists(filename$metafile) &&
-                !all(files_exist)) {
-              # Metafile exists but not all three files (ignores primer). It means
-              # that most likely a generate_synthpop() is still running. So the
-              # function waits until the file is created before it proceeds to
-              # load it. Note that if this is not the case then the loop is
-              # infinite!!!
-              while (!all(sapply(filename, file.exists)))
-                Sys.sleep(5)
-
-              # Ensure the file write is complete (size stable)
+        
+        foreach(
+          mc_iter = mc_,
+          .inorder = FALSE,
+          .verbose = FALSE,
+          .packages = c(
+            "R6",
+            "gamlss.dist", # For distr in prevalence.R
+            "dqrng",
+            "qs",
+            "fst",
+            "CKutils",
+            "workHORSEmisc",
+            "data.table"
+          ),
+          .export = NULL,
+          .noexport = NULL # c("time_mark")
+        ) %dopar% {
+          data.table::setDTthreads(private$design$sim_prm$n_cpus)
+          fst::threads_fst(private$design$sim_prm$n_cpus)
+          filename <-
+            private$gen_synthpop_filename(mc_iter,
+                                          private$checksum,
+                                          private$design)
+          
+          # logic for the synthpop load
+          files_exist <- sapply(filename[-4L], file.exists)
+          if (all(!files_exist)) {
+            # No files exist (ignores primer). Create the synthpop and store
+            # the file on disk
+            private$gen_synthpop(mc_iter,
+                                 filename,
+                                 private$design,
+                                 lsoas)
+            
+          } else if (file.exists(filename$metafile) &&
+                     !all(files_exist)) {
+            # Metafile exists but not all three files (ignores primer). It means
+            # that most likely a generate_synthpop() is still running. So the
+            # function waits until the file is created before it proceeds to
+            # load it. Note that if this is not the case then the loop is
+            # infinite!!!
+            while (!all(sapply(filename, file.exists)))
+              Sys.sleep(5)
+            
+            # Ensure the file write is complete (size stable)
+            sz1 <- file.size(filename$synthpop)
+            Sys.sleep(3)
+            sz2 <- file.size(filename$synthpop)
+            while (sz1 != sz2) {
               sz1 <- file.size(filename$synthpop)
               Sys.sleep(3)
               sz2 <- file.size(filename$synthpop)
-              while (sz1 != sz2) {
-                sz1 <- file.size(filename$synthpop)
-                Sys.sleep(3)
-                sz2 <- file.size(filename$synthpop)
-              }
-
-            } else if (!file.exists(filename$metafile) &&
-                !all(files_exist)) {
-              # Metafile doesn't exist but some other files exist (ignores
-              # primer). In this case delete everything and start from scratch
-              self$delete_incomplete_synthpop()
-              private$gen_synthpop(mc_iter,
-                filename,
-                private$design)
             }
-            # No need to provision for case when all files present.
-
-            return(NULL)
+            
+          } else if (!file.exists(filename$metafile) &&
+                     !all(files_exist)) {
+            # Metafile doesn't exist but some other files exist (ignores
+            # primer). In this case delete everything and start from scratch
+            self$delete_incomplete_synthpop()
+            private$gen_synthpop(mc_iter,
+                                 filename,
+                                 private$design,
+                                 lsoas)
           }
-        } else {
-          foreach(
-            mc_iter = mc_,
-            .inorder = FALSE,
-            .verbose = FALSE,
-            .packages = c(
-              "R6",
-              "gamlss.dist",
-              # For distr in prevalence.R
-              "dqrng",
-              "qs",
-              "fst",
-              "CKutils",
-              "workHORSEmisc",
-              "data.table"
-            ),
-            .export = NULL,
-            .noexport = NULL # c("time_mark")
-          ) %dopar% {
-            data.table::setDTthreads(private$design$sim_prm$n_cpus)
-            fst::threads_fst(private$design$sim_prm$n_cpus)
-            filename <-
-              private$gen_synthpop_filename(mc_iter,
-                private$checksum,
-                private$design)
-
-            # logic for the synthpop load
-            files_exist <- sapply(filename[-4L], file.exists)
-            if (all(!files_exist)) {
-              # No files exist (ignores primer). Create the synthpop and store
-              # the file on disk
-              private$gen_synthpop(mc_iter,
-                filename,
-                private$design)
-
-            } else if (file.exists(filename$metafile) &&
-                !all(files_exist)) {
-              # Metafile exists but not all three files (ignores primer). It means
-              # that most likely a generate_synthpop() is still running. So the
-              # function waits until the file is created before it proceeds to
-              # load it. Note that if this is not the case then the loop is
-              # infinite!!!
-              while (!all(sapply(filename, file.exists)))
-                Sys.sleep(5)
-
-              # Ensure the file write is complete (size stable)
-              sz1 <- file.size(filename$synthpop)
-              Sys.sleep(3)
-              sz2 <- file.size(filename$synthpop)
-              while (sz1 != sz2) {
-                sz1 <- file.size(filename$synthpop)
-                Sys.sleep(3)
-                sz2 <- file.size(filename$synthpop)
-              }
-
-            } else if (!file.exists(filename$metafile) &&
-                !all(files_exist)) {
-              # Metafile doesn't exist but some other files exist (ignores
-              # primer). In this case delete everything and start from scratch
-              self$delete_incomplete_synthpop()
-              private$gen_synthpop(mc_iter,
-                filename,
-                private$design)
-            }
-            # No need to provision for case when all files present.
-
-            return(NULL)
-          }
+          # No need to provision for case when all files present.
+          
+          return(NULL)
         }
+        
         invisible(self)
       },
-
+      
       #' @description
       #' Prints the synthpop object metadata.
       #' @return The invisible `SynthPop` object.
       print = function() {
         print(c(
-          "path" = ifelse(self$mc == 0L,
+          "path" = ifelse(is.na(private$filename),
                           "Not relevant because mc = 0L",
                           private$filename$synthpop),
-          "checksum" = private$checksum,
           "mc" = self$mc,
           self$metadata
         ))
         invisible(self)
       }
     ),
-
-
-
+    
+    
+    
     # private -----------------------------------------------------------------
     private = list(
       filename = NA,
@@ -656,7 +401,7 @@ SynthPop <-
       # The design object with the simulation parameters.
       design = NA,
       synthpop_dir = NA,
-
+      
       # Special deep copy for data.table. Use POP$clone(deep = TRUE) to
       # dispatch. Otherwise a reference is created
       deep_clone = function(name, value) {
@@ -670,14 +415,14 @@ SynthPop <-
           value
         }
       },
-
-
+      
+      
       # get all unique LSOAs included in locality vector
       get_unique_LSOAs = function(design_) {
         indx_hlp <-
           read_fst("./synthpop/lsoa_to_locality_indx.fst",
                    as.data.table = TRUE)
-
+        
         if ("England" %in% design_$sim_prm$locality) {
           lsoas <- indx_hlp[, unique(LSOA11CD)] # national
         } else {
@@ -687,7 +432,7 @@ SynthPop <-
         }
         return(sort(lsoas))
       },
-
+      
       # get a smaller design list only with characteristics that are important
       # for synthpop creation and define the uniqueness of the object. I.e. if
       # these parameters are different the synthpop has to have different
@@ -707,22 +452,21 @@ SynthPop <-
           "simsmok_calibration"
         )]
       },
-
+      
       # gen synthpop unique checksum for the given set of inputs
       gen_checksum =
-        function(design_) {
+        function(design_,
+                 lsoas_) {
           # get a md5 checksum based on function arguments
           # First get function call arguments
           fcall <- private$get_unique_characteristics(design_)
-
-          lsoas_ <- private$get_unique_LSOAs(design_)
-
+          
           locality_years_age_id <-
             digest::digest(paste(lsoas_, fcall, sep = ",", collapse = ","),
                            serialize = FALSE)
           return(locality_years_age_id)
         },
-
+      
       # gen synthpop filename for the given set of inputs
       gen_synthpop_filename =
         function(mc_,
@@ -734,7 +478,7 @@ SynthPop <-
             list(
               "synthpop" = normalizePath(
                 paste0(design_$sim_prm$synthpop_dir,
-                       "/synthpop_",
+                       "/IMPACThint_",
                        checksum_,
                        "_",
                        mc_,
@@ -744,7 +488,7 @@ SynthPop <-
               "metafile" = normalizePath(
                 paste0(
                   design_$sim_prm$synthpop_dir,
-                  "/synthpop_",
+                  "/IMPACThint_",
                   checksum_,
                   "_",
                   mc_,
@@ -754,7 +498,7 @@ SynthPop <-
               ),
               "indxfile" = normalizePath(
                 paste0(design_$sim_prm$synthpop_dir,
-                       "/synthpop_",
+                       "/IMPACThint_",
                        checksum_,
                        "_",
                        mc_,
@@ -763,7 +507,7 @@ SynthPop <-
               ),
               "primer" = normalizePath(
                 paste0(design_$sim_prm$synthpop_dir,
-                       "/synthpop_",
+                       "/IMPACThint_",
                        checksum_,
                        "_",
                        mc_primer,
@@ -773,12 +517,12 @@ SynthPop <-
             )
           )
         },
-
+      
       # generate synthpop demographics
       gen_synthpop_demog =
-        function(design_) {
+        function(design_, lsoas_) {
           # locality <- c("East Midlands", "Adur", "Allerdale")
-          lsoas_ <- private$get_unique_LSOAs(design_)
+          
           # load dt
           dt <-
             read_fst("./synthpop/lsoa_mid_year_population_estimates.fst",
@@ -788,7 +532,7 @@ SynthPop <-
           dt[, c(paste0(0:(design_$sim_prm$ageL - 1L)), c(paste0((
             design_$sim_prm$ageH + 1L
           ):90))) := NULL]
-
+          
           dt <-
             melt(
               dt,
@@ -800,7 +544,7 @@ SynthPop <-
           dt[, age := as.integer(age)]
           dt[, year := as.integer(year)]
           dt[, population_size := population_size / sum(population_size)]
-
+          
           # load ethnicity proportions by lsoa
           rows <-
             read_fst("./synthpop/ethn2011_pct_indx.fst", as.data.table = TRUE)
@@ -811,7 +555,7 @@ SynthPop <-
             to = rows[2],
             as.data.table = TRUE
           )[LSOA11CD %in% lsoas_]
-
+          
           absorb_dt(dt, ethn)
           .ethn_nam <- c(
             "white",
@@ -824,7 +568,7 @@ SynthPop <-
             "chinese",
             "other"
           )
-
+          
           for (j in .ethn_nam)
             set(dt, NULL, j,
                 dt[, get(j) * population_size])
@@ -836,15 +580,15 @@ SynthPop <-
               variable.name = "ethnicity",
               variable.factor = TRUE
             )
-
+          
           # I do not explicitly set.seed because I do so in the gen_synthpop()
           dt <- dt[sample(.N, design_$sim_prm$n, TRUE, value)]
           dt[, value := NULL]
-
+          
           indx_hlp <-
             read_fst("./synthpop/lsoa_to_locality_indx.fst",
                      as.data.table = TRUE)
-
+          
           dt[indx_hlp, on = "LSOA11CD", `:=` (
             tds = i.tds,
             tds_quintile = i.tds_quintile,
@@ -855,7 +599,7 @@ SynthPop <-
           )]
           return(invisible(dt))
         },
-
+      
       del_incomplete = function(filename_) {
         if (file.exists(filename_$metafile) &&
             (!file.exists(filename_$synthpop) ||
@@ -867,21 +611,22 @@ SynthPop <-
           # file.remove(filename_$metafile)
         }
       },
-
+      
       gen_synthpop = # returns NULL. Writes synthpop on disk
         function(mc_,
                  filename_,
-                 design_) {
+                 design_,
+                 lsoas_) {
           # increase design_$sim_prm$jumpiness for more erratic jumps in
           # trajectories
-
+          
           # In Shiny app this function runs as a future. It is not
           # straightforward to check whether the future has been resolved or
           # not. To circumvent the problem I will save the metafile here (almost
           # function beginning) and the synthpop file at the end. So if both
           # files exist the function has finished. If only metafile exists the
           # function probably still runs.
-
+          
           # Save synthpop metadata
           if (!file.exists(filename_$metafile)) {
             yaml::write_yaml(private$get_unique_characteristics(design_),
@@ -889,30 +634,29 @@ SynthPop <-
           }
           # NOTE In shiny app if 2 users click the  button at the same time, 2
           # functions will run almost concurrently with potential race condition
-
+          
           # To avoid edge cases when the function stopped prematurely and a
           # metafile was created while the file was not. On.exit ensures that
           # either both files exist or none.
-
+          
           on.exit(private$del_incomplete(filename_), add = TRUE)
-
+          
           dqRNGkind("pcg64")
           SEED <-
             2121870L # sample(1e7, 1) # Hard-coded for reproducibility
           set.seed(SEED + mc_)
           dqset.seed(SEED, mc_)
-
-          lsoas_ <- private$get_unique_LSOAs(design_)
-
+          
+          
           # Generate design%sim_prm$n_primers primer synthpops with
           # sociodemographic and exposures information. The primer synthpops
           # then are recycled to generate the complete synthpop that depends on
           # the sampling from the RR distributions and disease epidemiology.
-
+          
           if (mc_ <= design_$sim_prm$n_primers &&
               !file.exists(filename_$primer)) {
-            dt <- private$gen_synthpop_demog(design_)
-
+            dt <- private$gen_synthpop_demog(design_, lsoas_)
+            
             # Calculate local qimd (lqimd) ----
             message("Calculate local qimd (lqimd)")
             if ("England" %in% design_$sim_prm$locality) {
@@ -928,24 +672,24 @@ SynthPop <-
               CCG17CDH_ <- as.character(unique(dt$CCG17CDH))
               # names(sort(table(as.character(dt$CCG17CDH)))[1]) # if more than one ccgs
             }
-
-            # Generate the cohorts of 30 year old to enter every year ----
-            message("Generate the cohorts of 30 year old")
-
+            
+            # Generate the cohorts of 15 year old to enter every year ----
+            message("Generate the cohorts of 15 year old")
+            
             # new
             tt <- dt[age == design_$sim_prm$ageL, .N]
             design2_ <- design_$clone()
             design2_$sim_prm$n <-
               tt * design_$sim_prm$sim_horizon_max
             design2_$sim_prm$ageH <- design_$sim_prm$ageL
-            dt2 <- private$gen_synthpop_demog(design2_)
+            dt2 <- private$gen_synthpop_demog(design2_, lsoas_)
             dt2[, age := age - rep(1:design_$sim_prm$sim_horizon_max, tt)]
-
+            
             # as sim progress these will become 30 yo
             # no population growth here as I will calibrate to dt projections
             if ("England" %in% design_$sim_prm$locality) {
               dt2[, lqimd := qimd]
-
+              
             } else {
               dt2[, lqimd := cut(
                 imd,
@@ -958,16 +702,16 @@ SynthPop <-
             }
             dt <- rbind(dt2, dt)
             rm(dt2, design2_)
-
+            
             # NOTE!! from now on year in the short form i.e. 13 not 2013
             dt[, `:=`(year = year - 2000L,
                       pid  = .I)]
             new_n <- nrow(dt)
-
-
+            
+            
             # Generate correlated ranks for the individuals ----
             message("Generate correlated ranks for the individuals")
-
+            
             cm_mean <- as.matrix(
               read_fst(
                 "./lifecourse_models/exposure_corr_mean.fst",
@@ -975,10 +719,10 @@ SynthPop <-
               ),
               rownames = "rn"
             )
-
+            
             rank_mtx <- generate_corr_unifs(new_n, cm_mean)
             message("generate correlated uniforms")
-
+            
             # Restrict the range of some RNs to avoid unrealistic exposures
             # This scaling does not affect correlations
             # /0.999 because I multiplied all the columns below
@@ -994,12 +738,12 @@ SynthPop <-
               rank_mtx[, "smok_dur_ex_r"] * 0.99 / 0.999
             rank_mtx[, "smok_dur_curr_r"] <-
               rank_mtx[, "smok_dur_curr_r"] * 0.88 / 0.999
-
+            
             # sum((cor(rank_mtx) - cm_mean) ^ 2)
             message("correlated ranks matrix to data.table")
-
+            
             rank_mtx <- data.table(rank_mtx)
-
+            
             # NOTE rankstat_* is unaffected by the RW. Stay constant through the lifecourse
             dt[, c(
               "rank_education",
@@ -1027,9 +771,9 @@ SynthPop <-
               "rank_statin_px",
               "rankstat_ckd"
             ) := rank_mtx]
-
+            
             rm(rank_mtx)
-
+            
             # add non-correlated RNs
             rank_cols <-
               c(
@@ -1039,14 +783,14 @@ SynthPop <-
                 "rankstat_ca_history",
                 "rankstat_famlungca"
               )
-
-
+            
+            
             for (nam in rank_cols)
               set(dt, NULL, nam, dqrunif(new_n)) # NOTE do not replace with generate_rns function.
-
+            
             # Generate education (exception as it remains stable through lifecourse) ----
             message("Generate education")
-
+            
             tbl <-
               read_fst("./lifecourse_models/education_table.fst",
                        as.data.table = TRUE)
@@ -1078,15 +822,15 @@ SynthPop <-
               )
             )]
             dt[, rank_education := NULL]
-
+            
             # Project forward for simulation and back project for lags  ----
             message("Project forward and back project")
-
+            
             dt <-
               clone_dt(dt,
                        design_$sim_prm$sim_horizon_max +
                          design_$sim_prm$maxlag + 1L)
-
+            
             dt[.id <= design_$sim_prm$maxlag, `:=` (age  = age  - .id,
                                                     year = year - .id)]
             dt[.id > design_$sim_prm$maxlag, `:=` (
@@ -1105,49 +849,51 @@ SynthPop <-
               ),
               environment()
             )
-
+            
             dt[, `:=` (.id = NULL)]
-
+            
             # to_agegrp(dt, 20L, 85L, "age", "agegrp20", to_factor = TRUE)
             # to_agegrp(dt, 10L, 85L, "age", "agegrp10", to_factor = TRUE)
             # to_agegrp(dt,  5L, 85L, "age", "agegrp5" , to_factor = TRUE)
-
+            
             # generate population weights
             private$calc_pop_weights(dt, design_)
-
+            
             # Simulate exposures -----
-
+            
             # Random walk for ranks ----
             message("Random walk for ranks")
-
+            
             setkeyv(dt, c("pid", "year"))
             setindexv(dt, c("year", "age", "sex", "sha", "qimd", "ethnicity"))
-
+            
             dt[, pid_mrk := mk_new_simulant_markers(pid)]
-
+            
             dt[, lapply(.SD,
                         fscramble_trajectories,
                         pid_mrk,
                         design_$sim_prm$jumpiness),
                .SDcols = patterns("^rank_")]
             # ggplot2::qplot(year, rank_income, data = dt[pid %in% sample(1e5, 1)], ylim = c(0,1))
-
+            
             # Generate income ----
             message("Generate income")
-
+            
             tbl <-
               read_fst("./lifecourse_models/income_table.fst", as.data.table = TRUE)
             nam <- intersect(names(dt), names(tbl))
+            
             dt[tbl, income := (rank_income > inc1) + (rank_income > inc2) +
                  (rank_income > inc3) + (rank_income > inc4) + 1L,
                on = nam]
+            
             dt[, income := factor(
               income,
               levels = 1:5,
               labels = c("1 Highest", "2", "3", "4", "5 Lowest")
             )]
             dt[, rank_income := NULL]
-
+              
             # Generate active days ----
             message("Generate active days")
 
@@ -1168,13 +914,16 @@ SynthPop <-
               read_fst("./lifecourse_models/frtpor_table.fst", as.data.table = TRUE)
             col_nam <-
               setdiff(names(tbl), intersect(names(dt), names(tbl)))
+
             absorb_dt(dt, tbl)
+
             dt[, fruit :=
                  my_qZISICHEL(rank_fruit,
                               mu, sigma, nu, tau, n_cpu = design_$sim_prm$n_cpu) * 80L]  # g/d
+
             dt[, (col_nam) := NULL]
             dt[, rank_fruit := NULL]
-
+            
             # Generate veg consumption (DEL) ----
             message("Generate veg consumption")
 
@@ -1185,19 +934,21 @@ SynthPop <-
             absorb_dt(dt, tbl)
             dt[, veg :=
                  my_qDEL(rank_veg, mu, sigma, nu, n_cpu = design_$sim_prm$n_cpu) * 80L]  # g/d
+            # dt[, veg :=
+            #      qDEL(rank_veg, mu, sigma, nu) * 80L]  # g/d #DEL gives ERROR - is this correct?
             dt[, (col_nam) := NULL]
             dt[, rank_veg := NULL]
 
             # Smoking simulation ----
             message("Smoking simulation")
-
-            # Assign smok_status when pid_mrk == true (the first year an individual enters the simulation (with lags))
+            
+            # # Assign smok_status when pid_mrk == true (the first year an individul enters the simulation (with lags))
             tbl <-
               read_fst("./lifecourse_models/smok_status_table.fst",
                        as.data.table = TRUE)
             col_nam <-
               setdiff(names(tbl), intersect(names(dt), names(tbl)))
-            absorb_dt(dt, tbl)
+            absorb_dt(dt, tbl) 
             dt[, smok_status_ref := my_qMN4(rankstat_smok, mu, sigma, nu)] # for calibration
             dt[(pid_mrk), smok_status := smok_status_ref]
             dt[, (col_nam) := NULL]
@@ -1208,6 +959,7 @@ SynthPop <-
             tbl <-
               read_fst("./lifecourse_models/smok_quit_yrs_table.fst",
                        as.data.table = TRUE)
+            # change to my cessation table
             col_nam <-
               setdiff(names(tbl), intersect(names(dt), names(tbl)))
             absorb_dt(dt, tbl)
@@ -1218,16 +970,19 @@ SynthPop <-
             dt[, rankstat_smok_quit_yrs := NULL]
             dt[, (col_nam) := NULL]
 
-            # Assign smok_dur_ex when pid_mrk == true (the first year an individual enters the simulation)
+            # Assign smok_dur_ex when pid_mrk == true (the first year an individul enters the simulation)
             tbl <-
               read_fst("./lifecourse_models/smok_dur_ex_table.fst",
                        as.data.table = TRUE)
             col_nam <-
               setdiff(names(tbl), intersect(names(dt), names(tbl)))
+            tbl$smok_status <- as.integer(tbl$smok_status)
             absorb_dt(dt, tbl)
+
             set(dt, NULL, "smok_dur", 0L)
             dt[(pid_mrk) &
                  smok_status %in% 2:3, smok_dur := my_qDPO(rankstat_smok_dur_ex, mu, sigma)]
+            
             dt[, rankstat_smok_dur_ex := NULL]
             dt[, (col_nam) := NULL]
 
@@ -1492,10 +1247,10 @@ SynthPop <-
               "prb_smok_cess",
               "smok_status_ref"
             ) := NULL]
-
+            
             # Generate ETS (BI) ----
             message("Generate ETS")
-
+            
             # Note at the moment this is independent of smoking prevalence TODO
             # calculate how many each smoker pollutes by year, SHA (not qimd) to
             # be used in scenarios. Ideally correct for mortality
@@ -1508,7 +1263,7 @@ SynthPop <-
             dt[, rank_ets := NULL]
             dt[, (col_nam) := NULL]
             # View(dt[, prop_if(ets == 1)/prop_if(smok_status == "4"), keyby = .(year, sha)])
-
+            
             # Generate alcohol (ZINBI) ----
             message("Generate alcohol")
 
@@ -1516,6 +1271,7 @@ SynthPop <-
               read_fst("./lifecourse_models/alcohol_table.fst", as.data.table = TRUE)
             col_nam <-
               setdiff(names(tbl), intersect(names(dt), names(tbl)))
+           
             absorb_dt(dt, tbl)
             dt[, alcohol := as.integer(qZINBI(rank_alcohol, mu, sigma, nu))]
             dt[, rank_alcohol := NULL]
@@ -1580,6 +1336,7 @@ SynthPop <-
 
             # NOTE this very highly correlated with hdl level (~0.76) and
             #  highly to tchol (~-0.47). The latter is captured by the correlated RNs
+            
             tbl <-
               read_fst("./lifecourse_models/hdl_to_tchol_table.fst",
                        as.data.table = TRUE)
@@ -1684,9 +1441,11 @@ SynthPop <-
             tbl <-
               read_fst("./lifecourse_models/ckd_table.fst", as.data.table = TRUE)
             nam <- intersect(names(dt), names(tbl))
+           
             dt[tbl, ckd_prvl := (rankstat_ckd > ckd0) + (rankstat_ckd > ckd1) +
                  (rankstat_ckd > ckd2) + (rankstat_ckd > ckd3) + 1L,
                on = nam]
+           
             dt[, ckd5_prvl := fifelse(ckd_prvl == 5L, 1L, 0L)]
             dt[, rankstat_ckd := NULL]
 
@@ -1726,7 +1485,7 @@ SynthPop <-
               "./lifecourse_models/corticosteroids_prvl.csv",
               stringsAsFactors = TRUE,
               colClasses = c("factor", "integer",
-                             "numeric"),
+                              "numeric"),
               key = c("sex", "age")
             )
             tt <- dqrunif(1L)
@@ -1762,6 +1521,7 @@ SynthPop <-
             col_nam <-
               setdiff(names(tbl), intersect(names(dt), names(tbl)))
             absorb_dt(dt, tbl)
+           
             dt[, t2dm_dgn := as.integer(rankstat_t2dm_dgn < mu)]
             dt[, (col_nam) := NULL]
 
@@ -1870,7 +1630,8 @@ SynthPop <-
             setnames(dt, exps_tolag, exps_nam)
 
             # Ensure pid does not overlap for files from different mc
-            if (max(dt$pid + (mc_ - 1L) * new_n) < .Machine$integer.max) {
+            if 
+            (max(dt$pid + (mc_ - 1L) * new_n) < .Machine$integer.max) {
               dt[, pid := as.integer(pid + (mc_ - 1L) * new_n)]
             }
 
@@ -1881,14 +1642,14 @@ SynthPop <-
                      "LAD11NM",
                      "tds_quintile",
                      "imd",
-                     # "sha", # NEEDED for social scenarios
-                     # "pid_mrk",
+                     #"sha",
                      "CCG17CDH"
+                     #"pid_mrk"
                      )
             dt[, (nam) := NULL]
-
+            
             message("Writing primer to disk")
-
+            
             setkey(dt, pid, year) # Just in case
             write_fst(dt,
                       filename_$primer,
@@ -1910,8 +1671,8 @@ SynthPop <-
             message("Reading primer from disk")
             dt <- read_fst(filename_$primer, as.data.table = TRUE)
           }
-
-
+          
+          
           # Include diseases ----
           message("Include diseases")
           setkey(dt, pid, year)
@@ -1923,16 +1684,17 @@ SynthPop <-
           dt <-
             dt[year >= (design_$sim_prm$init_year - design_$max_lag_mc) &
                  between(dt$age, design_$sim_prm$ageL, design_$sim_prm$ageH)]
-
+          
           setkey(dt, pid, year)
           dt[, pid_mrk := mk_new_simulant_markers(pid)]
-
+          
           finalise_synthpop(
             mc_aggr,
             dt,
             design_
           )
-
+         
+          
           generate_rns(
             mc_, # NOT mc_aggr
             dt,
@@ -1952,87 +1714,87 @@ SynthPop <-
               "rn_t2dm_dgn"                ,  "rn_t2dm_incd"
             )
           )
-
+          
           # Fatality rate calibration ----
           message("calibrating fatality rates")
-            # run year by year and calibrate fatality
-            .diseases <- c("chd", "stroke", "copd", "lung_ca",
-                           "colon_ca", "breast_ca", "nonmodelled")
-
-            for (yr in design_$sim_prm$init_year:(
-              design_$sim_prm$sim_horizon_max + design_$sim_prm$init_year)
-              ) {
-              output <- list()
-              output <-
-                gen_output("", design_$sim_prm, design_$lags_mc, dt[year <= yr], output)
-              output <- rbindlist(output, idcol = FALSE)
-
-              if (yr > design_$sim_prm$init_year) {
-                setkey(output, pid, year)
-                output[, pid_mrk := mk_new_simulant_markers(pid)]
-                output[, dead := identify_longdead(all_cause_mrtl, pid_mrk)]
-                output <- output[year == yr & !(dead), .SD,
-                                 .SDcols = !patterns("_dgn$")]
-              } else { # for init year
-                output <- output[year == yr, .SD, .SDcols = !patterns("_dgn$")]
-              }
-
-              tt <- output[, .(pid, year, t2dm_prvl)]
-              dt[tt, on = .(pid, year), t2dm_prvl2 := i.t2dm_prvl]
-              dt[year == yr, prb_nonmodelled_mrtl :=
-                   fifelse(t2dm_prvl2 > 0L,
-                           prb_nonmodelled_mrtl_not2dm *
-                             nonmodelled_mrtl_t2dm_mltp,
-                           prb_nonmodelled_mrtl_not2dm)]
-              set(dt, NULL, "t2dm_prvl2", NULL)
-
-              nam <- grep("^prb_.*_mrtl$", names(dt), value = TRUE)
-              absorb_dt(output, dt[year == yr, .SD, .SDcols = c("pid", nam)])
-
-              for (disease_nam in .diseases) {
-                expected_deaths <-
-                  get_lifetable_all(mc_aggr,
-                                    disease_nam,
-                                    design_$sim_prm,
-                                    "mx")
-                colnam <- paste0(disease_nam, "_mrtl")
-                setnames(expected_deaths, "qx_mc", colnam)
-                set(output, NULL, colnam, NULL)
-                absorb_dt(output, expected_deaths)
-
-                if (disease_nam != "nonmodelled") {
-                  colnam_prvl <- paste0(disease_nam, "_prvl")
-                  setnames(output, colnam_prvl, "col__prvl")
-                  set(output, which(output[["col__prvl"]] == 0L),
-                      paste0("prb_", colnam), 0)
-                  set(output, NULL, "col__prvl", NULL)
-                }
-              }
-              output[, (c("all_cause_mrtl",
-                          grep("_prvl$|^pid", names(output), value = TRUE))) := NULL]
-              output <-
-                output[, lapply(.SD, sum),
-                       keyby = .(year, age, sex, qimd)]
-
-              for (disease_nam in .diseases) {
-                colnam_expc <- paste0(disease_nam, "_mrtl")
-                colnam_obs <- paste0("prb_", disease_nam, "_mrtl")
-                setnames(output, c(colnam_expc, colnam_obs), c("expc__", "obs__"))
-                output[, corr_factor := expc__/obs__]
-                output[!is.finite(corr_factor), corr_factor := 1]
-                set(output, NULL, "expc__", NULL)
-                set(output, NULL, "obs__", NULL)
-                if (disease_nam == "nonmodelled") {
-                  colnam_obs <- paste0(colnam_obs, "_not2dm")
-                }
-                dt[output,
-                   (colnam_obs) := get(colnam_obs) * i.corr_factor,
-                   on = .(year, age, sex, qimd)]
-              }
-
-              set(dt, NULL, "prb_nonmodelled_mrtl", NULL)
+          # run year by year and calibrate fatality
+          .diseases <- c("chd", "stroke", "copd", "lung_ca",
+                         "colon_ca", "breast_ca", "nonmodelled")
+          
+          for (yr in design_$sim_prm$init_year:(
+            design_$sim_prm$sim_horizon_max + design_$sim_prm$init_year)
+          ) {
+            output <- list()
+            output <-
+              gen_output("", design_$sim_prm, design_$lags_mc, dt[year <= yr], output)
+            output <- rbindlist(output, idcol = FALSE)
+            
+            if (yr > design_$sim_prm$init_year) {
+              setkey(output, pid, year)
+              output[, pid_mrk := mk_new_simulant_markers(pid)]
+              output[, dead := identify_longdead(all_cause_mrtl, pid_mrk)]
+              output <- output[year == yr & !(dead), .SD,
+                               .SDcols = !patterns("_dgn$")]
+            } else { # for init year
+              output <- output[year == yr, .SD, .SDcols = !patterns("_dgn$")]
             }
-
+            
+            tt <- output[, .(pid, year, t2dm_prvl)]
+            dt[tt, on = .(pid, year), t2dm_prvl2 := i.t2dm_prvl]
+            dt[year == yr, prb_nonmodelled_mrtl :=
+                 fifelse(t2dm_prvl2 > 0L,
+                         prb_nonmodelled_mrtl_not2dm *
+                           nonmodelled_mrtl_t2dm_mltp,
+                         prb_nonmodelled_mrtl_not2dm)]
+            set(dt, NULL, "t2dm_prvl2", NULL)
+            
+            nam <- grep("^prb_.*_mrtl$", names(dt), value = TRUE)
+            absorb_dt(output, dt[year == yr, .SD, .SDcols = c("pid", nam)])
+            
+            for (disease_nam in .diseases) {
+              expected_deaths <-
+                get_lifetable_all(mc_aggr,
+                                  disease_nam,
+                                  design_$sim_prm,
+                                  "mx")
+              colnam <- paste0(disease_nam, "_mrtl")
+              setnames(expected_deaths, "qx_mc", colnam)
+              set(output, NULL, colnam, NULL)
+              absorb_dt(output, expected_deaths)
+              
+              if (disease_nam != "nonmodelled") {
+                colnam_prvl <- paste0(disease_nam, "_prvl")
+                setnames(output, colnam_prvl, "col__prvl")
+                set(output, which(output[["col__prvl"]] == 0L),
+                    paste0("prb_", colnam), 0)
+                set(output, NULL, "col__prvl", NULL)
+              }
+            }
+            output[, (c("all_cause_mrtl",
+                        grep("_prvl$|^pid", names(output), value = TRUE))) := NULL]
+            output <-
+              output[, lapply(.SD, sum),
+                     keyby = .(year, age, sex, qimd)]
+            
+            for (disease_nam in .diseases) {
+              colnam_expc <- paste0(disease_nam, "_mrtl")
+              colnam_obs <- paste0("prb_", disease_nam, "_mrtl")
+              setnames(output, c(colnam_expc, colnam_obs), c("expc__", "obs__"))
+              output[, corr_factor := expc__/obs__]
+              output[!is.finite(corr_factor), corr_factor := 1]
+              set(output, NULL, "expc__", NULL)
+              set(output, NULL, "obs__", NULL)
+              if (disease_nam == "nonmodelled") {
+                colnam_obs <- paste0(colnam_obs, "_not2dm")
+              }
+              dt[output,
+                 (colnam_obs) := get(colnam_obs) * i.corr_factor,
+                 on = .(year, age, sex, qimd)]
+            }
+            
+            set(dt, NULL, "prb_nonmodelled_mrtl", NULL)
+          }
+          
           # Prune & write to disk ----
           # del rn as they are reproducible
           nam <- grep("_mrtl$|^rn_", names(dt), value = TRUE)
@@ -2043,26 +1805,27 @@ SynthPop <-
                    setdiff(primer_colnames, c("year", "pid", "t2dm_dgn", "ncc"))
           )
           dt[, (nam) := NULL]
-
+          
           message("Writing to disk")
-
+          
           setkey(dt, pid, year) # Just in case
           write_fst(dt,
                     filename_$synthpop,
                     90) # 100 is too slow
-
+          
           # Write pid based indx
           dt[, rn := .I]
           tt <-
             dt[, .(from = min(rn), to = max(rn)), keyby = .(pid)]
           write_fst(tt, filename_$indxfile, 90L)
-
+         
+          
           # rm(dt, tt)
-
+          
           return(invisible(NULL))
         },
-
-
+      
+      
       # Load a synthpop file from disk in full or in chunks.
       get_synthpop =
         function(mc_,
@@ -2070,15 +1833,15 @@ SynthPop <-
                  design_,
                  exclude_cols = c()) {
           mc_aggr <- ceiling(mc_ / design_$sim_prm$n_synthpop_aggregation)
-
+          
           mm_primer <- metadata_fst(filename_$primer)
           mm_primer <- setdiff(mm_primer$columnNames,
                                c(exclude_cols, "ncc", "t2dm_dgn"))
           mm_synthpop <- metadata_fst(filename_$synthpop)
           mm_synthpop <- setdiff(mm_synthpop$columnNames, exclude_cols)
-
+          
           # Read synthpop and merge with the primer
-
+          
           dt <-
             read_fst(filename_$synthpop,
                      columns = mm_synthpop,
@@ -2126,8 +1889,8 @@ SynthPop <-
               "rn_multi_mrtl"
             )
           )
-
-
+          
+          
           dt <- dt[between(
             year,
             design_$sim_prm$init_year - design_$sim_prm$maxlag,
@@ -2139,27 +1902,27 @@ SynthPop <-
             between(age,
                     design_$sim_prm$ageL - design_$sim_prm$maxlag,
                     design_$sim_prm$ageH)]
-
+          
           # dt <- dt[between(year,
           #                  design$init_year_fromGUI,
           #                  sum(fromGUI_timeframe(parameters)) - 2000L) &
           #            between(age, design$ageL - max_lag, design$ageH)]
-
+          
           dt[, pid_mrk := mk_new_simulant_markers(pid)]
           # Above necessary because of pruning  and potential merging above
-
+          
           # simulate disease epidemiology
           design_$get_lags(mc_aggr)
-
+          
           output <- list()
           output <-
             gen_output("", design_$sim_prm, design_$lags_mc, dt, output)
           output <- rbindlist(output, idcol = FALSE)
-
+          
           absorb_dt(dt, output, on = c("year", "pid"))
           rm(output)
           dt[, dead := identify_longdead(all_cause_mrtl, pid_mrk)]
-
+          
           dt[, ncc := clamp(
             ncc - (chd_prvl > 0) - (stroke_prvl > 0) -
               (poststroke_dementia_prvl > 0) -
@@ -2172,16 +1935,16 @@ SynthPop <-
           )]
           # to be added back in the qaly fn. Otherwise when I prevent disease
           # the ncc does not decrease.
-
+          
           dt[, statin_adherence := rBE(.N, design_$sim_prm$statin_adherence, 0.2)]
           dt[, bpmed_adherence := rBE(.N, design_$sim_prm$statin_adherence, 0.2)]
-
+          
           setcolorder(dt, c("pid", "pid_mrk", "year", "age", "sex", "qimd"))
           setkeyv(dt, c("pid", "year"))
           setindexv(dt, c("year", "age", "sex", "qimd", "ethnicity"))
           invisible(dt)
         },
-
+      
       # Calculate weights so that their sum is the population of the area based
       # on ONS. It takes into account synthpop aggregation. So you need to sum
       # all the synthpops belong to the same aggregation to reach the total pop.
@@ -2198,12 +1961,12 @@ SynthPop <-
         absorb_dt(dt, tt)
         dt[, wt := pops / (wt * design$sim_prm$n_synthpop_aggregation)]
         dt[, pops := NULL]
-
+        
         invisible(dt)
       }
-
-
-
-
+      
+      
+      
+      
     )
   )

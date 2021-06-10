@@ -2152,7 +2152,17 @@ run_scenario <-
     colon_ca_model(           scenario_nam, mc, dt$pop, design, timing = timing[[2]])
     breast_ca_model(          scenario_nam, mc, dt$pop, design, timing = timing[[2]])
     nonmodelled_model(        scenario_nam, mc, dt$pop, design, timing = timing[[2]])
-
+    # to export smoke prevalence
+    if (!"smok_status_sc" %in% names(dt$pop))
+      set(dt$pop, NULL, "smok_status_sc", dt$pop$smok_status_curr_xps)
+    if (!"smok_quit_yrs_sc" %in% names(dt$pop))
+      set(dt$pop, NULL, "smok_quit_yrs_sc", dt$pop$smok_quit_yrs_curr_xps)
+    if (!"smok_dur_sc" %in% names(dt$pop))
+      set(dt$pop, NULL, "smok_dur_sc", dt$pop$smok_dur_curr_xps)
+    if (!"smok_cig_sc" %in% names(dt$pop))
+      set(dt$pop, NULL, "smok_cig_sc", dt$pop$smok_cig_curr_xps)
+    
+    
     output <- gen_output(scenario_nam, design$sim_prm, design$lags_mc, dt$pop, output)
 
     dt$pop[, (grep("_sc$", names(dt$pop), value = TRUE)) := NULL]

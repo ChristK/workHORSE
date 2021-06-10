@@ -44,6 +44,10 @@ cols_for_output:
 - education
 - ncc
 - ethnicity
+- smok_status_sc
+- smok_cig_sc
+- smok_quit_yrs_sc
+- smok_dur_sc
 strata_for_output:
 - scenario
 - year
