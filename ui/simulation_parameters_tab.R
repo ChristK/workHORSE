@@ -27,6 +27,7 @@ tabPanel(
       pickerInput(inputId = "locality_select",
                   label = "Area to simulate",
                   choices = localitities_list,
+                  selected = "England",
                   options = list(`actions-box` = TRUE, `live-search` = TRUE,
                     liveSearchNormalize = TRUE, header = "Close list"),
                   multiple = TRUE)
