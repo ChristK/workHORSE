@@ -11,26 +11,6 @@ design$get_lags(mc_iter)
 dt <- SynthPop$new(mc_iter, design) #run until ncc , with problems on 5(frt, veg, smok all, hdl, alcohol)
 dt0 <- SynthPop$new(0, design)
 
-# basic_sc_nam <-
-#   parameters_dt[true_scenario == scenario_nam, unique(true_scenario), keyby = scenario]$scenario
-# scenario_parms <-
-#   lapply(basic_sc_nam, fromGUI_scenario_parms, parameters_dt)
-# names(scenario_parms) <- basic_sc_nam
-# # Sort scenarios in chronological order (important for serial ensembles)
-# basic_sc_nam <-
-#   names(sort(unlist(
-#     lapply(scenario_parms, `[[`, "sc_init_year")
-#   )))
-# scenario_parms <- scenario_parms[basic_sc_nam]
-# for (sc in basic_sc_nam) print(sc)
-# 
-# scenario_parms[[sc]]$sc_soc_qimd1_change <- 5L
-# scenario_parms[[sc]]$sc_soc_qimd_fatality_change <- TRUE
-# scenario_parms[[sc]]$sc_soc_qimd_rf_change <-
-#   c("tob", "ets", "fv", "alc", "pa", "sbp", "bmi", "tchol")
-# # scenario_parms <- scenario_parms[[sc]]
-# # dt <- dt$pop
-
 output_chunk  <- list()
 output_chunk <- sapply(
   sort(fromGUI_scenario_names(parameters_dt)$true_scenario),
