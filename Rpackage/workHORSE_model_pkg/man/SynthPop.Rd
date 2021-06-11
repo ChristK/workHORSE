@@ -46,7 +46,9 @@ first generated, then saved to disk, and then loaded from disk.}
 \item \href{#method-new}{\code{SynthPop$new()}}
 \item \href{#method-delete_synthpop}{\code{SynthPop$delete_synthpop()}}
 \item \href{#method-delete_incomplete_synthpop}{\code{SynthPop$delete_incomplete_synthpop()}}
+\item \href{#method-check_integridy}{\code{SynthPop$check_integridy()}}
 \item \href{#method-count_synthpop}{\code{SynthPop$count_synthpop()}}
+\item \href{#method-get_checksum}{\code{SynthPop$get_checksum()}}
 \item \href{#method-get_filename}{\code{SynthPop$get_filename()}}
 \item \href{#method-get_design}{\code{SynthPop$get_design()}}
 \item \href{#method-get_dir}{\code{SynthPop$get_dir()}}
@@ -116,7 +118,7 @@ POP$get_filename()
 \subsection{Method \code{delete_synthpop()}}{
 Delete (all) synthpop files in the synthpop directory.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{SynthPop$delete_synthpop(mc_)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{SynthPop$delete_synthpop(mc_, spare_primer = TRUE, check_checksum = TRUE)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -125,6 +127,11 @@ Delete (all) synthpop files in the synthpop directory.
 \item{\code{mc_}}{If `mc_ = NULL`, delete all files in the synthpop directory.
 If `mc_` is an integer vector delete the specific synthpop files
 including the metadata and index files but spares primers.}
+
+\item{\code{spare_primer}}{If `TRUE` primer files are not deleted.}
+
+\item{\code{check_checksum}}{If  `TRUE` only delete files with the same
+checksum as the synthpop. Only relevant when `mc_ = NULL`.}
 }
 \if{html}{\out{</div>}}
 }
@@ -139,9 +146,42 @@ The invisible `SynthPop` object.
 Check that every synthpop file has a metafile and an index file. Delete
 any orphan files.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{SynthPop$delete_incomplete_synthpop()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{SynthPop$delete_incomplete_synthpop(check_checksum = TRUE)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{check_checksum}}{If  `TRUE` only delete incomplete group files
+with the same checksum as the synthpop.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+The invisible `SynthPop` object.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-check_integridy"></a>}}
+\if{latex}{\out{\hypertarget{method-check_integridy}{}}}
+\subsection{Method \code{check_integridy()}}{
+Check the integrity of (and optionally delete) .fst files by checking
+their metadata are readable.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{SynthPop$check_integridy(remove_malformed = FALSE, check_checksum = TRUE)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{remove_malformed}}{If `TRUE`, delete all malformed .fst files and
+their associated files.}
+
+\item{\code{check_checksum}}{If  `TRUE` only check files with the same
+checksum as the synthpop.}
+}
+\if{html}{\out{</div>}}
+}
 \subsection{Returns}{
 The invisible `SynthPop` object.
 }
@@ -156,6 +196,27 @@ metafiles and index files.
 \if{html}{\out{<div class="r">}}\preformatted{SynthPop$count_synthpop()}\if{html}{\out{</div>}}
 }
 
+\subsection{Returns}{
+The invisible `SynthPop` object.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-get_checksum"></a>}}
+\if{latex}{\out{\hypertarget{method-get_checksum}{}}}
+\subsection{Method \code{get_checksum()}}{
+Get the synthpop file paths.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{SynthPop$get_checksum()}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{x}}{One of "all", "synthpop", "metafile", or "indxfile". Can be
+abbreviated.}
+}
+\if{html}{\out{</div>}}
+}
 \subsection{Returns}{
 The invisible `SynthPop` object.
 }
