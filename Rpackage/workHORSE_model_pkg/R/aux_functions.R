@@ -2072,6 +2072,130 @@ set_social <- function(scenario_parms, dt, design) {
   }
 }
 
+set_tobacco <- function(scenario_parms, dt, design) {
+  # bypass if irrelevant
+  if (all(
+    scenario_parms$sc_tobacco_mala_change == 18L
+  )) {
+    return(invisible(dt))
+    
+  } else {
+    # if any relevant scenario input
+    
+    # Manipulate age per user input ----
+    set(dt, NULL, "age_sc", dt$age) # create new scenario age
+    
+    row_sel_id <- # Indices of eligible rows
+      dt[between(year + 2000L,
+                 scenario_parms$sc_init_year,
+                 scenario_parms$sc_last_year) &
+          dead == FALSE & 
+          between(age, 18, 20), 
+          unique(pid)]
+    
+    row_sel <- 
+      dt[between(year + 2000L,
+                 scenario_parms$sc_init_year,
+                 scenario_parms$sc_last_year) &
+        dead == FALSE &
+        pid %in% row_sel_id, 
+                  which = TRUE]
+    
+    dt[between(year + 2000L,
+               scenario_parms$sc_init_year,
+               scenario_parms$sc_last_year) &
+                dead == FALSE & 
+                between(age, 18, 20), # TO DO - link to slider (scenario_parms$sc_tobacco_mala_change); min age to 18
+       age_sc := 17L]
+    
+    # smoking ----
+    # Assumes that from the smoking initiation/cessation/relapse probabilities
+    # change, not smoking prevalence. Smoking intensity also changes.
+    # pid_mrk needs to be recalculated for row_sel
+    if ("smok" %in% scenario_parms$sc_soc_qimd_rf_change) {
+      if (!"smok_status_sc" %in% names(dt))
+        set(dt, NULL, "smok_status_sc", dt$smok_status_curr_xps)
+      if (!"smok_quit_yrs_sc" %in% names(dt))
+        set(dt, NULL, "smok_quit_yrs_sc", dt$smok_quit_yrs_curr_xps)
+      if (!"smok_dur_sc" %in% names(dt))
+        set(dt, NULL, "smok_dur_sc", dt$smok_dur_curr_xps)
+      if (!"smok_cig_sc" %in% names(dt))
+        set(dt, NULL, "smok_cig_sc", dt$smok_cig_curr_xps)
+      
+      dt[row_sel, pid_mrk_sc := mk_new_simulant_markers(pid)]
+      
+      # Assign smok_incid probabilities
+      lutbl <-
+        read_fst("./lifecourse_models/smok_incid_table.fst",
+                 as.data.table = TRUE)
+      setnames(lutbl, c("age", "mu"), c("age_sc", "prb_smok_incid_sc"))
+      lookup_dt(dt, lutbl)
+      
+      
+      # Assign smok_cessation probabilities
+      lutbl <-
+        read_fst("./lifecourse_models/smok_cess_table.fst",
+                 as.data.table = TRUE)
+      setnames(lutbl, c("age", "mu"), c("age_sc", "prb_smok_cess_sc"))
+      lookup_dt(dt, lutbl)
+      
+      # Handle smok_relapse probabilities
+      # No need to use qimd_sc here. It happens at the simsmok_sc side
+      tbl <-
+        read_fst("./lifecourse_models/smok_relapse_table.fst",
+                 as.data.table = TRUE)
+      tbl <-
+        dcast(tbl, sex + qimd ~ smok_quit_yrs, value.var = "pr")
+      nam <- tbl[, paste0(sex, " ", qimd)]
+      tbl <-
+        as.matrix(tbl[, mget(paste0(1:15))], rownames = nam)
+      
+      simsmok_sc(dt, tbl, design$sim_prm$smoking_relapse_limit, row_sel)
+      
+      dt[, c("prb_smok_incid_sc", "prb_smok_cess_sc") := NULL]
+      
+      # smok intensity
+      lutbl <-
+        read_fst("./lifecourse_models/smok_cig_curr_table.fst",
+                 as.data.table = TRUE)
+      setnames(lutbl, "age", "age_sc")
+      lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
+      
+      dt[row_sel, mrk := TRUE]
+      
+      dt[(mrk) & smok_status_sc == "4",
+         smok_cig_sc := qZINBI(rankstat_smok_cig_curr, mu, sigma, nu)]
+      
+      lutbl <-
+        read_fst("./lifecourse_models/smok_cig_ex_table.fst",
+                 as.data.table = TRUE)
+      setnames(lutbl, "age", "age_sc")
+      lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
+      dt[(pid_mrk_sc) & # no need for mrk as superseded by pid_mrk_sc
+           smok_status_sc == "3",
+         smok_cig_sc := my_qZABNB(rankstat_smok_cig_ex,
+                                  mu,
+                                  sigma,
+                                  nu,
+                                  tau,
+                                  n_cpu = design$sim_prm$n_cpu)]
+      
+      simsmok_cig_sc(dt, row_sel) # carry forward smok_cig if smok_status == 3
+      dt[smok_cig_sc == 0L & smok_status_sc != "1", smok_cig_sc := 1L]
+      dt[, mrk := NULL]
+      
+      
+      dt[, smok_status_sc := factor(smok_status_sc)]
+      dt[, smoke_cat_sc := 0L]
+      dt[smok_status_sc == "3", smoke_cat_sc := 1L]
+      dt[smok_status_sc == "4", smoke_cat_sc := 3L]
+      dt[smok_status_sc == "4" & smok_cig_sc < 10L, smoke_cat_sc := 2L]
+      dt[smok_status_sc == "4" & smok_cig_sc > 19L, smoke_cat_sc := 4L]
+    }
+    return(invisible(dt))
+  }
+}
+
 
 
 #' @export
@@ -2131,6 +2255,7 @@ run_scenario <-
       set_lifestyle(scenario_parms[[sc]], dt$pop, design)
       set_structural(scenario_parms[[sc]], dt$pop, design)
       set_social(scenario_parms[[sc]], dt$pop, design)
+      set_tobacco(scenario_parms[[sc]], dt$pop, design)
     }
 
     dt$pop[, eligible_sc  := clamp(eligible_sc + hlp$previous_elig)]

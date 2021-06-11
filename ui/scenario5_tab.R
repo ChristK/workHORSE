@@ -1311,6 +1311,7 @@ fluidRow(
         )
 
     ),
+    
     column(6,
       switchInput(
         "qimd_fatalities_checkbox_sc5",
@@ -1358,9 +1359,59 @@ fluidRow(
           icon("info") %>%
             bs_embed_popover(title = "Which risk factors should be affected by the changes in QIMD?")
         )
-    ) # end column
-  ))
+    ), # end column
+  )),
+
+wellPanel(fluidRow(
+  ## Tobacco Policies ----
+  h5("Smoking Policies"),
+  h6("Note: these policies may override some of the changes set above"),
+  HTML("<br> <br/> "),
+  column(6,
+         sliderInput(
+           "mala_slider_sc5",
+           "Minimum age of legal access to tobacco products",
+           1, 28, 18, 1,
+           sep = "",
+           ticks = FALSE,
+           post  = ""
+         )
+         %>%
+           shinyInput_label_embed(
+             icon("info") %>%
+               bs_embed_popover(title = "Assign MALA to tobacco to a different one")
+           )
+  ) # end column
+)) # end wellPanel
 ),
+
+
+# bsCollapsePanel(
+#   "Smoking Policy",
+#   style = "default",
+# wellPanel(fluidRow(
+# ## Tobacco Policies ----
+# h5("Smoking Policies"),
+# h6("Note: these policies may override some of the changes set above"),
+# HTML("<br> <br/> "),
+# column(6,
+#        sliderInput(
+#          "mala_slider_sc5",
+#          "Minimum age of legal access to tobacco products",
+#          1, 28, 21, 1,
+#          sep = "",
+#          ticks = FALSE,
+#          post  = ""
+#        )
+#        %>%
+#          shinyInput_label_embed(
+#            icon("info") %>%
+#              bs_embed_popover(title = "Assign MALA to tobacco to a different one")
+#          )
+#     ) # end column
+#   ))
+# ),
+
 
 # Notes  ------------------------------------------------
 bsCollapsePanel("Notes",

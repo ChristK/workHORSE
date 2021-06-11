@@ -439,7 +439,6 @@ fromGUI_scenario_parms <- function(scenario_nam, parameters_dt) {
                       input_names %flike% "structural_smk_slider",
                     as.numeric(value1)/100]
 
-    # l$sc_str_nevsmk_change <-
     #   parameters_dt[scenario == scenario_nam &
     #                   input_names %flike% "structural_neversmk_slider",
     #                 as.numeric(value1)/100]
@@ -509,6 +508,12 @@ fromGUI_scenario_parms <- function(scenario_nam, parameters_dt) {
       parameters_dt[scenario == scenario_nam &
           input_names %flike% "qimd_risk_factors_checkbox",
         as.character(value1)]
+    
+    # for MALA policy    
+    l$sc_tobacco_mala_change <-
+      parameters_dt[scenario == scenario_nam &
+                      input_names %flike% "mala_slider",
+                    as.integer(value1)]
 
     # Ensemble logic
     l$sc_ens_is <- FALSE
