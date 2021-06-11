@@ -125,7 +125,7 @@ void simsmok_sc(
   NumericVector rn_smok         = df["rankstat_smok"];
   LogicalVector new_pid         = df["pid_mrk_sc"];
   IntegerVector sex             = df["sex"];
-  IntegerVector qimd            = df["qimd_sc"];
+  IntegerVector qimd            = df["qimd"];
   IntegerVector smok_quit_yrs   = df["smok_quit_yrs_sc"];
   IntegerVector smok_dur        = df["smok_dur_sc"];
 
