@@ -62,7 +62,7 @@ output_chunk <-
 output_chunk[, pid_mrk  := mk_new_simulant_markers(pid)]
 output_chunk[, scenario := factor(scenario)]
 
-export_smok(mc_iter, output_chunk)
+#export_smok(mc_iter, output_chunk)
 
 generate_health_econ(output_chunk,
   ceiling(mc_iter /

@@ -2216,7 +2216,7 @@ time_mark <- function(x, file_nam = output_dir("times.txt")) {
 export_smok <- function(mc_,
                         dt,
                         write_to_disk = TRUE,
-                        filenam = "val_smk_output.csv",
+                        filenam = "smk_output.csv",
                         reweighted_to_hse = FALSE) {
   to_agegrp(dt, 10L, 89L, "age", "agegrp10", to_factor = TRUE)
   dt[, smok_never_smok_xps := fifelse(smok_status == "1", 1L, 0L)] # smok function
@@ -2623,6 +2623,7 @@ run_simulation <- function(parameters, design, final = FALSE) {
                      !identify_longdead(all_cause_mrtl, pid_mrk), ]
     output_chunk[, pid_mrk  := mk_new_simulant_markers(pid)]
     output_chunk[, scenario := factor(scenario)]
+    export_smok(mc_ = mc_aggr, dt = output_chunk) # export smoking prevalence
     generate_health_econ(output_chunk, mc_aggr)
     output_chunk[, c("ncc", "pid", "income", "education") := NULL]
 
