@@ -54,3 +54,6 @@ hint_script/*.qs
 disease_epidemiology/*.csv
 disease_epidemiology/*.fst
 HSE_ts.fst
+aux_functions.R
+hint_script
+test_model.R
