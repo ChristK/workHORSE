@@ -48,7 +48,7 @@ if (!require(workHORSEmisc)) {
   library(workHORSEmisc)
 }
 
-dt <- na.omit(HSE_ts[wt_int > 0 & between(age, 20, 90) & smok_status %in% 4, .(
+dt <- na.omit(HSE_ts[wt_int > 0 & between(age, 16, 90) & smok_status %in% 4, .(
   smok_cig_curr, smok_status, year, age, agegrp10, sex, qimd, ethnicity, sha, wt_int)]
 )
 dt[, smok_cig_curr := as.integer(round(smok_cig_curr))]
@@ -77,7 +77,7 @@ con1 <- gamlss.control(c.crit = 1e-3) # increase for faster exploratory analysis
 
 # Univariate analysis ----------------------------------------
 if (univariate_analysis) {
-  age_scaled <- scale(20:90, 45, 15.3)
+  age_scaled <- scale(16:90, 45, 15.3)
   dt[, .(smok_cig_curr_median = wtd.quantile(smok_cig_curr, weight = wt_int)), keyby = .(age)
      ][, scatter.smooth(age, smok_cig_curr_median)]
 
@@ -156,7 +156,7 @@ qsave(smok_cig_curr_model, "./lifecourse_models/smok_cig_curr_model.qs", preset 
 print("Model saved")
 
 trms <- all.vars(formula(smok_cig_curr_model))[-1] # -1 excludes dependent var
-newdata <- CJ(year = 3:50, age_int = 20:90, sex = unique(dt$sex), qimd = unique(dt$qimd),
+newdata <- CJ(year = 3:73, age_int = 5:89, sex = unique(dt$sex), qimd = unique(dt$qimd),
               ethnicity = unique(dt$ethnicity),
               sha = unique(dt$sha))
 newdata[, age := scale(age_int, 45, 15.3)]

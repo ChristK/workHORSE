@@ -1205,6 +1205,7 @@ SynthPop <-
               setdiff(names(tbl), intersect(names(dt), names(tbl)))
             absorb_dt(dt, tbl)
             dt[, smok_status_ref := my_qMN4(rankstat_smok, mu, sigma, nu)] # for calibration
+            dt[age < 16, smok_status_ref := 1L] # lookum table is messed up for <16
             dt[(pid_mrk), smok_status := smok_status_ref]
             dt[, (col_nam) := NULL]
             dt[, rankstat_smok := dqrunif(.N)] # this is now used for simsmoke. There shouldn't be correlated any more (colname hardcoded in C++ code).
@@ -1219,7 +1220,7 @@ SynthPop <-
             absorb_dt(dt, tbl)
             set(dt, NULL, "smok_quit_yrs", 0L)
             dt[(pid_mrk) &
-                 smok_status %in% 2:3,
+                 smok_status %in% 2:3 & age > 15L,
                smok_quit_yrs := my_qDPO(rankstat_smok_quit_yrs, mu, sigma)]
             dt[, rankstat_smok_quit_yrs := NULL]
             dt[, (col_nam) := NULL]
@@ -1234,7 +1235,8 @@ SynthPop <-
             absorb_dt(dt, tbl)
             set(dt, NULL, "smok_dur", 0L)
             dt[(pid_mrk) &
-                 smok_status %in% 2:3, smok_dur := my_qDPO(rankstat_smok_dur_ex, mu, sigma)]
+                 smok_status %in% 2:3 & age > 15L,
+              smok_dur := my_qDPO(rankstat_smok_dur_ex, mu, sigma)]
             dt[, rankstat_smok_dur_ex := NULL]
             dt[, (col_nam) := NULL]
 
@@ -1246,7 +1248,8 @@ SynthPop <-
               setdiff(names(tbl), intersect(names(dt), names(tbl)))
             absorb_dt(dt, tbl)
             dt[(pid_mrk) &
-                 smok_status == 4, smok_dur := as.integer(round(qNBI(rankstat_smok_dur_curr, mu, sigma)))]
+                 smok_status == 4 & age > 15L,
+              smok_dur := as.integer(round(qNBI(rankstat_smok_dur_curr, mu, sigma)))]
             dt[, rankstat_smok_dur_curr := NULL]
             dt[, (col_nam) := NULL]
 
@@ -1267,6 +1270,7 @@ SynthPop <-
                        as.data.table = TRUE)
             col_nam <-
               setdiff(names(tbl), intersect(names(dt), names(tbl)))
+            tbl[age < 16L, mu := 0]
             absorb_dt(dt, tbl)
             setnames(dt, "mu", "prb_smok_incid")
 
@@ -1274,6 +1278,7 @@ SynthPop <-
             tbl <-
               read_fst("./lifecourse_models/smok_cess_table.fst",
                        as.data.table = TRUE)
+            tbl[age < 16L, mu := 0]
             col_nam <-
               setdiff(names(tbl), intersect(names(dt), names(tbl)))
             absorb_dt(dt, tbl)

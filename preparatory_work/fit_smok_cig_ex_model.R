@@ -43,7 +43,7 @@ if (file.exists("./preparatory_work/HSE_ts.fst")) {
 source("./preparatory_work/aux_functions.R", local = TRUE)
 sourceCpp("./preparatory_work/BNB_distribution.cpp", cacheDir = "./.CppCache/")
 
-dt <- na.omit(HSE_ts[wt_int > 0 & between(age, 20, 90) & smok_status %in% 3, .(
+dt <- na.omit(HSE_ts[wt_int > 0 & between(age, 16, 90) & smok_status %in% 3, .(
   smok_cig_ex, smok_status, year, age, agegrp10, sex, qimd, ethnicity, sha, wt_int)]
 )
 dt[, smok_cig_ex := as.integer(round(smok_cig_ex))]
@@ -63,7 +63,7 @@ con1 <- gamlss.control(c.crit = 1e-3) # increase for faster exploratory analysis
 
 # Univariate analysis ----------------------------------------
 if (univariate_analysis) {
-  age_scaled <- scale(20:90, 57.4, 16.6)
+  age_scaled <- scale(16:90, 57.4, 16.6)
   dt[, .(smok_cig_ex_median = wtd.quantile(smok_cig_ex, weight = wt_int)), keyby = .(age)
      ][, scatter.smooth(age, smok_cig_ex_median)]
 
@@ -143,7 +143,7 @@ qsave(smok_cig_ex_model, "./lifecourse_models/smok_cig_ex_model.qs", preset = "h
 print("Model saved")
 
 trms <- all.vars(formula(smok_cig_ex_model))[-1] # -1 excludes dependent var
-newdata <- CJ(year = 3:50, age_int = 20:90, sex = unique(dt$sex), qimd = unique(dt$qimd),
+newdata <- CJ(year = 3:73, age_int = 5:89, sex = unique(dt$sex), qimd = unique(dt$qimd),
               ethnicity = unique(dt$ethnicity),
               sha = unique(dt$sha))
 newdata[, age := scale(age_int, 57.4, 16.6)]

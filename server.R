@@ -156,12 +156,17 @@ server = function(input, output, session) {
           {
             # TODO remove before release
 
+            if (file.exists(file.path(design$sim_prm$output_dir, "smk_output.csv")))
+              file.remove(file.path(design$sim_prm$output_dir, "smk_output.csv"))
+            
             if (file.exists(file.path(design$sim_prm$output_dir, "results.fst"))) {
               # out <- read_fst(file.path(design$sim_prm$output_dir, "results.fst"), as.data.table = TRUE)
               # out
               file.remove(file.path(design$sim_prm$output_dir, "results.fst"))
+
               run_simulation(parameters, design, FALSE)
             } else {
+              
               run_simulation(parameters, design, FALSE)
             }
           })
@@ -187,6 +192,8 @@ server = function(input, output, session) {
       {
         if (file.exists(file.path(design$sim_prm$output_dir, "results.fst")))
           file.remove(file.path(design$sim_prm$output_dir, "results.fst"))
+        if (file.exists(file.path(design$sim_prm$output_dir, "smk_output.csv")))
+          file.remove(file.path(design$sim_prm$output_dir, "smk_output.csv"))
         run_simulation(parameters, design, TRUE)
       })
   },

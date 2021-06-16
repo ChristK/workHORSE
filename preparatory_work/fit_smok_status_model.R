@@ -39,7 +39,7 @@ if (!require(workHORSEmisc)) {
 }
 dependencies(c("Rcpp", "dqrng", "fst", "qs", "gamlss", "reldist", "future", "future.apply", "data.table"))
 options(future.fork.enable = TRUE) # enable fork in Rstudio
-plan(multiprocess)
+plan(multicore)
 
 if (file.exists("./preparatory_work/HSE_ts.fst")) {
   HSE_ts <- read_fst("./preparatory_work/HSE_ts.fst", as.data.table = TRUE)
@@ -50,7 +50,7 @@ if (file.exists("./preparatory_work/HSE_ts.fst")) {
 # sourceCpp("./preparatory_work/MN_distribution.cpp", cacheDir = "./.CppCache/")
 
 
-dt <- na.omit(HSE_ts[wt_int > 0 & between(age, 20, 90),
+dt <- na.omit(HSE_ts[wt_int > 0 & between(age, 15, 90),
   .(smok_status, year, age, agegrp10, sex, qimd,
     ethnicity, sha, wt_int)])
 dt[, smok_status := as.integer(smok_status)]
@@ -61,7 +61,7 @@ distr_nam <- "MN4"
 con1 <- gamlss.control(c.crit = 1e-3) # increase for faster exploratory analysis.
 
 if (univariate_analysis) {
-  age_scaled <- scale(20:90, 50.7, 17.4)
+  age_scaled <- scale(15:90, 50.7, 17.4)
   dt[, .(smok_status_median = wtd.quantile(smok_status, weight = wt_int)), keyby = .(age)
     ][, scatter.smooth(age, smok_status_median)]
 
@@ -162,7 +162,7 @@ qsave(smok_status_model, "./lifecourse_models/smok_status_model.qs", preset = "h
 print("Model saved")
 
 trms <- all.vars(formula(smok_status_model))[-1] # -1 excludes dependent var
-newdata <- CJ(year = 3:50, age_int = 20:90, sex = unique(dt$sex), qimd = unique(dt$qimd), ethnicity = unique(dt$ethnicity),
+newdata <- CJ(year = 3:73, age_int = 5:89, sex = unique(dt$sex), qimd = unique(dt$qimd), ethnicity = unique(dt$ethnicity),
   sha = unique(dt$sha))
 newdata[, age := scale(age_int, 50.7, 17.4)]
 
