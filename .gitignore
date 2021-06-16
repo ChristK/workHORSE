@@ -53,3 +53,4 @@ simulation/health_econ/informal_care_costs_l.fst
 hint_script/*.qs
 disease_epidemiology/*.csv
 disease_epidemiology/*.fst
+HSE_ts.fst

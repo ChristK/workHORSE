@@ -42,17 +42,17 @@ output_chunk <-
 output_chunk[, pid_mrk  := mk_new_simulant_markers(pid)]
 output_chunk[, scenario := factor(scenario)]
 
-#export_smok(mc_iter, output_chunk)
+export_smok(mc_iter, output_chunk)
 
 generate_health_econ(output_chunk,
   ceiling(mc_iter /
       design$sim_prm$n_synthpop_aggregation))
 
-output_chunk[, c("ncc", "pid", "income", "education") := NULL]
+output_chunk[, c("ncc", "pid", "income", "education", "smok_status", 
+  "smok_cig", "smok_quit_yrs", "smok_dur") := NULL]
 
 output_chunk2 <- copy(output_chunk)
-library(collapse)
-output_chunk <- copy(output_chunk2)
+# output_chunk <- copy(output_chunk2)
 
 # gen incd
 for (nam in grep("_prvl$", names(output_chunk), value = TRUE)) {
@@ -87,7 +87,7 @@ if ("lqimd" %in% names(output_chunk)) {
 
 output_chunk[, year := year + 2000L]
 to_agegrp(output_chunk, 20L, 89L, "age", "agegrp", TRUE, 30L)
-output_chunk20 <- copy(output_chunk)
+output_chunk3 <- copy(output_chunk)
 
 # Scale-up to ONS population projections
 # output_chunk[, sum(wt), keyby = .(year, scenario)]
@@ -104,18 +104,6 @@ output_chunk[, c("age", "pid_mrk") := NULL]
 output_chunk <-
   output_chunk[, lapply(.SD, sum),
     keyby = eval(design$sim_prm$strata_for_output)]
-
-output_chunk4 <- # TODO
-  collapv(output_chunk20,
-    by = design$sim_prm$strata_for_output,
-    fsum,
-    w = "wt")
-output_chunk4[, c("age", "pid_mrk") := NULL]
-setkeyv(output_chunk4, design$sim_prm$strata_for_output)
-
-setcolorder(output_chunk)
-setcolorder(output_chunk4)
-all.equal(output_chunk, output_chunk4)
 
 setnames(output_chunk, "wt", "pops")
 output_chunk[, mc := mc_aggr]

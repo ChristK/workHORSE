@@ -44,7 +44,7 @@ source("./preparatory_work/aux_functions.R", local = TRUE)
 # sourceCpp("./preparatory_work/MN_distribution.cpp", cacheDir = "./.CppCache/")
 
 
-dt <- HSE_ts[wt_int > 0 & between(age, 18, 90),
+dt <- HSE_ts[wt_int > 0 & between(age, 15, 90),
                      .(smok_status, smok_quit_yrs, year, age, agegrp10, sex, qimd,
                        ethnicity, sha, wt_int)]
 # dt[smok_quit_yrs == 1, .N]
@@ -67,7 +67,7 @@ con1 <- gamlss.control(c.crit = 1e-3) # increase for faster exploratory analysis
 
 
 if (univariate_analysis) {
-  age_scaled <- scale(18:90, 43.8, 15.8)
+  age_scaled <- scale(16:90, 43.8, 15.8)
   dt[, .(event_mean = wtd.mean(event, weight = wt_int)), keyby = .(age)
      ][, scatter.smooth(age, event_mean)]
 
