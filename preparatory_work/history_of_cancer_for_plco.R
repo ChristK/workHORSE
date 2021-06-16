@@ -28,7 +28,7 @@
 
 # This is needed for PLCO lung cancer calculation
 
-dt <- CJ(age = 20:89,
+dt <- CJ(age = 20:90,
   sex = c("men", "women"),
   year = 3:50)
 
