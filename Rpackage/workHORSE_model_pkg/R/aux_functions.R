@@ -752,6 +752,7 @@ generate_eq5d_decr <- function(dt) {
   # TODO add copd and cancers
   utility_pop_norms <-
     c(
+      0.922, # age = 0
       0.922,
       0.922,
       0.922,
@@ -759,7 +760,24 @@ generate_eq5d_decr <- function(dt) {
       0.922,
       0.922,
       0.922,
-      0.914,
+      0.922,
+      0.922,
+      0.922,
+      0.922,
+      0.922,
+      0.922,
+      0.922,
+      0.922,
+      0.922,
+      0.922,
+      0.922, # for age = 18 (younger ages I set it arbitrarily as if 18)
+      0.922,
+      0.922,
+      0.922,
+      0.922,
+      0.922,
+      0.922,
+      0.914, # age = 25
       0.914,
       0.914,
       0.914,
@@ -872,7 +890,7 @@ generate_eq5d_decr <- function(dt) {
 
 
   out <-
-    utility_pop_norms[dt$age - 17L] + utility_income[dt$income] +
+    utility_pop_norms[dt$age + 1L] + utility_income[dt$income] +
     utility_education[dt$education] +
     0.0010046 * (dt$sex == "men") +
     utility_ncc[new_ncc + 1L] - 0.0460 * (dt$htn_prvl > 0L) -
@@ -968,9 +986,12 @@ get_socialcare_costs <- function(mc) {
 
 generate_socialcare_costs <- function(dt, mc) {
   costs <- get_socialcare_costs(mc)
-  # for ages 18 to 100. Hence, age - 17L
+  # above are for ages 18 to 100. 
+  # I will assume £0 social care cost for ages 0-17
+  costs$socialcare_cost <- c(rep(0, 18), costs$socialcare_cost)
+  
   out <-
-    costs$socialcare_cost[dt$age - 17L] + costs$socialcare_cost_stroke * (dt$stroke_prvl > 0L) +
+    costs$socialcare_cost[dt$age + 1L] + costs$socialcare_cost_stroke * (dt$stroke_prvl > 0L) +
     costs$socialcare_cost_poststroke_dementia * (dt$poststroke_dementia_prvl > 0L)
 
   # half cost for year of death
@@ -2105,7 +2126,7 @@ set_tobacco <- function(scenario_parms, dt, design) {
                scenario_parms$sc_init_year,
                scenario_parms$sc_last_year) &
                 dead == FALSE & 
-                between(age, 18, 20), # TO DO - link to slider (scenario_parms$sc_tobacco_mala_change); min age to 18
+                between(age, 18, scenario_parms$sc_tobacco_mala_change - 1L),
        age_sc := 17L]
     
     # smoking ----
@@ -2133,10 +2154,16 @@ set_tobacco <- function(scenario_parms, dt, design) {
       
       
       # Assign smok_cessation probabilities
+      # Smoking cessation pr decreasing with age for young ages. That makes the 
+      # method of shifting inappropriate. I will use the study by Fidler & West
+      # that found OR 0.87 for reduction in smoking prevalence. I will arbitrarily
+      # apply this OR to the cessation probabilities (for now, I will improve later)
       lutbl <-
         read_fst("./lifecourse_models/smok_cess_table.fst",
                  as.data.table = TRUE)
-      setnames(lutbl, c("age", "mu"), c("age_sc", "prb_smok_cess_sc"))
+      lutbl[between(age, 18, scenario_parms$sc_tobacco_mala_change - 1),
+        mu := 0.87 * mu]
+      setnames(lutbl, c("mu"), c("prb_smok_cess_sc"))
       lookup_dt(dt, lutbl)
       
       # Handle smok_relapse probabilities
@@ -2341,8 +2368,7 @@ time_mark <- function(x, file_nam = output_dir("times.txt")) {
 export_smok <- function(mc_,
                         dt,
                         write_to_disk = TRUE,
-                        filenam = "smk_output.csv",
-                        reweighted_to_hse = FALSE) {
+                        filenam = "smk_output.csv") {
   to_agegrp(dt, 10L, 89L, "age", "agegrp10", to_factor = TRUE)
   dt[, smok_never_smok_xps := fifelse(smok_status == "1", 1L, 0L)] # smok function
   dt[, smok_active_smok_xps := fifelse(smok_status == "4", 1L, 0L)] # smok function
@@ -2750,7 +2776,8 @@ run_simulation <- function(parameters, design, final = FALSE) {
     output_chunk[, scenario := factor(scenario)]
     export_smok(mc_ = mc_aggr, dt = output_chunk) # export smoking prevalence
     generate_health_econ(output_chunk, mc_aggr)
-    output_chunk[, c("ncc", "pid", "income", "education") := NULL]
+    output_chunk[, c("ncc", "pid", "income", "education", "smok_status", 
+      "smok_cig", "smok_quit_yrs", "smok_dur") := NULL]
 
     # gen incd
     for (nam in grep("_prvl$", names(output_chunk), value = TRUE)) {

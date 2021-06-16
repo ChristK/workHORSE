@@ -44,12 +44,12 @@ source("./preparatory_work/aux_functions.R", local = TRUE)
 # sourceCpp("./preparatory_work/MN_distribution.cpp", cacheDir = "./.CppCache/")
 
 
-dt <- HSE_ts[wt_int > 0 & between(age, 18, 90),
+dt <- HSE_ts[wt_int > 0 & between(age, 15, 90),
                      .(smok_status, smok_init_age, year, age, agegrp10, sex, qimd,
                        ethnicity, sha, wt_int)]
 # dt[smok_init_age >= (age - 1), .N]
 dt[smok_status == "1", event := 0L] # only never smokers in the denominator
-dt[smok_init_age >= (age - 1) & smok_status == "4", event := 1L] # only smokers for up to a year in the denominator
+dt[smok_init_age >= (age - 1L) & smok_status == "4", event := 1L] # only smokers for up to a year in the numerator
 dt[, smok_init_age := NULL]
 dt <- na.omit(dt)
 dt[, age := scale(age, 51.7, 17.4)]
@@ -67,7 +67,7 @@ con1 <- gamlss.control(c.crit = 1e-3) # increase for faster exploratory analysis
 
 
 if (univariate_analysis) {
-  age_scaled <- scale(18:90, 51.7, 17.4)
+  age_scaled <- scale(15:90, 51.7, 17.4)
   dt[, .(event_mean = wtd.mean(event, weight = wt_int)), keyby = .(age)
      ][, scatter.smooth(age, event_mean)]
 
@@ -138,11 +138,11 @@ if (univariate_analysis) {
 }
 
 smok_incid_model <- gamlss(
-  event ~ log(year - 2L) *  pb(age) * pcat(qimd) * (sex +  pcat(ethnicity) + pcat(sha)),
+  event ~ log(year - 2) * pb(age) * pcat(qimd) * (sex +  pcat(ethnicity)),
   family = distr_nam,
   weights = dt$wt_int,
   data = dt,
-  method = mixed(400, 400),
+  method = RS(400),
   control = con1
 )
 
@@ -153,8 +153,7 @@ qsave(smok_incid_model, "./lifecourse_models/smok_incid_model.qs", preset = "hig
 print("Model saved")
 
 trms <- all.vars(formula(smok_incid_model))[-1] # -1 excludes dependent var
-newdata <- CJ(year = 3:50, age_int = 20:90, sex = unique(dt$sex), qimd = unique(dt$qimd), ethnicity = unique(dt$ethnicity),
-              sha = unique(dt$sha))
+newdata <- CJ(year = 3:73, age_int = 5:89, sex = unique(dt$sex), qimd = unique(dt$qimd), ethnicity = unique(dt$ethnicity))
 newdata[, age := scale(age_int, 51.7, 17.4)]
 
 newdata <- split(newdata, by = "year")
