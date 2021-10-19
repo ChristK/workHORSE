@@ -289,7 +289,7 @@ bsCollapsePanel(
       ),
       ## col 2 ----
       column(
-        4,
+        3,
         numericInput(
           "coverage_cost_qimd0_sc1",
           "Cost per invitation",
@@ -306,7 +306,19 @@ bsCollapsePanel(
       ),
       ## col 3 ----
       column(
-        4,
+        3,
+        numericInput(
+          "overhead_cost_qimd0_sc1",
+          "Overhead Cost",
+          20,
+          0,
+          500,
+          1
+        )
+      ),
+      ## col 4 ----
+      column(
+        2,
         br(),
         switchInput(
           "coverage_detailed_checkbox_sc1",
@@ -1380,36 +1392,24 @@ wellPanel(fluidRow(
            shinyInput_label_embed(
              icon("info") %>%
                bs_embed_popover(title = "Assign MALA to tobacco to a different one")
+           ),
+         numericInput(
+           "tax_slider_sc1",
+           "Price Elasticity (%)",
+           3.5,
+           0,
+          100,
+           0.1
+         )
+         %>%
+           shinyInput_label_embed(
+             icon("info") %>%
+               bs_embed_popover(title = "10% of tobacco price reduction impact on precentage of smoking prevalence reduction")
            )
   ) # end column
 )) # end wellPanel
 ),
 
-# bsCollapsePanel(
-#   "Smoking Policy",
-#   style = "default",
-# wellPanel(fluidRow(
-# ## Tobacco Policies ----
-# h5("Smoking Policies"),
-# h6("Note: these policies may override some of the changes set above"),
-# HTML("<br> <br/> "),
-# column(6,
-#        sliderInput(
-#          "mala_slider_sc1",
-#          "Minimum age of legal access to tobacco products",
-#          1, 28, 21, 1,
-#          sep = "",
-#          ticks = FALSE,
-#          post  = ""
-#        )
-#        %>%
-#          shinyInput_label_embed(
-#            icon("info") %>%
-#              bs_embed_popover(title = "Assign MALA to tobacco to a different one")
-#          )
-#     ) # end column
-#   ))
-# ),
 
 
 # Notes  ------------------------------------------------
