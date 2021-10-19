@@ -4,7 +4,7 @@ input <- qread("./output/input.qs")
 parameters <- fromGUI_prune(parameters) # TODO delete for production
 design$update_fromGUI(parameters)
 parameters_dt <- fromGUI_to_dt(parameters)
-scenario_nam <- "sc2"
+scenario_nam <- ""
 mc_iter <- 1L
 
 design$get_lags(mc_iter)
