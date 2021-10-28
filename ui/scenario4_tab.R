@@ -304,7 +304,7 @@ bsCollapsePanel(
               bs_embed_popover(title = "Please enter the cost per invitation")
           )
       ),
-      # added for overhead cost
+      ## col 3 ----
       column(
         3,
         numericInput(
@@ -316,7 +316,7 @@ bsCollapsePanel(
           1
         )
       ),
-      ## col 3 ----
+      ## col 4 ----
       column(
         2,
         br(),
@@ -1380,25 +1380,39 @@ wellPanel(fluidRow(
   h6("Note: these policies may override some of the changes set above"),
   HTML("<br> <br/> "),
   column(6,
-         sliderInput(
-           "mala_slider_sc4",
-           "Minimum age of legal access to tobacco products",
-           18, 30, 18, 1,
-           sep = "",
-           ticks = FALSE,
-           post  = ""
-         )
-         %>%
+                sliderInput(
+                  "mala_slider_sc4",
+                  "Minimum age of legal access to tobacco products",
+                  18, 30, 18, 1,
+                  sep = "",
+                  ticks = FALSE,
+                  post  = ""
+                )
+                %>%
+                  shinyInput_label_embed(
+                    icon("info") %>%
+                      bs_embed_popover(title = "Assign MALA to tobacco to a different one")
+                  )
+         ),
+  column(4, 
+         numericInput(
+           "smoking_prevalence_sc4",
+           "Reduction in new smokers (%) ",
+           0.5,
+           0,
+           100,
+           1
+         )%>%
            shinyInput_label_embed(
              icon("info") %>%
-               bs_embed_popover(title = "Assign MALA to tobacco to a different one")
+               bs_embed_popover(title = "annual reduction of the smoking prevalences")
            ),
          numericInput(
            "tax_slider_sc4",
            "Price Elasticity (%)",
            3.5,
            0,
-          100,
+           100,
            0.1
          )
          %>%
@@ -1406,7 +1420,61 @@ wellPanel(fluidRow(
              icon("info") %>%
                bs_embed_popover(title = "10% of tobacco price reduction impact on precentage of smoking prevalence reduction")
            )
-  ) # end column
+  ),
+         column(4, 
+                numericInput(
+                  "smoking_prevalence_high_ses_sc4",
+                  "Reduction in new smokers (%) - High SES group ",
+                  0.5,
+                  0,
+                  100,
+                  1
+                )%>%
+                  shinyInput_label_embed(
+                    icon("info") %>%
+                      bs_embed_popover(title = "annual reduction  of the smoking prevalences among high SES groups")
+                  ),
+                numericInput(
+                  "tax_slider_high_ses_sc4",
+                  "Price Elasticity (%) - High SES group",
+                  3.5,
+                  0,
+                  100,
+                  0.1
+                )
+                %>%
+                  shinyInput_label_embed(
+                    icon("info") %>%
+                      bs_embed_popover(title = "10% of tobacco price reduction impact on precentage of smoking prevalence reduction among high SES groups")
+                  )
+  ),
+  column(4, 
+         numericInput(
+           "smoking_prevalence_low_ses_sc4",
+           "Reduction in new smokers (%) - Low SES group ",
+           0.5,
+           0,
+           100,
+           1
+         )%>%
+           shinyInput_label_embed(
+             icon("info") %>%
+               bs_embed_popover(title = "annual reduction  of the smoking prevalence among the lowest SES groups")
+           ),
+         numericInput(
+           "tax_slider_low_ses_sc4",
+           "Price Elasticity (%) - Low SES group",
+           3.5,
+           0,
+           100,
+           0.1
+         )
+         %>%
+           shinyInput_label_embed(
+             icon("info") %>%
+               bs_embed_popover(title = "10% of tobacco price reduction impact on precentage of smoking prevalence reduction among the lowest SES groups")
+           )
+  )
 )) # end wellPanel
 ),
 
