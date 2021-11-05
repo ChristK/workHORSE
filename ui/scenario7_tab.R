@@ -604,49 +604,50 @@ bsCollapsePanel("Health Checks Received (%)",
 # Prescription rate panel  ------------------------------------------------
 bsCollapsePanel(
   "Prescription Rate",
-  style = "success",
+  style = "success"
+  ,
   wellPanel(
     fluidRow(
       ## col 1 ----
-      column(
-        4,
-        sliderInput(
-          "statin_px_slider_sc7",
-          "Proportion of participants that have been prescribed a statin",
-          0,
-          100,
-          10,
-          0.5,
-          sep = "",
-          ticks = FALSE,
-          post  = " %"
-        )
-        %>%
-          shinyInput_label_embed(
-            icon("info") %>%
-              bs_embed_popover(title = "Please select the percentage of attendees who have completed a Health Check and have been prescribed a statin as a consequence. Note that the denomiator here are all attendees, not just those that a statin would be recommended.")
-          )
-      ),
+      # column(
+      #   4,
+      #   sliderInput(
+      #     "statin_px_slider_sc7",
+      #     "Proportion of participants that have been prescribed a statin",
+      #     0,
+      #     100,
+      #     10,
+      #     0.5,
+      #     sep = "",
+      #     ticks = FALSE,
+      #     post  = " %"
+      #   )
+      #   %>%
+      #     shinyInput_label_embed(
+      #       icon("info") %>%
+      #         bs_embed_popover(title = "Please select the percentage of attendees who have completed a Health Check and have been prescribed a statin as a consequence. Note that the denomiator here are all attendees, not just those that a statin would be recommended.")
+      #     )
+      # ),
       ## col 2 ----
-      column(
-        4,
-        sliderInput(
-          "antihtn_px_slider_sc7",
-          "Proportion of participants that have been prescribed antihypertensives",
-          0,
-          100,
-          10,
-          0.5,
-          sep = "",
-          ticks = FALSE,
-          post  = " %"
-        )
-        %>%
-          shinyInput_label_embed(
-            icon("info") %>%
-              bs_embed_popover(title = "Please select the percentage of attendees who have completed a Health Check and have been prescribed antihypertensive medication as a consequence. Note that the denomiator here are all attendees, not just those that treatment for hypertension would be recommended." )
-          )
-      ),
+      # column(
+      #   4,
+      #   sliderInput(
+      #     "antihtn_px_slider_sc7",
+      #     "Proportion of participants that have been prescribed antihypertensives",
+      #     0,
+      #     100,
+      #     10,
+      #     0.5,
+      #     sep = "",
+      #     ticks = FALSE,
+      #     post  = " %"
+      #   )
+      #   %>%
+      #     shinyInput_label_embed(
+      #       icon("info") %>%
+      #         bs_embed_popover(title = "Please select the percentage of attendees who have completed a Health Check and have been prescribed antihypertensive medication as a consequence. Note that the denomiator here are all attendees, not just those that treatment for hypertension would be recommended." )
+      #     )
+      # ),
       ## col 3 ----
       column(
         4,
@@ -659,25 +660,27 @@ bsCollapsePanel(
           offLabel = "Hide",
           labelWidth = "100%"
         )
-        %>%
-          shinyInput_label_embed(
-            icon("info") %>%
-              bs_embed_popover(title = "Reveal more granular options. It is highly recommended to inform the model with this additional information.")
-          )
+        # %>%
+        #   shinyInput_label_embed(
+        #     icon("info") %>%
+        #       bs_embed_popover(title = "Reveal more granular options. It is highly recommended to inform the model with this additional information.")
+        #   )
       )
-    )),
+    )
+    )
+  #,
 
-  wellPanel(
-    fluidRow(
-    uiOutput("statin_px_table_help_sc7"),
-    tableOutput("statin_px_table_sc7")
-)),
+#   wellPanel(
+#     fluidRow(
+#     uiOutput("statin_px_table_help_sc7"),
+#     tableOutput("statin_px_table_sc7")
+# )),
 
-wellPanel(
-  fluidRow(
-    uiOutput("antihtn_px_table_help_sc7"),
-    tableOutput("antihtn_px_table_sc7")
-  ))
+# wellPanel(
+#   fluidRow(
+#     uiOutput("antihtn_px_table_help_sc7"),
+#     tableOutput("antihtn_px_table_sc7")
+#   ))
 ),
 
 # Lifestyle panel  ------------------------------------------------
@@ -740,245 +743,246 @@ bsCollapsePanel(
                       bs_embed_popover(title = "Please enter the annual fixed cost of the smoking cessation program")
                   )
               )
-            )),
-  wellPanel(
-  helpText(h5('Weight management')),
-  fluidRow(
-    column(
-      4,
-      sliderInput(
-        "wghtpct_slider_sc7",
-        "Percentage of obese participants losing weight",
-        0,
-        100,
-        0,
-        0.5,
-        sep = "",
-        ticks = FALSE,
-        post  = " %"
-      )  %>%
-        shinyInput_label_embed(
-          icon("info") %>%
-            bs_embed_popover(title = "Please enter the percentage of obese participants losing weigth")
-      ),
-      sliderInput(
-        "wghtreduc_slider_sc7",
-        "Average weight loss as percentage weight", # equivalent to percentage of BMI
-        0,
-        20,
-        0,
-        0.5,
-        sep = "",
-        ticks = FALSE,
-        post  = " %"
-      )
-      %>%
-        shinyInput_label_embed(
-          icon("info") %>%
-            bs_embed_popover(title = "Please enter average percentage reduction in BMI per person in a year, e.g. 5% reduction in BMI")
-        )
-    ),
-    column(
-      4,
-      numericInput(
-        "wghtloss_cost_sc7",
-        "Weight management annual cost per participant losing weight",
-        0,
-        0,
-        5e6,
-        1
-      )
-      %>%
-        shinyInput_label_embed(
-          icon("info") %>%
-            bs_embed_popover(title = "Please enter the cost per participant in the weight management program")
-        )
-    ),
-    column(
-      4,
-      numericInput(
-        "wghtloss_cost_ovrhd_sc7",
-        "Weight management annual overhead costs",
-        0,
-       -5e6,
-        5e6,
-        1
-      )
-      %>%
-        shinyInput_label_embed(
-          icon("info") %>%
-            bs_embed_popover(title = "Please enter the annual fixed cost of the weight management program")
-        )
-    )
-  )
-  ),
-  wellPanel(
-  helpText(h5('Physical activity')),
-  fluidRow(
-    column(
-      4,
-      sliderInput(
-        "papct_slider_sc7",
-        "Percentage of participants increasing their physical activity",
-        0,
-        100,
-        0,
-        0.5,
-        sep = "",
-        ticks = FALSE,
-        post  = " %"
-      )
-      %>%
-        shinyInput_label_embed(
-          icon("info") %>%
-            bs_embed_popover(title = "Please enter the percentage of participants increasing their physical activity levels")
-      ),
-      sliderInput(
-        "papincr_slider_sc7",
-        "Average increase in active days per week",
-        0,
-        7,
-        0,
-        1,
-        sep = "",
-        ticks = FALSE,
-        post  = ""
-      )
-      %>%
-        shinyInput_label_embed(
-          icon("info") %>%
-            bs_embed_popover(title = "Please enter the average increase in days of physical activity, e.g. 2 days")
-        )
-    ),
-    column(
-      4,
-      numericInput(
-        "pa_cost_sc7",
-        "Physical activity annual cost per more active participant",
-        0,
-        0,
-        5e6,
-        1
-      )
-      %>%
-        shinyInput_label_embed(
-          icon("info") %>%
-            bs_embed_popover(title = "Please enter the cost per participant in the the physical activity program")
-        )
-    ),
-    column(
-      4,
-      numericInput(
-        "pa_cost_ovrhd_sc7",
-        "Physical activity actions annual overhead costs",
-        0,
-       -5e6,
-        5e6,
-        1
-      )
-      %>%
-        shinyInput_label_embed(
-          icon("info") %>%
-            bs_embed_popover(title = "Please enter the annual fixed cost of the physical activity program")
-        )
-    )
-  )),
-  wellPanel(
-    helpText(h5('Alcohol')),
-    fluidRow(
-      column(
-        4,
-        sliderInput(
-          "alcoholpct_slider_sc7",
-          "Percentage of participants consuming more than 14 units of alcohol per week, cutting down",
-          # 1 unit is 8g of alcohol
-          0,
-          100,
-          0,
-          0.5,
-          sep = "",
-          ticks = FALSE,
-          post  = " %"
-        )  %>%
-          shinyInput_label_embed(
-            icon("info") %>%
-              bs_embed_popover(title = "Please enter the percentage of participants consuming more than 14 units of alcohol per week that cut down")
-          ),
-        sliderInput(
-          "alcoholreduc_slider_sc7",
-          "Alcohol intake percentage reduction",
-          0,
-          50,
-          0,
-          0.5,
-          sep = "",
-          ticks = FALSE,
-          post  = " %"
-        )
-        %>%
-          shinyInput_label_embed(
-            icon("info") %>%
-              bs_embed_popover(title = "Please enter average percentage reduction in alcohol intake, e.g. 5% reduction in units of alcohol consumed per week")
-          )
-      ),
-      column(
-        4,
-        numericInput(
-          "alcoholreduc_cost_sc7",
-          "Alcohol service annual cost per participant losing weight",
-          0,
-          0,
-          5e6,
-          1
-        )
-        %>%
-          shinyInput_label_embed(
-            icon("info") %>%
-              bs_embed_popover(title = "Please enter the cost per participant in the alcohol reduction service")
-          )
-      ),
-      column(
-        4,
-        numericInput(
-          "alcoholreduc_cost_ovrhd_sc7",
-          "Alcohol service annual overhead costs",
-          0,
-          -5e6,
-          5e6,
-          1
-        )
-        %>%
-          shinyInput_label_embed(
-            icon("info") %>%
-              bs_embed_popover(title = "Please enter the annual fixed cost of the alcohol reduction service")
-          )
-      )
-    )
-  ),
-  wellPanel(helpText(h5('Attrition rate')),
-            fluidRow(
-              ## col 1 ----
-              column(
-                4,
-                sliderInput(
-                  "lifestyle_attrition_slider_sc7",
-                  "Percentage of participants reverting back to pre health check lifestyle every year",
-                  0,
-                  100,
-                  20,
-                  0.5,
-                  sep = "",
-                  ticks = FALSE,
-                  post  = " %"
-                )
-                %>%
-                  shinyInput_label_embed(
-                    icon("info") %>%
-                      bs_embed_popover(title = "Please enter the percentage of people that revert to their previous lifestyle every year, after succesfully improving their lifestyle because of a health check. For example, 20% attrition rate per year means that after 5 years only (1-0.2)^5 = 33% of those successfuly improved their lifestyle initially are still observe the lifestyle change. The same attrition rate applies to all of the risk factor above, except for smoking.")
-                  )
-              )
-            )
-          )
+            ))
+  # ,
+  # wellPanel(
+  # helpText(h5('Weight management')),
+  # fluidRow(
+  #   column(
+  #     4,
+  #     sliderInput(
+  #       "wghtpct_slider_sc7",
+  #       "Percentage of obese participants losing weight",
+  #       0,
+  #       100,
+  #       0,
+  #       0.5,
+  #       sep = "",
+  #       ticks = FALSE,
+  #       post  = " %"
+  #     )  %>%
+  #       shinyInput_label_embed(
+  #         icon("info") %>%
+  #           bs_embed_popover(title = "Please enter the percentage of obese participants losing weigth")
+  #     ),
+  #     sliderInput(
+  #       "wghtreduc_slider_sc7",
+  #       "Average weight loss as percentage weight", # equivalent to percentage of BMI
+  #       0,
+  #       20,
+  #       0,
+  #       0.5,
+  #       sep = "",
+  #       ticks = FALSE,
+  #       post  = " %"
+  #     )
+  #     %>%
+  #       shinyInput_label_embed(
+  #         icon("info") %>%
+  #           bs_embed_popover(title = "Please enter average percentage reduction in BMI per person in a year, e.g. 5% reduction in BMI")
+  #       )
+  #   ),
+  #   column(
+  #     4,
+  #     numericInput(
+  #       "wghtloss_cost_sc7",
+  #       "Weight management annual cost per participant losing weight",
+  #       0,
+  #       0,
+  #       5e6,
+  #       1
+  #     )
+  #     %>%
+  #       shinyInput_label_embed(
+  #         icon("info") %>%
+  #           bs_embed_popover(title = "Please enter the cost per participant in the weight management program")
+  #       )
+  #   ),
+  #   column(
+  #     4,
+  #     numericInput(
+  #       "wghtloss_cost_ovrhd_sc7",
+  #       "Weight management annual overhead costs",
+  #       0,
+  #      -5e6,
+  #       5e6,
+  #       1
+  #     )
+  #     %>%
+  #       shinyInput_label_embed(
+  #         icon("info") %>%
+  #           bs_embed_popover(title = "Please enter the annual fixed cost of the weight management program")
+  #       )
+  #   )
+  # )
+  # ),
+  # wellPanel(
+  # helpText(h5('Physical activity')),
+  # fluidRow(
+  #   column(
+  #     4,
+  #     sliderInput(
+  #       "papct_slider_sc7",
+  #       "Percentage of participants increasing their physical activity",
+  #       0,
+  #       100,
+  #       0,
+  #       0.5,
+  #       sep = "",
+  #       ticks = FALSE,
+  #       post  = " %"
+  #     )
+  #     %>%
+  #       shinyInput_label_embed(
+  #         icon("info") %>%
+  #           bs_embed_popover(title = "Please enter the percentage of participants increasing their physical activity levels")
+  #     ),
+  #     sliderInput(
+  #       "papincr_slider_sc7",
+  #       "Average increase in active days per week",
+  #       0,
+  #       7,
+  #       0,
+  #       1,
+  #       sep = "",
+  #       ticks = FALSE,
+  #       post  = ""
+  #     )
+  #     %>%
+  #       shinyInput_label_embed(
+  #         icon("info") %>%
+  #           bs_embed_popover(title = "Please enter the average increase in days of physical activity, e.g. 2 days")
+  #       )
+  #   ),
+  #   column(
+  #     4,
+  #     numericInput(
+  #       "pa_cost_sc7",
+  #       "Physical activity annual cost per more active participant",
+  #       0,
+  #       0,
+  #       5e6,
+  #       1
+  #     )
+  #     %>%
+  #       shinyInput_label_embed(
+  #         icon("info") %>%
+  #           bs_embed_popover(title = "Please enter the cost per participant in the the physical activity program")
+  #       )
+  #   ),
+  #   column(
+  #     4,
+  #     numericInput(
+  #       "pa_cost_ovrhd_sc7",
+  #       "Physical activity actions annual overhead costs",
+  #       0,
+  #      -5e6,
+  #       5e6,
+  #       1
+  #     )
+  #     %>%
+  #       shinyInput_label_embed(
+  #         icon("info") %>%
+  #           bs_embed_popover(title = "Please enter the annual fixed cost of the physical activity program")
+  #       )
+  #   )
+  # )),
+  # wellPanel(
+  #   helpText(h5('Alcohol')),
+  #   fluidRow(
+  #     column(
+  #       4,
+  #       sliderInput(
+  #         "alcoholpct_slider_sc7",
+  #         "Percentage of participants consuming more than 14 units of alcohol per week, cutting down",
+  #         # 1 unit is 8g of alcohol
+  #         0,
+  #         100,
+  #         0,
+  #         0.5,
+  #         sep = "",
+  #         ticks = FALSE,
+  #         post  = " %"
+  #       )  %>%
+  #         shinyInput_label_embed(
+  #           icon("info") %>%
+  #             bs_embed_popover(title = "Please enter the percentage of participants consuming more than 14 units of alcohol per week that cut down")
+  #         ),
+  #       sliderInput(
+  #         "alcoholreduc_slider_sc7",
+  #         "Alcohol intake percentage reduction",
+  #         0,
+  #         50,
+  #         0,
+  #         0.5,
+  #         sep = "",
+  #         ticks = FALSE,
+  #         post  = " %"
+  #       )
+  #       %>%
+  #         shinyInput_label_embed(
+  #           icon("info") %>%
+  #             bs_embed_popover(title = "Please enter average percentage reduction in alcohol intake, e.g. 5% reduction in units of alcohol consumed per week")
+  #         )
+  #     ),
+  #     column(
+  #       4,
+  #       numericInput(
+  #         "alcoholreduc_cost_sc7",
+  #         "Alcohol service annual cost per participant losing weight",
+  #         0,
+  #         0,
+  #         5e6,
+  #         1
+  #       )
+  #       %>%
+  #         shinyInput_label_embed(
+  #           icon("info") %>%
+  #             bs_embed_popover(title = "Please enter the cost per participant in the alcohol reduction service")
+  #         )
+  #     ),
+  #     column(
+  #       4,
+  #       numericInput(
+  #         "alcoholreduc_cost_ovrhd_sc7",
+  #         "Alcohol service annual overhead costs",
+  #         0,
+  #         -5e6,
+  #         5e6,
+  #         1
+  #       )
+  #       %>%
+  #         shinyInput_label_embed(
+  #           icon("info") %>%
+  #             bs_embed_popover(title = "Please enter the annual fixed cost of the alcohol reduction service")
+  #         )
+  #     )
+  #   )
+  # ),
+  # wellPanel(helpText(h5('Attrition rate')),
+  #           fluidRow(
+  #             ## col 1 ----
+  #             column(
+  #               4,
+  #               sliderInput(
+  #                 "lifestyle_attrition_slider_sc7",
+  #                 "Percentage of participants reverting back to pre health check lifestyle every year",
+  #                 0,
+  #                 100,
+  #                 20,
+  #                 0.5,
+  #                 sep = "",
+  #                 ticks = FALSE,
+  #                 post  = " %"
+  #               )
+  #               %>%
+  #                 shinyInput_label_embed(
+  #                   icon("info") %>%
+  #                     bs_embed_popover(title = "Please enter the percentage of people that revert to their previous lifestyle every year, after succesfully improving their lifestyle because of a health check. For example, 20% attrition rate per year means that after 5 years only (1-0.2)^5 = 33% of those successfuly improved their lifestyle initially are still observe the lifestyle change. The same attrition rate applies to all of the risk factor above, except for smoking.")
+  #                 )
+  #             )
+  #           )
+  #         )
 ),
 
 # Advanced panel  ------------------------------------------------
@@ -1042,59 +1046,59 @@ fluidRow(
           bs_embed_popover(title = "Percentage of the population this scenario applies to if it is part of a parallel or sequential ensemble")
       )
     ))),
-  wellPanel(fluidRow(
-    ## Digital Health Checks ----
-    h5("Digital Health Checks"),
-    HTML("<br> <br/> "),
-    column(3,
-           switchInput(
-             "ignore_cholesterol_checkbox_sc7",
-             "Ignore cholesterol in QRISK calculation",
-             value = FALSE,
-             onLabel = "Yes",
-             offLabel = "No",
-             labelWidth = "50%",
-             width = "100%"
-           )
-           %>%
-             shinyInput_label_embed(
-               icon("info") %>%
-                 bs_embed_popover(title = "When calculating the Qrisk function this option allows you to exclude cholesterol estimates")
-             )
-    ),
-    column(4, offset = 1,
-           switchInput(
-             "ignore_sbp_checkbox_sc7",
-             "Ignore systolic blood pressure in QRISK calculation",
-             value = FALSE,
-             onLabel = "Yes",
-             offLabel = "No",
-             labelWidth = "100%",
-             width = "100%"
-           )
-           %>%
-             shinyInput_label_embed(
-               icon("info") %>%
-                 bs_embed_popover(title = "When calculating the Qrisk function this option allows you to exclude systolic blood pressure estimates")
-             )
-    ),
-    column(3, offset = 1,
-           switchInput(
-             "ignore_bmi_checkbox_sc7",
-             "Ignore BMI in QRISK calculation",
-             value = FALSE,
-             onLabel = "Yes",
-             offLabel = "No",
-             labelWidth = "50%",
-             width = "100%"
-           )
-           %>%
-             shinyInput_label_embed(
-               icon("info") %>%
-                 bs_embed_popover(title = "When calculating the Qrisk function this option allows you to exclude BMI estimates")
-             )
-    )
-    )),
+  # wellPanel(fluidRow(
+  #   ## Digital Health Checks ----
+  #   h5("Digital Health Checks"),
+  #   HTML("<br> <br/> "),
+  #   column(3,
+  #          switchInput(
+  #            "ignore_cholesterol_checkbox_sc7",
+  #            "Ignore cholesterol in QRISK calculation",
+  #            value = FALSE,
+  #            onLabel = "Yes",
+  #            offLabel = "No",
+  #            labelWidth = "50%",
+  #            width = "100%"
+  #          )
+  #          %>%
+  #            shinyInput_label_embed(
+  #              icon("info") %>%
+  #                bs_embed_popover(title = "When calculating the Qrisk function this option allows you to exclude cholesterol estimates")
+  #            )
+  #   ),
+  #   column(4, offset = 1,
+  #          switchInput(
+  #            "ignore_sbp_checkbox_sc7",
+  #            "Ignore systolic blood pressure in QRISK calculation",
+  #            value = FALSE,
+  #            onLabel = "Yes",
+  #            offLabel = "No",
+  #            labelWidth = "100%",
+  #            width = "100%"
+  #          )
+  #          %>%
+  #            shinyInput_label_embed(
+  #              icon("info") %>%
+  #                bs_embed_popover(title = "When calculating the Qrisk function this option allows you to exclude systolic blood pressure estimates")
+  #            )
+  #   ),
+  #   column(3, offset = 1,
+  #          switchInput(
+  #            "ignore_bmi_checkbox_sc7",
+  #            "Ignore BMI in QRISK calculation",
+  #            value = FALSE,
+  #            onLabel = "Yes",
+  #            offLabel = "No",
+  #            labelWidth = "50%",
+  #            width = "100%"
+  #          )
+  #          %>%
+  #            shinyInput_label_embed(
+  #              icon("info") %>%
+  #                bs_embed_popover(title = "When calculating the Qrisk function this option allows you to exclude BMI estimates")
+  #            )
+  #   )
+  #   )),
   wellPanel(fluidRow(
     ## Structural Policies ----
     h5("Structural Policies / Calibration"),
@@ -1127,11 +1131,29 @@ fluidRow(
                                   cessation). When positive, smokers are coming
                                   from the pool of ex-smokers (i.e. it increases
                                   the probability of relapse).")
-           ),
+           )
+           # ,
+           # # sliderInput(
+           # #   "structural_neversmk_slider_sc7",
+           # #   "Never-smoking prevalence absolute percentage change across
+           # #   population",
+           # #   -20,
+           # #   20,
+           # #   0,
+           # #   0.1,
+           # #   sep = "",
+           # #   ticks = FALSE,
+           # #   post  = " %"
+           # # )
+           # # %>%
+           # #   shinyInput_label_embed(
+           # #     icon("info") %>%
+           # #       bs_embed_popover(title = "Absolute change (%) in the
+           # # cprevalence of smoking as result of a structural policy")
+           # #   ),
            # sliderInput(
-           #   "structural_neversmk_slider_sc7",
-           #   "Never-smoking prevalence absolute percentage change across
-           #   population",
+           #   "structural_fv_slider_sc7",
+           #   "Fruit & veg relative percentage change across population",
            #   -20,
            #   20,
            #   0,
@@ -1139,109 +1161,92 @@ fluidRow(
            #   sep = "",
            #   ticks = FALSE,
            #   post  = " %"
-           # )
-           # %>%
+           # )  %>%
            #   shinyInput_label_embed(
            #     icon("info") %>%
-           #       bs_embed_popover(title = "Absolute change (%) in the
-           # cprevalence of smoking as result of a structural policy")
-           #   ),
-           sliderInput(
-             "structural_fv_slider_sc7",
-             "Fruit & veg relative percentage change across population",
-             -20,
-             20,
-             0,
-             0.1,
-             sep = "",
-             ticks = FALSE,
-             post  = " %"
-           )  %>%
-             shinyInput_label_embed(
-               icon("info") %>%
-                 bs_embed_popover(title = "Relative change (%) in the prevalence
-                                  of fruit and vegetable consumption as result
-                                  of a structural policy")
-           ),
-           sliderInput(
-             "structural_alcohol_slider_sc7",
-             "Alcohol relative percentage change across population",
-             -20,
-             20,
-             0,
-             0.1,
-             sep = "",
-             ticks = FALSE,
-             post  = " %"
-           )  %>%
-             shinyInput_label_embed(
-               icon("info") %>%
-                 bs_embed_popover(title = "Relative change (%) in the population
-                                  mean of alcohol consumption as result of a
-                                  structural policy")
-           ),
-           sliderInput(
-             "structural_bmi_slider_sc7",
-             "BMI relative percentage change across population",
-             -20,
-             20,
-             0,
-             0.1,
-             sep = "",
-             ticks = FALSE,
-             post  = " %"
-           )  %>%
-             shinyInput_label_embed(
-               icon("info") %>%
-                 bs_embed_popover(title = "Relative change (%) in the population mean of BMI as result of a structural policy")
-           ),
-           sliderInput(
-             "structural_sbp_slider_sc7",
-             "Systolic blood pressure relative percentage change across population",
-             -20,
-             20,
-             0,
-             0.1,
-             sep = "",
-             ticks = FALSE,
-             post  = " %"
-           )  %>%
-             shinyInput_label_embed(
-               icon("info") %>%
-                 bs_embed_popover(title = "Relative change (%) in the population mean of systolic blood pressure as result of a structural policy")
-           ),
-           sliderInput(
-             "structural_chol_slider_sc7",
-             "Cholesterol relative percentage change across population",
-             -20,
-             20,
-             0,
-             0.1,
-             sep = "",
-             ticks = FALSE,
-             post  = " %"
-           )  %>%
-             shinyInput_label_embed(
-               icon("info") %>%
-                 bs_embed_popover(title = "Relative change (%) in the population mean of cholesterol as result of a structural policy")
-           ),
-           sliderInput(
-             "structural_pa_slider_sc7",
-             "Physical activity change in active days per week across
-             population",
-             -7,
-             7,
-             0,
-             1,
-             sep = "",
-             ticks = TRUE,
-             post  = " active days/week"
-           )  %>%
-             shinyInput_label_embed(
-               icon("info") %>%
-                 bs_embed_popover(title = "Change in the active days per week
-                 as result of a structural policy")
-             )
+           #       bs_embed_popover(title = "Relative change (%) in the prevalence
+           #                        of fruit and vegetable consumption as result
+           #                        of a structural policy")
+           # ),
+           # sliderInput(
+           #   "structural_alcohol_slider_sc7",
+           #   "Alcohol relative percentage change across population",
+           #   -20,
+           #   20,
+           #   0,
+           #   0.1,
+           #   sep = "",
+           #   ticks = FALSE,
+           #   post  = " %"
+           # )  %>%
+           #   shinyInput_label_embed(
+           #     icon("info") %>%
+           #       bs_embed_popover(title = "Relative change (%) in the population
+           #                        mean of alcohol consumption as result of a
+           #                        structural policy")
+           # ),
+           # sliderInput(
+           #   "structural_bmi_slider_sc7",
+           #   "BMI relative percentage change across population",
+           #   -20,
+           #   20,
+           #   0,
+           #   0.1,
+           #   sep = "",
+           #   ticks = FALSE,
+           #   post  = " %"
+           # )  %>%
+           #   shinyInput_label_embed(
+           #     icon("info") %>%
+           #       bs_embed_popover(title = "Relative change (%) in the population mean of BMI as result of a structural policy")
+           # ),
+           # sliderInput(
+           #   "structural_sbp_slider_sc7",
+           #   "Systolic blood pressure relative percentage change across population",
+           #   -20,
+           #   20,
+           #   0,
+           #   0.1,
+           #   sep = "",
+           #   ticks = FALSE,
+           #   post  = " %"
+           # )  %>%
+           #   shinyInput_label_embed(
+           #     icon("info") %>%
+           #       bs_embed_popover(title = "Relative change (%) in the population mean of systolic blood pressure as result of a structural policy")
+           # ),
+           # sliderInput(
+           #   "structural_chol_slider_sc7",
+           #   "Cholesterol relative percentage change across population",
+           #   -20,
+           #   20,
+           #   0,
+           #   0.1,
+           #   sep = "",
+           #   ticks = FALSE,
+           #   post  = " %"
+           # )  %>%
+           #   shinyInput_label_embed(
+           #     icon("info") %>%
+           #       bs_embed_popover(title = "Relative change (%) in the population mean of cholesterol as result of a structural policy")
+           # ),
+           # sliderInput(
+           #   "structural_pa_slider_sc7",
+           #   "Physical activity change in active days per week across
+           #   population",
+           #   -7,
+           #   7,
+           #   0,
+           #   1,
+           #   sep = "",
+           #   ticks = TRUE,
+           #   post  = " active days/week"
+           # )  %>%
+           #   shinyInput_label_embed(
+           #     icon("info") %>%
+           #       bs_embed_popover(title = "Change in the active days per week
+           #       as result of a structural policy")
+           #   )
     ),
     column(3
 
@@ -1342,21 +1347,25 @@ fluidRow(
       checkboxGroupButtons("qimd_risk_factors_checkbox_sc7",
         "Which risk factors should be affected by the changes in QIMD?",
         c("Smoking" = "smok",
-          "Environmental Tobacco Smoking" = "ets",
-          "Fruit & Veg" = "fv",
-          "Alcohol" = "alc",
-          "Physical Activity" = "pa",
-          "BMI" = "bmi",
-          "SBP" = "sbp",
-          "Cholesterol" = "tchol"),
+          "Environmental Tobacco Smoking" = "ets"
+          #,
+          # "Fruit & Veg" = "fv",
+          # "Alcohol" = "alc",
+          # "Physical Activity" = "pa",
+          # "BMI" = "bmi",
+          # "SBP" = "sbp",
+          # "Cholesterol" = "tchol"
+          ),
         selected = c("smok",
-          "ets",
-          "fv",
-          "alc",
-          "pa",
-          "bmi" ,
-          "sbp",
-          "tchol"),
+          "ets"
+          # ,
+          # "fv",
+          # "alc",
+          # "pa",
+          # "bmi" ,
+          # "sbp",
+          # "tchol"
+          ),
         direction = "vertical",
         status = "default",
         checkIcon = list(
@@ -1379,7 +1388,7 @@ wellPanel(fluidRow(
   h5("Smoking Policies"),
   h6("Note: these policies may override some of the changes set above"),
   HTML("<br> <br/> "),
-  column(6,
+  column(12,
                 sliderInput(
                   "mala_slider_sc7",
                   "Minimum age of legal access to tobacco products",
