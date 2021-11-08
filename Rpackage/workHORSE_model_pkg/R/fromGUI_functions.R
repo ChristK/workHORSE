@@ -514,6 +514,34 @@ fromGUI_scenario_parms <- function(scenario_nam, parameters_dt) {
       parameters_dt[scenario == scenario_nam &
                       input_names %flike% "mala_slider",
                     as.integer(value1)]
+    
+    # for smoking prevalence  
+    l$sc_smok_prevalence_change <-
+      parameters_dt[scenario == scenario_nam &
+                      input_names %like% "smoking_prevalence_sc1$",
+                    as.numeric(value1)]
+    l$sc_smok_prevalence_high_ses_change <-
+      parameters_dt[scenario == scenario_nam &
+                      input_names %like% "smoking_prevalence_high_ses_sc1$",
+                    as.numeric(value1)]
+    l$sc_smok_prevalence_low_ses_change <-
+      parameters_dt[scenario == scenario_nam &
+                      input_names %like% "smoking_prevalence_low_ses_sc1$",
+                    as.numeric(value1)]
+    
+    # for price elascity   
+    l$sc_tax_change <-
+      parameters_dt[scenario == scenario_nam &
+                      input_names %like% "tax_slider_sc1$",
+                    as.numeric(value1)]
+    l$sc_tax_high_ses_change <-
+      parameters_dt[scenario == scenario_nam &
+                      input_names %like% "tax_slider_high_ses_sc1$",
+                    as.numeric(value1)]
+    l$sc_tax_low_ses_change <-
+      parameters_dt[scenario == scenario_nam &
+                      input_names %like% "tax_slider_low_ses_sc1$",
+                    as.numeric(value1)]
 
     # Ensemble logic
     l$sc_ens_is <- FALSE
