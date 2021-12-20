@@ -1268,6 +1268,8 @@ SynthPop <-
             tbl <-
               read_fst("./lifecourse_models/smok_incid_table.fst",
                        as.data.table = TRUE)
+            # TODO: tbl <- read_fst("./lifecourse_models/smoke_initiation_table.fst", as.data.table = TRUE)
+            # TODO: add initiation calibrated value (intercept)
             col_nam <-
               setdiff(names(tbl), intersect(names(dt), names(tbl)))
             tbl[age < 16L, mu := 0]
@@ -1278,6 +1280,8 @@ SynthPop <-
             tbl <-
               read_fst("./lifecourse_models/smok_cess_table.fst",
                        as.data.table = TRUE)
+            # TODO: tbl <- read_fst("./lifecourse_models/smoke_cessation_table.fst", as.data.table = TRUE)
+            # TODO: add cessation calibrated value (intercept)
             tbl[age < 16L, mu := 0]
             col_nam <-
               setdiff(names(tbl), intersect(names(dt), names(tbl)))
@@ -1290,11 +1294,14 @@ SynthPop <-
                        as.data.table = TRUE)
             tbl <-
               dcast(tbl, sex + qimd ~ smok_quit_yrs, value.var = "pr")
+            # TODO: add final relapse calibrated value (multiply)
+            # TODO: change to script in hint-smoke
             nam <- tbl[, paste0(sex, " ", qimd)]
             tbl <-
               as.matrix(tbl[, mget(paste0(1:15))], rownames = nam)
 
             simsmok(dt, tbl, design_$sim_prm$smoking_relapse_limit)
+            # TODO: simsmok() to simsmok_relapse_calibrate()
             # dt[!(pid_mrk), table(smok_status)]
             # dt[pid == 1, plot(year, smok_status, ylim = c(0, 4))]
             # dt[pid == 10, .(age, smok_status, smok_quit_yrs, smok_dur)]
