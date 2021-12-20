@@ -515,7 +515,8 @@ fromGUI_scenario_parms <- function(scenario_nam, parameters_dt) {
                       input_names %flike% "mala_slider",
                     as.integer(value1)]
     
-    # for smoking prevalence  
+    # for smoking prevalence 
+    # TODO: add into change of smoking prevalence of specific group
     l$sc_smok_prevalence_change <-
       parameters_dt[scenario == scenario_nam &
                       input_names %like% "smoking_prevalence_sc1$",
@@ -529,7 +530,8 @@ fromGUI_scenario_parms <- function(scenario_nam, parameters_dt) {
                       input_names %like% "smoking_prevalence_low_ses_sc1$",
                     as.numeric(value1)]
     
-    # for price elascity   
+    # for price elascity  
+    # TODO: add into the change of smoking prevalence of targeted groups
     l$sc_tax_change <-
       parameters_dt[scenario == scenario_nam &
                       input_names %like% "tax_slider_sc1$",
@@ -543,6 +545,8 @@ fromGUI_scenario_parms <- function(scenario_nam, parameters_dt) {
                       input_names %like% "tax_slider_low_ses_sc1$",
                     as.numeric(value1)]
 
+    # TODO: SCS scenario: 1) smokers group 30% * 15% quit, relapse?; 2) cost: 
+    
     # Ensemble logic
     l$sc_ens_is <- FALSE
     l$sc_ens_parallel_is <- FALSE
