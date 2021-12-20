@@ -2104,6 +2104,8 @@ set_tobacco <- function(scenario_parms, dt, design) {
     # if any relevant scenario input
     
     # Manipulate age per user input ----
+    # TODO: SCS senario for 30% smokers
+    # TODO: overall smoking pravelence? - taxation (SES groups)
     set(dt, NULL, "age_sc", dt$age) # create new scenario age
     
     row_sel_id <- # Indices of eligible rows
@@ -2127,7 +2129,7 @@ set_tobacco <- function(scenario_parms, dt, design) {
                scenario_parms$sc_last_year) &
                 dead == FALSE & 
                 between(age, 18, scenario_parms$sc_tobacco_mala_change - 1L),
-       age_sc := 17L]
+       age_sc := 17L] # TODO: senario for MALA age: now all at 17 level
     
     # smoking ----
     # Assumes that from the smoking initiation/cessation/relapse probabilities
@@ -2149,6 +2151,7 @@ set_tobacco <- function(scenario_parms, dt, design) {
       lutbl <-
         read_fst("./lifecourse_models/smok_incid_table.fst",
                  as.data.table = TRUE)
+      # TODO: update to new initiation table
       setnames(lutbl, c("age", "mu"), c("age_sc", "prb_smok_incid_sc"))
       lookup_dt(dt, lutbl)
       
