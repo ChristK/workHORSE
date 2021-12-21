@@ -2113,7 +2113,7 @@ set_tobacco <- function(scenario_parms, dt, design) {
                  scenario_parms$sc_init_year,
                  scenario_parms$sc_last_year) &
           dead == FALSE & 
-          between(age, 18, 20), 
+          between(age, 18, 20), # TODO: change to slider input; logic to swap 
           unique(pid)]
     
     row_sel <- 
