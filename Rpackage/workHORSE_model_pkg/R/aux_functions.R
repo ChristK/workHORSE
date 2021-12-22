@@ -1058,6 +1058,7 @@ generate_health_econ <- function(dt, mc) {
 
 #' @export
 set_eligible <- function(scenario_parms, dt, hlp, env = parent.frame()) {
+  # TODO: revise to SCS senarios (willingness to quit for % of invited)
   colnam <- "eligible_sc"
   if (scenario_parms$sc_ens_is && colnam %in% names(dt)) {
     env$hlp$previous_elig <- clamp(hlp$previous_elig + dt$eligible_sc)
@@ -2105,15 +2106,19 @@ set_tobacco <- function(scenario_parms, dt, design) {
     
     # Manipulate age per user input ----
     # TODO: SCS senario for 30% smokers
-    # TODO: overall smoking pravelence? - taxation (SES groups)
     set(dt, NULL, "age_sc", dt$age) # create new scenario age
     
+
+    # TODO: ban on smoking
+    # if ban box tick {initiation == 0L, cessation change?, relapse == 0L, intensit == 0L. }
+    # if scenario_parms$sc_tobacco_mala_change > 18 { # below for smoking ban > 18 yo 
     row_sel_id <- # Indices of eligible rows
       dt[between(year + 2000L,
                  scenario_parms$sc_init_year,
                  scenario_parms$sc_last_year) &
           dead == FALSE & 
-          between(age, 18, 20), # TODO: change to slider input; logic to swap 
+          between(age, 18, 20), 
+          # between(age, 18, scenario_parms$sc_tobacco_mala_change),  
           unique(pid)]
     
     row_sel <- 
@@ -2124,12 +2129,17 @@ set_tobacco <- function(scenario_parms, dt, design) {
         pid %in% row_sel_id, 
                   which = TRUE]
     
-    dt[between(year + 2000L,
+      dt[between(year + 2000L,
                scenario_parms$sc_init_year,
                scenario_parms$sc_last_year) &
                 dead == FALSE & 
                 between(age, 18, scenario_parms$sc_tobacco_mala_change - 1L),
-       age_sc := 17L] # TODO: senario for MALA age: now all at 17 level
+          age_sc := 17L] # set all illegal smoking age to 17 yo
+      #}
+      # if scenario_parms$sc_tobacco_mala_change < 18 { 
+      # change above code to different boundaries 
+      #}
+      # SCS: alter initiation, cessation, relapse rate (by SES groups: merge datatable?) ####
     
     # smoking ----
     # Assumes that from the smoking initiation/cessation/relapse probabilities

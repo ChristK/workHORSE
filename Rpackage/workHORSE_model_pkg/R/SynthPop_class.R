@@ -1302,6 +1302,7 @@ SynthPop <-
 
             simsmok(dt, tbl, design_$sim_prm$smoking_relapse_limit)
             # TODO: simsmok() to simsmok_relapse_calibrate()
+            
             # dt[!(pid_mrk), table(smok_status)]
             # dt[pid == 1, plot(year, smok_status, ylim = c(0, 4))]
             # dt[pid == 10, .(age, smok_status, smok_quit_yrs, smok_dur)]
