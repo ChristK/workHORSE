@@ -1383,16 +1383,20 @@ fluidRow(
     ), # end column
   )),
 
-wellPanel(fluidRow(
-  ## Tobacco Policies ----
-  h5("Smoking Policies"),
-  h6("Note: these policies may override some of the changes set above"),
-  HTML("<br> <br/> "),
-  column(12,
+wellPanel(
+  fluidRow(
+    ## Tobacco Policies ----
+    h5("Smoking Policies"),
+    h6("Note: these policies may override some of the changes set above"),
+    HTML("<br>")
+    ),
+  
+  fluidRow(
+  column(8,
                 sliderInput(
                   "mala_slider_sc1",
                   "Minimum age of legal access to tobacco products",
-                  18, 30, 18, 1,
+                  10, 30, 18, 1,
                   sep = "",
                   ticks = FALSE,
                   post  = ""
@@ -1402,7 +1406,24 @@ wellPanel(fluidRow(
                     icon("info") %>%
                       bs_embed_popover(title = "Assign MALA to tobacco to a different one")
                   )
-         ),
+  ),
+  column(3,
+         switchInput(
+           "ban_smoke_checkbox_sc1",
+           "Smoking ban?",
+           value = FALSE,
+           onLabel = "Yes",
+           offLabel = "No",
+           labelWidth = "100%"
+         )
+         %>%
+           shinyInput_label_embed(
+             icon("info") %>%
+               bs_embed_popover(title = "Smoking ban on the whole population")
+           )
+  )
+  ),
+  fluidRow( 
   column(4, 
          numericInput(
            "smoking_prevalence_sc1",
