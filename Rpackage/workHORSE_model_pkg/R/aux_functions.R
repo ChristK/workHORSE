@@ -2109,9 +2109,40 @@ set_tobacco <- function(scenario_parms, dt, design) {
     set(dt, NULL, "age_sc", dt$age) # create new scenario age
     
 
-    # TODO: ban on smoking
-    # if ban box tick {initiation == 0L, cessation change?, relapse == 0L, intensit == 0L. }
-    # if scenario_parms$sc_tobacco_mala_change > 18 { # below for smoking ban > 18 yo 
+ #    ## ban on smoking ####
+ #    # if ban box tick {for the generation, intensit == 0L, initiation == 0L, cessation = 0, relapse == 0L}
+ #    # select rows that identified as the x generation (born in the year)
+ #     row_sel_id <- # Indices of eligible rows
+ #      dt[between(year + 2000L,
+ #                 scenario_parms$sc_init_year,
+ #                 scenario_parms$sc_last_year) &
+ #           dead == FALSE,
+ #         # between(age, 18, scenario_parms$sc_tobacco_mala_change),  
+ #         unique(pid)]
+ #    
+ #    row_sel <- 
+ #      dt[between(year + 2000L,
+ #                 scenario_parms$sc_init_year,
+ #                 scenario_parms$sc_last_year) &
+ #           dead == FALSE &
+ #           pid %in% row_sel_id, 
+ #         which = TRUE]
+ #    
+ #    dt[between(year + 2000L,
+ #               scenario_parms$sc_init_year,
+ #               scenario_parms$sc_last_year) &
+ #         dead == FALSE,
+ #       age_sc := 15L] # TODO: check if the ages need to be set to illegal smoking or 0 strictly
+ #    
+ #    lutbl <-
+ #      read_fst("./lifecourse_models/smok_incid_table.fst",
+ #               as.data.table = TRUE)
+ # # TODO: set uptake, stop, relapse and intensity as 0
+    
+    # MALA policy ####
+    # TODO: age slider smaller than current age
+    
+    # if scenario_parms$sc_tobacco_mala_change_max >= 18 { # below for smoking ban >= 18 yo 
     row_sel_id <- # Indices of eligible rows
       dt[between(year + 2000L,
                  scenario_parms$sc_init_year,
@@ -2136,9 +2167,30 @@ set_tobacco <- function(scenario_parms, dt, design) {
                 between(age, 18, scenario_parms$sc_tobacco_mala_change - 1L),
           age_sc := 17L] # set all illegal smoking age to 17 yo
       #}
-      # if scenario_parms$sc_tobacco_mala_change < 18 { 
-      # change above code to different boundaries 
-      #}
+      # # if scenario_parms$sc_tobacco_mala_change_max < 18 { 
+      # row_sel_id <- # Indices of eligible rows
+      #   dt[between(year + 2000L,
+      #              scenario_parms$sc_init_year,
+      #              scenario_parms$sc_last_year) &
+      #        dead == FALSE & 
+      #        between(age, scenario_parms$sc_tobacco_mala_change_min, scenario_parms$sc_tobacco_mala_change_max),  
+      #      unique(pid)]
+      # 
+      # row_sel <- 
+      #   dt[between(year + 2000L,
+      #              scenario_parms$sc_init_year,
+      #              scenario_parms$sc_last_year) &
+      #        dead == FALSE &
+      #        pid %in% row_sel_id, 
+      #      which = TRUE]
+      # 
+      # dt[between(year + 2000L,
+      #            scenario_parms$sc_init_year,
+      #            scenario_parms$sc_last_year) &
+      #      dead == FALSE & 
+      #      between(age, scenario_parms$sc_tobacco_mala_change_min, scenario_parms$sc_tobacco_mala_change_max),
+      #    age_sc := 17L] # TODO: which age set it to
+      # #}
       # SCS: alter initiation, cessation, relapse rate (by SES groups: merge datatable?) ####
     
     # smoking ----
@@ -2171,6 +2223,7 @@ set_tobacco <- function(scenario_parms, dt, design) {
       # method of shifting inappropriate. I will use the study by Fidler & West
       # that found OR 0.87 for reduction in smoking prevalence. I will arbitrarily
       # apply this OR to the cessation probabilities (for now, I will improve later)
+      
       lutbl <-
         read_fst("./lifecourse_models/smok_cess_table.fst",
                  as.data.table = TRUE)
@@ -2179,6 +2232,26 @@ set_tobacco <- function(scenario_parms, dt, design) {
       setnames(lutbl, c("mu"), c("prb_smok_cess_sc"))
       lookup_dt(dt, lutbl)
       
+      # use when the slider is used
+      # if(scenario_parms$sc_tobacco_mala_change_max >= 18) {
+      #   lutbl <-
+      #     read_fst("./lifecourse_models/smok_cess_table.fst",
+      #              as.data.table = TRUE)
+      #   lutbl[between(age, 18, scenario_parms$sc_tobacco_mala_change_max - 1),
+      #         mu := 0.87 * mu]
+      #   setnames(lutbl, c("mu"), c("prb_smok_cess_sc"))
+      #   lookup_dt(dt, lutbl)
+      # }
+      # else {
+      #   lutbl <-
+      #     read_fst("./lifecourse_models/smok_cess_table.fst",
+      #              as.data.table = TRUE)
+      #   lutbl[between(age, scenario_parms$sc_tobacco_mala_change_min, scenario_parms$sc_tobacco_mala_change_max - 1),
+      #         mu := 0.87 * mu]
+      #   setnames(lutbl, c("mu"), c("prb_smok_cess_sc"))
+      #   lookup_dt(dt, lutbl)
+      # }
+      # 
       # Handle smok_relapse probabilities
       # No need to use qimd_sc here. It happens at the simsmok_sc side
       tbl <-
