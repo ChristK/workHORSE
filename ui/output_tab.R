@@ -194,7 +194,8 @@ tabPanel(
       tabItems(
         tabItem(
           # dashboard tab ----
-          "dashboard", fluidPage(
+          "dashboard", 
+        fluidPage(
           fluidRow(
             infoBoxOutput("most_cost_effective_box"),
             infoBoxOutput("most_equitable_box"),

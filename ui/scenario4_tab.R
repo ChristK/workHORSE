@@ -1385,6 +1385,81 @@ fluidRow(
 
 wellPanel(
   fluidRow(
+    ## Smoking Parameters ----
+    h5("Smoking Parameters"),
+    HTML("<br>")
+  ),
+  
+  fluidRow( 
+    column(4, 
+           numericInput(
+             "smoking_initiation_sc4",
+             "Changes in smoking initiation (%)",
+             (0.5),
+             (-1),
+             1,
+             (0.1)
+           )%>%
+             shinyInput_label_embed(
+               icon("info") %>%
+                 bs_embed_popover(title = "changes in smoking initiation")
+             )
+    ),
+    column(4, 
+           numericInput(
+             "smoking_cessation_sc4",
+             "Changes in smoking cessation (%)",
+             0.5,
+             (-1),
+             1,
+             (0.1)
+           )%>%
+             shinyInput_label_embed(
+               icon("info") %>%
+                 bs_embed_popover(title = "changes in smoking cessation")
+             )
+    ),
+    column(4, 
+           numericInput(
+             "smoking_relapse_sc4",
+             "Changes in smoking relapse (%) ",
+             0.5,
+             (-1),
+             1,
+             (0.1)
+           )%>%
+             shinyInput_label_embed(
+               icon("info") %>%
+                 bs_embed_popover(title = "changes in smoking relapse")
+             )
+    )
+  ),
+
+fluidRow(
+  tags$head(tags$style("html, body {overflow: visible; }")),
+  box(
+    title = "Smoking Prevalence Tab",
+    solidHeader = TRUE,
+    collapsible = FALSE,
+    fluidRow(
+      column(12, offset = 0,
+             plotlyOutput("prevalence_baseline_plot"))
+    )
+  ),
+  box(
+    title = "Smoking Prevalence Modified Tab",
+    solidHeader = TRUE,
+    collapsible = FALSE,
+    fluidRow(
+      column(12, offset = 0,
+             plotlyOutput("prevalence_modified_plot"))
+    )
+  )
+)
+), # end wellPanel
+
+wellPanel(
+  fluidRow(
     ## Tobacco Policies ----
     h5("Smoking Policies"),
     h6("Note: these policies may override some of the changes set above"),
