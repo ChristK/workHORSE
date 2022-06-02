@@ -1383,80 +1383,81 @@ fluidRow(
     ), # end column
   )),
 
-wellPanel(
-  fluidRow(
-    ## Smoking Parameters ----
-    h5("Smoking Parameters"),
-    HTML("<br>")
-  ),
-  
-  fluidRow( 
-    column(4, 
-           numericInput(
-             "smoking_initiation_sc6",
-             "Changes in smoking initiation (%)",
-             (0.5),
-             (-1),
-             1,
-             (0.1)
-           )%>%
-             shinyInput_label_embed(
-               icon("info") %>%
-                 bs_embed_popover(title = "changes in smoking initiation")
-             )
-    ),
-    column(4, 
-           numericInput(
-             "smoking_cessation_sc6",
-             "Changes in smoking cessation (%)",
-             0.5,
-             (-1),
-             1,
-             (0.1)
-           )%>%
-             shinyInput_label_embed(
-               icon("info") %>%
-                 bs_embed_popover(title = "changes in smoking cessation")
-             )
-    ),
-    column(4, 
-           numericInput(
-             "smoking_relapse_sc6",
-             "Changes in smoking relapse (%) ",
-             0.5,
-             (-1),
-             1,
-             (0.1)
-           )%>%
-             shinyInput_label_embed(
-               icon("info") %>%
-                 bs_embed_popover(title = "changes in smoking relapse")
-             )
-    )
-  ),
-
-fluidRow(
-  tags$head(tags$style("html, body {overflow: visible; }")),
-  box(
-    title = "Smoking Prevalence Tab",
-    solidHeader = TRUE,
-    collapsible = FALSE,
-    fluidRow(
-      column(12, offset = 0,
-             plotlyOutput("prevalence_baseline_plot"))
-    )
-  ),
-  box(
-    title = "Smoking Prevalence Modified Tab",
-    solidHeader = TRUE,
-    collapsible = FALSE,
-    fluidRow(
-      column(12, offset = 0,
-             plotlyOutput("prevalence_modified_plot"))
-    )
-  )
-)
-), # end wellPanel
+# wellPanel(
+#   fluidRow(
+#     ## Smoking Parameters ----
+#     h5("Smoking Parameters"),
+#     HTML("<br>")
+#   ),
+#   
+#   fluidRow( 
+#     column(4, 
+#            numericInput(
+#              "smoking_initiation_sc6",
+#              "Changes in smoking initiation (%)",
+#              (0.5),
+#              (-1),
+#              1,
+#              (0.1)
+#            )%>%
+#              shinyInput_label_embed(
+#                icon("info") %>%
+#                  bs_embed_popover(title = "changes in smoking initiation")
+#              )
+#     ),
+#     column(4, 
+#            numericInput(
+#              "smoking_cessation_sc6",
+#              "Changes in smoking cessation (%)",
+#              0.5,
+#              (-1),
+#              1,
+#              (0.1)
+#            )%>%
+#              shinyInput_label_embed(
+#                icon("info") %>%
+#                  bs_embed_popover(title = "changes in smoking cessation")
+#              )
+#     ),
+#     column(4, 
+#            numericInput(
+#              "smoking_relapse_sc6",
+#              "Changes in smoking relapse (%) ",
+#              0.5,
+#              (-1),
+#              1,
+#              (0.1)
+#            )%>%
+#              shinyInput_label_embed(
+#                icon("info") %>%
+#                  bs_embed_popover(title = "changes in smoking relapse")
+#              )
+#     )
+#   )
+#   ,
+# 
+# fluidRow(
+#   tags$head(tags$style("html, body {overflow: visible; }")),
+#   box(
+#     title = "Smoking Prevalence Tab",
+#     solidHeader = TRUE,
+#     collapsible = FALSE,
+#     fluidRow(
+#       column(12, offset = 0,
+#              plotlyOutput("prevalence_baseline_plot"))
+#     )
+#   ),
+#   box(
+#     title = "Smoking Prevalence Modified Tab",
+#     solidHeader = TRUE,
+#     collapsible = FALSE,
+#     fluidRow(
+#       column(12, offset = 0,
+#              plotlyOutput("prevalence_modified_plot"))
+#     )
+#   )
+# )
+# ), # end wellPanel
 
 wellPanel(
   fluidRow(
@@ -1467,7 +1468,7 @@ wellPanel(
     ),
   
   fluidRow(
-  column(8,
+  column(10,
                 sliderInput(
                   "mala_slider_sc6",
                   "Minimum age of legal access to tobacco products",
@@ -1481,8 +1482,13 @@ wellPanel(
                     icon("info") %>%
                       bs_embed_popover(title = "Assign MALA to tobacco to a different one")
                   )
+  )
   ),
-  column(3,
+  
+  br(),
+  
+  fluidRow(
+  column(6,
          switchInput(
            "ban_smoke_checkbox_sc6",
            "Smoking ban?",
@@ -1498,11 +1504,14 @@ wellPanel(
            )
   )
   ),
+  
+  br(),
+  
   fluidRow( 
-  column(4, 
+  column(2, 
          numericInput(
            "smoking_prevalence_sc6",
-           "Reduction in new smokers (%) ",
+           "Reduction in new smokers (%) - Average ",
            0.5,
            0,
            100,
@@ -1514,8 +1523,8 @@ wellPanel(
            ),
          numericInput(
            "tax_slider_sc6",
-           "Price Elasticity (%)",
-           3.5,
+           "Price changes (%) - Average",
+           35,
            0,
            100,
            0.1
@@ -1526,10 +1535,10 @@ wellPanel(
                bs_embed_popover(title = "10% of tobacco price reduction impact on precentage of smoking prevalence reduction")
            )
   ),
-         column(4, 
+         column(2, 
                 numericInput(
-                  "smoking_prevalence_high_ses_sc6",
-                  "Reduction in new smokers (%) - High SES group ",
+                  "smoking_prevalence_qimd1_sc6",
+                  "Reduction in new smokers (%) - QIMD 1 (highest)",
                   0.5,
                   0,
                   100,
@@ -1540,9 +1549,9 @@ wellPanel(
                       bs_embed_popover(title = "annual reduction  of the smoking prevalences among high SES groups")
                   ),
                 numericInput(
-                  "tax_slider_high_ses_sc6",
-                  "Price Elasticity (%) - High SES group",
-                  3.5,
+                  "tax_slider_qimd1_sc6",
+                  "Price changes (%) - QIMD 1 (highest)",
+                  63,
                   0,
                   100,
                   0.1
@@ -1553,10 +1562,10 @@ wellPanel(
                       bs_embed_popover(title = "10% of tobacco price reduction impact on precentage of smoking prevalence reduction among high SES groups")
                   )
   ),
-  column(4, 
+  column(2, 
          numericInput(
-           "smoking_prevalence_low_ses_sc6",
-           "Reduction in new smokers (%) - Low SES group ",
+           "smoking_prevalence_qimd2_sc6",
+           "Reduction in new smokers (%) - QIMD 2",
            0.5,
            0,
            100,
@@ -1567,9 +1576,91 @@ wellPanel(
                bs_embed_popover(title = "annual reduction  of the smoking prevalence among the lowest SES groups")
            ),
          numericInput(
-           "tax_slider_low_ses_sc6",
-           "Price Elasticity (%) - Low SES group",
-           3.5,
+           "tax_slider_qimd2_sc6",
+           "Price changes (%) - QIMD 2",
+           12,
+           0,
+           100,
+           0.1
+         )
+         %>%
+           shinyInput_label_embed(
+             icon("info") %>%
+               bs_embed_popover(title = "10% of tobacco price reduction impact on precentage of smoking prevalence reduction among the lowest SES groups")
+           )
+  ),
+  
+  column(2, 
+         numericInput(
+           "smoking_prevalence_qimd3_sc6",
+           "Reduction in new smokers (%) - QIMD 3",
+           0.5,
+           0,
+           100,
+           1
+         )%>%
+           shinyInput_label_embed(
+             icon("info") %>%
+               bs_embed_popover(title = "annual reduction of the smoking prevalences")
+           ),
+         numericInput(
+           "tax_slider_qimd3_sc6",
+           "Price changes (%) - QIMD 3",
+           35,
+           0,
+           100,
+           0.1
+         )
+         %>%
+           shinyInput_label_embed(
+             icon("info") %>%
+               bs_embed_popover(title = "10% of tobacco price reduction impact on precentage of smoking prevalence reduction")
+           )
+  ),
+  column(2, 
+         numericInput(
+           "smoking_prevalence_qimd4_sc6",
+           "Reduction in new smokers (%) - QIMD 4",
+           0.5,
+           0,
+           100,
+           1
+         )%>%
+           shinyInput_label_embed(
+             icon("info") %>%
+               bs_embed_popover(title = "annual reduction  of the smoking prevalences among high SES groups")
+           ),
+         numericInput(
+           "tax_slider_qimd4_sc6",
+           "Price changes (%) - QIMD 4",
+           63,
+           0,
+           100,
+           0.1
+         )
+         %>%
+           shinyInput_label_embed(
+             icon("info") %>%
+               bs_embed_popover(title = "10% of tobacco price reduction impact on precentage of smoking prevalence reduction among high SES groups")
+           )
+  ),
+  column(2, 
+         numericInput(
+           "smoking_prevalence_qimd5_sc6",
+           "Reduction in new smokers (%) - QIMD 5 (lowest QIMD)",
+           0.5,
+           0,
+           100,
+           1
+         )%>%
+           shinyInput_label_embed(
+             icon("info") %>%
+               bs_embed_popover(title = "annual reduction  of the smoking prevalence among the lowest SES groups")
+           ),
+         numericInput(
+           "tax_slider_qimd5_sc6",
+           "Price changes (%) - QIMD 5 (lowest QIMD)",
+           12,
            0,
            100,
            0.1

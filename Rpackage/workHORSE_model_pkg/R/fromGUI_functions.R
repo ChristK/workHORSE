@@ -509,6 +509,11 @@ fromGUI_scenario_parms <- function(scenario_nam, parameters_dt) {
           input_names %flike% "qimd_risk_factors_checkbox",
         as.character(value1)]
     
+    # for smoking ban policy  
+    l$sc_smoke_ban <-
+      parameters_dt[scenario == scenario_nam &
+                      input_names %flike% "ban_smoke_checkbox", as.logical(value1)]
+
     # for MALA policy    
     l$sc_tobacco_mala_change <-
       parameters_dt[scenario == scenario_nam &
@@ -516,33 +521,55 @@ fromGUI_scenario_parms <- function(scenario_nam, parameters_dt) {
                     as.integer(value1)]
     
     # for smoking prevalence 
-    # TODO: add into change of smoking prevalence of specific group
     l$sc_smok_prevalence_change <-
       parameters_dt[scenario == scenario_nam &
-                      input_names %like% "smoking_prevalence_sc1$",
+                      input_names %like% "smoking_prevalence_slider",
                     as.numeric(value1)]
-    l$sc_smok_prevalence_high_ses_change <-
+    l$sc_smok_prevalence_qimd1_change <-
       parameters_dt[scenario == scenario_nam &
-                      input_names %like% "smoking_prevalence_high_ses_sc1$",
+                      input_names %like% "smoking_prevalence_slider_qimd1",
                     as.numeric(value1)]
-    l$sc_smok_prevalence_low_ses_change <-
+    l$sc_smok_prevalence_qimd2_change <-
       parameters_dt[scenario == scenario_nam &
-                      input_names %like% "smoking_prevalence_low_ses_sc1$",
+                      input_names %like% "smoking_prevalence_slider_qimd1",
+                    as.numeric(value1)]
+    l$sc_smok_prevalence_qimd3_change <-
+      parameters_dt[scenario == scenario_nam &
+                      input_names %like% "smoking_prevalence_slider_qimd1",
+                    as.numeric(value1)]
+    l$sc_smok_prevalence_qimd4_change <-
+      parameters_dt[scenario == scenario_nam &
+                      input_names %like% "smoking_prevalence_slider_qimd1",
+                    as.numeric(value1)]
+    l$sc_smok_prevalence_qimd5_change <-
+      parameters_dt[scenario == scenario_nam &
+                      input_names %like% "smoking_prevalence_slider_qimd1",
                     as.numeric(value1)]
     
     # for price elascity  
-    # TODO: add into the change of smoking prevalence of targeted groups
     l$sc_tax_change <-
       parameters_dt[scenario == scenario_nam &
-                      input_names %like% "tax_slider_sc1$",
+                      input_names %like% "tax_slider",
                     as.numeric(value1)]
-    l$sc_tax_high_ses_change <-
+    l$sc_tax_qimd1_change <-
       parameters_dt[scenario == scenario_nam &
-                      input_names %like% "tax_slider_high_ses_sc1$",
+                      input_names %like% "tax_slider_qimd1",
                     as.numeric(value1)]
-    l$sc_tax_low_ses_change <-
+    l$sc_tax_qimd2_change <-
       parameters_dt[scenario == scenario_nam &
-                      input_names %like% "tax_slider_low_ses_sc1$",
+                      input_names %like% "tax_slider_qimd2",
+                    as.numeric(value1)]
+    l$sc_tax_qimd3_change <-
+      parameters_dt[scenario == scenario_nam &
+                      input_names %like% "tax_slider_qimd3",
+                    as.numeric(value1)]
+    l$sc_tax_qimd4_change <-
+      parameters_dt[scenario == scenario_nam &
+                      input_names %like% "tax_slider_qimd4",
+                    as.numeric(value1)]
+    l$sc_tax_qimd5_change <-
+      parameters_dt[scenario == scenario_nam &
+                      input_names %like% "tax_slider_qimd5",
                     as.numeric(value1)]
 
     # TODO: SCS scenario: 1) smokers group 30% * 15% quit, relapse?; 2) cost: 

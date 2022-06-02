@@ -1058,7 +1058,9 @@ generate_health_econ <- function(dt, mc) {
 
 #' @export
 set_eligible <- function(scenario_parms, dt, hlp, env = parent.frame()) {
-  # TODO: revise to SCS senarios (willingness to quit for % of invited)
+  # SSS scenario: alter initiation, cessation, relapse rate (by SES groups: merge datatable?) ####
+  # age limit, smoking status, 30%
+  # TODO: if need to revise eligible cretiria
   colnam <- "eligible_sc"
   if (scenario_parms$sc_ens_is && colnam %in% names(dt)) {
     env$hlp$previous_elig <- clamp(hlp$previous_elig + dt$eligible_sc)
@@ -1083,7 +1085,7 @@ set_eligible <- function(scenario_parms, dt, hlp, env = parent.frame()) {
            # ra_prvl == 0L &
            chd_dgn == 0L &
            stroke_dgn == 0L,
-         (colnam) := 1L]
+         (colnam) := 1L] 
     } else { # if parallel ensemble
       dt[between(year + 2000L,
                  scenario_parms$sc_init_year,
@@ -2103,45 +2105,9 @@ set_tobacco <- function(scenario_parms, dt, design) {
     
   } else {
     # if any relevant scenario input
-    
-    # Manipulate age per user input ----
-    # TODO: SCS senario for 30% smokers
-    set(dt, NULL, "age_sc", dt$age) # create new scenario age
-    
 
- #    ## ban on smoking ####
- #    # if ban box tick {for the generation, intensit == 0L, initiation == 0L, cessation = 0, relapse == 0L}
- #    # select rows that identified as the x generation (born in the year)
- #     row_sel_id <- # Indices of eligible rows
- #      dt[between(year + 2000L,
- #                 scenario_parms$sc_init_year,
- #                 scenario_parms$sc_last_year) &
- #           dead == FALSE,
- #         # between(age, 18, scenario_parms$sc_tobacco_mala_change),  
- #         unique(pid)]
- #    
- #    row_sel <- 
- #      dt[between(year + 2000L,
- #                 scenario_parms$sc_init_year,
- #                 scenario_parms$sc_last_year) &
- #           dead == FALSE &
- #           pid %in% row_sel_id, 
- #         which = TRUE]
- #    
- #    dt[between(year + 2000L,
- #               scenario_parms$sc_init_year,
- #               scenario_parms$sc_last_year) &
- #         dead == FALSE,
- #       age_sc := 15L] # TODO: check if the ages need to be set to illegal smoking or 0 strictly
- #    
- #    lutbl <-
- #      read_fst("./lifecourse_models/smok_incid_table.fst",
- #               as.data.table = TRUE)
- # # TODO: set uptake, stop, relapse and intensity as 0
-    
-    # MALA policy ####
     # TODO: age slider smaller than current age
-    
+    set(dt, NULL, "age_sc", dt$age) # create new scenario age
     # if scenario_parms$sc_tobacco_mala_change_max >= 18 { # below for smoking ban >= 18 yo 
     row_sel_id <- # Indices of eligible rows
       dt[between(year + 2000L,
@@ -2191,7 +2157,7 @@ set_tobacco <- function(scenario_parms, dt, design) {
       #      between(age, scenario_parms$sc_tobacco_mala_change_min, scenario_parms$sc_tobacco_mala_change_max),
       #    age_sc := 17L] # TODO: which age set it to
       # #}
-      # SCS: alter initiation, cessation, relapse rate (by SES groups: merge datatable?) ####
+  
     
     # smoking ----
     # Assumes that from the smoking initiation/cessation/relapse probabilities
@@ -2309,6 +2275,400 @@ set_tobacco <- function(scenario_parms, dt, design) {
   }
 }
 
+set_tobacco_ban <- function(scenario_parms, dt, design) {
+  # bypass if irrelevant
+  if (all(
+    scenario_parms$sc_smoke_ban == 0L
+  )) {
+    return(invisible(dt))
+    
+  } else {
+    # if any relevant scenario input
+    set(dt, NULL, "ban_sc", 0L)
+    dt[(between(year + 2000L, scenario_parms$sc_init_year, scenario_parms$sc_last_year ) & dead == FALSE,
+       ban_sc := "1")] # 1 is ban from smoke onwards
+
+    # smoking ----
+    # Assumes that from the smoking initiation/cessation/relapse probabilities
+    # change, not smoking prevalence. Smoking intensity also changes.
+    # pid_mrk needs to be recalculated for row_sel
+    if ("smok" %in% scenario_parms$sc_soc_qimd_rf_change) {
+      if (!"smok_status_sc" %in% names(dt))
+        set(dt, NULL, "smok_status_sc", dt$smok_status_curr_xps)
+      if (!"smok_quit_yrs_sc" %in% names(dt))
+        set(dt, NULL, "smok_quit_yrs_sc", dt$smok_quit_yrs_curr_xps)
+      if (!"smok_dur_sc" %in% names(dt))
+        set(dt, NULL, "smok_dur_sc", dt$smok_dur_curr_xps) # TODO: keep?
+      if (!"smok_cig_sc" %in% names(dt))
+        set(dt, NULL, "smok_cig_sc", dt$smok_cig_curr_xps)
+      
+      dt[row_sel, pid_mrk_sc := mk_new_simulant_markers(pid)] # TODO: keep?
+      
+      # Assign smok_incid probabilities
+      lutbl <-
+        read_fst("./lifecourse_models/smok_incid_table.fst",
+                 as.data.table = TRUE)
+      # TODO: update to new initiation table
+      setnames(lutbl, c("age", "mu"), c("age_sc", "prb_smok_incid_sc"))
+      lookup_dt(dt, lutbl)
+
+      lutbl <-
+        read_fst("./lifecourse_models/smok_cess_table.fst",
+                 as.data.table = TRUE)
+      setnames(lutbl, c("mu"), c("prb_smok_cess_sc"))
+      lookup_dt(dt, lutbl)
+      
+      tbl <-
+        read_fst("./lifecourse_models/smok_relapse_table.fst",
+                 as.data.table = TRUE)
+      tbl <-
+        dcast(tbl, sex + qimd ~ smok_quit_yrs, value.var = "pr")
+      nam <- tbl[, paste0(sex, " ", qimd)]
+      tbl <-
+        as.matrix(tbl[, mget(paste0(1:15))], rownames = nam) 
+      
+      dt[between(age, 16, 90) & 
+           ban_sc := "1")],
+          ':='(prb_smok_incid_sc = prb_smok_incid_sc * 0.05, 
+               prb_smok_cess_sc = prb_smok_cess_sc * 0.95)] # for eligible individual, reset smoking parameters
+
+      tbl <- tbl[ relapse = relapse * 0.05] # TODO: this number only use for year after ban - maybe fit 2 simsmoke
+
+      simsmok_sc(dt, tbl, design$sim_prm$smoking_relapse_limit)
+      
+      dt[, c("prb_smok_incid_sc", "prb_smok_cess_sc") := NULL]
+    }
+    return(invisible(dt))
+  }
+}
+
+set_tobacco_prevalence <- function(scenario_parms, dt, design) {
+  # bypass if irrelevant
+  if (all(
+    scenario_parms$sc_smok_prevalence_change == 0L
+  )) {
+    return(invisible(dt))
+    
+  } else {
+    # if any relevant scenario input
+    # # map to initiation from prevalence
+    # initiation_multiply = 
+    #   
+    # # map to cessation from prevalence
+    # cessation_multiply = 
+    # 
+    # # map to relapse from prevalence
+    # relapse_multiply = 
+    
+    # smoking ----
+    if ("smok" %in% scenario_parms$sc_soc_qimd_rf_change) {
+      if (!"smok_status_sc" %in% names(dt))
+        set(dt, NULL, "smok_status_sc", dt$smok_status_curr_xps)
+      if (!"smok_quit_yrs_sc" %in% names(dt))
+        set(dt, NULL, "smok_quit_yrs_sc", dt$smok_quit_yrs_curr_xps)
+      if (!"smok_dur_sc" %in% names(dt))
+        set(dt, NULL, "smok_dur_sc", dt$smok_dur_curr_xps) # TODO: keep?
+      if (!"smok_cig_sc" %in% names(dt))
+        set(dt, NULL, "smok_cig_sc", dt$smok_cig_curr_xps)
+      
+      dt[row_sel, pid_mrk_sc := mk_new_simulant_markers(pid)] # TODO: keep?
+      
+      # Assign smok_incid probabilities
+      lutbl <-
+        read_fst("./lifecourse_models/smok_incid_table.fst",
+                 as.data.table = TRUE)
+      # TODO: update to new initiation table
+      setnames(lutbl, c("age", "mu"), c("age_sc", "prb_smok_incid_sc"))
+      lookup_dt(dt, lutbl)
+      
+      lutbl <-
+        read_fst("./lifecourse_models/smok_cess_table.fst",
+                 as.data.table = TRUE)
+      setnames(lutbl, c("mu"), c("prb_smok_cess_sc"))
+      lookup_dt(dt, lutbl)
+      
+      tbl <-
+        read_fst("./lifecourse_models/smok_relapse_table.fst",
+                 as.data.table = TRUE)
+      tbl <-
+        dcast(tbl, sex + qimd ~ smok_quit_yrs, value.var = "pr")
+      nam <- tbl[, paste0(sex, " ", qimd)]
+      tbl <-
+        as.matrix(tbl[, mget(paste0(1:15))], rownames = nam) 
+      
+      dt[between(age, 16, 90) & 
+           between(year, scenario_parms$sc_init_year, scenario_parms$sc_last_year),
+         ':='(prb_smok_incid_sc = prb_smok_incid_sc * initiation_multiply, 
+              prb_smok_cess_sc = prb_smok_cess_sc * cessation_multiply)] # for eligible individual, reset smoking parameters
+      
+      tbl <- tbl[ relapse = relapse * relapse_multiply] # TODO: this number only use for year after ban - maybe fit 2 simsmoke
+      
+      simsmok_sc(dt, tbl, design$sim_prm$smoking_relapse_limit)
+      
+      dt[, c("prb_smok_incid_sc", "prb_smok_cess_sc") := NULL]
+    }
+    return(invisible(dt))
+  }
+}
+
+set_tobacco_prevalence_qimd <- function(scenario_parms, dt, design) {
+  # bypass if irrelevant
+  if (all(
+    scenario_parms$sc_smok_prevalence_qimd_change == 0L
+  )) {
+    return(invisible(dt))
+    
+  } else {
+    # if any relevant scenario input
+    # #TODO: find price_elasticity_group 
+    # TODO: how to extract smok_prevalence_qimd group
+    
+    # find which group with prevalence change
+
+    # # map to initiation from prevalence
+    # initiation_multiply = 
+    #   
+    # # map to cessation from prevalence
+    # cessation_multiply = 
+    # 
+    # # map to relapse from prevalence
+    # relapse_multiply = 
+    
+    # if scenario_parms$sc_tobacco_mala_change_max >= 18 { # below for smoking ban >= 18 yo 
+    row_sel_id <- # Indices of eligible rows
+      dt[between(year + 2000L,
+                 scenario_parms$sc_init_year,
+                 scenario_parms$sc_last_year) &
+           dead == FALSE & 
+           qimd == scenario_parms$sc_smok_prevalence_qimd_change, 
+         unique(pid)]
+    
+    row_sel <- 
+      dt[between(year + 2000L,
+                 scenario_parms$sc_init_year,
+                 scenario_parms$sc_last_year) &
+           dead == FALSE &
+           qimd == scenario_parms$sc_smok_prevalence_qimd_change & 
+           pid %in% row_sel_id, 
+         which = TRUE] # TODO: what is this function?
+    
+    # smoking ----
+    if ("smok" %in% scenario_parms$sc_soc_qimd_rf_change) {
+      if (!"smok_status_sc" %in% names(dt))
+        set(dt, NULL, "smok_status_sc", dt$smok_status_curr_xps)
+      if (!"smok_quit_yrs_sc" %in% names(dt))
+        set(dt, NULL, "smok_quit_yrs_sc", dt$smok_quit_yrs_curr_xps)
+      if (!"smok_dur_sc" %in% names(dt))
+        set(dt, NULL, "smok_dur_sc", dt$smok_dur_curr_xps) # TODO: keep?
+      if (!"smok_cig_sc" %in% names(dt))
+        set(dt, NULL, "smok_cig_sc", dt$smok_cig_curr_xps)
+      
+      dt[row_sel, pid_mrk_sc := mk_new_simulant_markers(pid)] # TODO: what is this command?
+      
+      # Assign smok_incid probabilities
+      lutbl <-
+        read_fst("./lifecourse_models/smok_incid_table.fst",
+                 as.data.table = TRUE)
+      # TODO: update to new initiation table
+      setnames(lutbl, c("age", "mu"), c("age_sc", "prb_smok_incid_sc"))
+      lookup_dt(dt, lutbl)
+      
+      lutbl <-
+        read_fst("./lifecourse_models/smok_cess_table.fst",
+                 as.data.table = TRUE)
+      setnames(lutbl, c("mu"), c("prb_smok_cess_sc"))
+      lookup_dt(dt, lutbl)
+      
+      tbl <-
+        read_fst("./lifecourse_models/smok_relapse_table.fst",
+                 as.data.table = TRUE)
+      tbl <-
+        dcast(tbl, sex + qimd ~ smok_quit_yrs, value.var = "pr")
+      nam <- tbl[, paste0(sex, " ", qimd)]
+      tbl <-
+        as.matrix(tbl[, mget(paste0(1:15))], rownames = nam) 
+      
+      dt[between(age, 16, 90) & row_sel,
+         ':='(prb_smok_incid_sc = prb_smok_incid_sc * initiation_multiply, 
+              prb_smok_cess_sc = prb_smok_cess_sc * cessation_multiply)] # for eligible individual, reset smoking parameters
+      
+      tbl <- tbl[ relapse = relapse * relapse_multiply] # TODO: this number only use for year after ban - maybe fit 2 simsmoke
+      
+      simsmok_sc(dt, tbl, design$sim_prm$smoking_relapse_limit)
+      
+      dt[, c("prb_smok_incid_sc", "prb_smok_cess_sc") := NULL]
+    }
+    return(invisible(dt))
+  }
+}
+
+
+
+
+
+
+set_tobacco_price <- function(scenario_parms, dt, design) {
+  # bypass if irrelevant
+  if (all(
+    scenario_parms$sc_tax_change == 0L
+  )) {
+    return(invisible(dt))
+    
+  } else {
+    # if any relevant scenario input
+    # find price elasticity 
+    price_elasticity =  scenario_parms$sc_tax_change/10 * 0.35
+    # # map to initiation from price_elasticity
+    # initiation_multiply = 
+    #   
+    # # map to cessation from price_elasticity
+    # cessation_multiply = 
+    # 
+    # # map to relapse from price_elasticity
+    # relapse_multiply = 
+    
+    # smoking ----
+    if ("smok" %in% scenario_parms$sc_soc_qimd_rf_change) {
+      if (!"smok_status_sc" %in% names(dt))
+        set(dt, NULL, "smok_status_sc", dt$smok_status_curr_xps)
+      if (!"smok_quit_yrs_sc" %in% names(dt))
+        set(dt, NULL, "smok_quit_yrs_sc", dt$smok_quit_yrs_curr_xps)
+      if (!"smok_dur_sc" %in% names(dt))
+        set(dt, NULL, "smok_dur_sc", dt$smok_dur_curr_xps) # TODO: keep?
+      if (!"smok_cig_sc" %in% names(dt))
+        set(dt, NULL, "smok_cig_sc", dt$smok_cig_curr_xps)
+      
+      dt[row_sel, pid_mrk_sc := mk_new_simulant_markers(pid)] # TODO: keep?
+      
+      # Assign smok_incid probabilities
+      lutbl <-
+        read_fst("./lifecourse_models/smok_incid_table.fst",
+                 as.data.table = TRUE)
+      # TODO: update to new initiation table
+      setnames(lutbl, c("age", "mu"), c("age_sc", "prb_smok_incid_sc"))
+      lookup_dt(dt, lutbl)
+      
+      lutbl <-
+        read_fst("./lifecourse_models/smok_cess_table.fst",
+                 as.data.table = TRUE)
+      setnames(lutbl, c("mu"), c("prb_smok_cess_sc"))
+      lookup_dt(dt, lutbl)
+      
+      tbl <-
+        read_fst("./lifecourse_models/smok_relapse_table.fst",
+                 as.data.table = TRUE)
+      tbl <-
+        dcast(tbl, sex + qimd ~ smok_quit_yrs, value.var = "pr")
+      nam <- tbl[, paste0(sex, " ", qimd)]
+      tbl <-
+        as.matrix(tbl[, mget(paste0(1:15))], rownames = nam) 
+      
+      dt[between(age, 16, 90) & 
+          between(year, scenario_parms$sc_init_year, scenario_parms$sc_last_year),
+         ':='(prb_smok_incid_sc = prb_smok_incid_sc * initiation_multiply, 
+                              prb_smok_cess_sc = prb_smok_cess_sc * cessation_multiply)] # for eligible individual, reset smoking parameters
+
+tbl <- tbl[ relapse = relapse * relapse_multiply] # TODO: this number only use for year after ban - maybe fit 2 simsmoke
+
+simsmok_sc(dt, tbl, design$sim_prm$smoking_relapse_limit)
+
+dt[, c("prb_smok_incid_sc", "prb_smok_cess_sc") := NULL]
+    }
+    return(invisible(dt))
+  }
+}
+
+set_tobacco_price_qimd <- function(scenario_parms, dt, design) {
+  # bypass if irrelevant
+  if (all(
+    scenario_parms$sc_tax_qimd1_change == 0L
+  )) {
+    return(invisible(dt))
+    
+  } else {
+    # if any relevant scenario input
+    # #TODO: find price_elasticity_group 
+    # TODO: how to extract tax_qimd group
+    # price_elasticiprice_elasticity_index = scenario_parms$sc_tax_qimd * ??
+    
+    # find price elasticity 
+    price_elasticity =  scenario_parms$sc_tax_qimd1_change/10 * price_elasticity_index
+    # # map to initiation from price_elasticity
+    # initiation_multiply = 
+    #   
+    # # map to cessation from price_elasticity
+    # cessation_multiply = 
+    # 
+    # # map to relapse from price_elasticity
+    # relapse_multiply = 
+
+    # if scenario_parms$sc_tobacco_mala_change_max >= 18 { # below for smoking ban >= 18 yo 
+    row_sel_id <- # Indices of eligible rows
+      dt[between(year + 2000L,
+                 scenario_parms$sc_init_year,
+                 scenario_parms$sc_last_year) &
+           dead == FALSE & 
+           qimd == scenario_parms$sc_tax_qimd, 
+         unique(pid)]
+    
+    row_sel <- 
+      dt[between(year + 2000L,
+                 scenario_parms$sc_init_year,
+                 scenario_parms$sc_last_year) &
+           dead == FALSE &
+           qimd == scenario_parms$sc_tax_qimd & 
+           pid %in% row_sel_id, 
+         which = TRUE] # TODO: what is this function?
+    
+    # smoking ----
+    if ("smok" %in% scenario_parms$sc_soc_qimd_rf_change) {
+      if (!"smok_status_sc" %in% names(dt))
+        set(dt, NULL, "smok_status_sc", dt$smok_status_curr_xps)
+      if (!"smok_quit_yrs_sc" %in% names(dt))
+        set(dt, NULL, "smok_quit_yrs_sc", dt$smok_quit_yrs_curr_xps)
+      if (!"smok_dur_sc" %in% names(dt))
+        set(dt, NULL, "smok_dur_sc", dt$smok_dur_curr_xps) # TODO: keep?
+      if (!"smok_cig_sc" %in% names(dt))
+        set(dt, NULL, "smok_cig_sc", dt$smok_cig_curr_xps)
+      
+      dt[row_sel, pid_mrk_sc := mk_new_simulant_markers(pid)] # TODO: what is this command?
+      
+      # Assign smok_incid probabilities
+      lutbl <-
+        read_fst("./lifecourse_models/smok_incid_table.fst",
+                 as.data.table = TRUE)
+      # TODO: update to new initiation table
+      setnames(lutbl, c("age", "mu"), c("age_sc", "prb_smok_incid_sc"))
+      lookup_dt(dt, lutbl)
+      
+      lutbl <-
+        read_fst("./lifecourse_models/smok_cess_table.fst",
+                 as.data.table = TRUE)
+      setnames(lutbl, c("mu"), c("prb_smok_cess_sc"))
+      lookup_dt(dt, lutbl)
+      
+      tbl <-
+        read_fst("./lifecourse_models/smok_relapse_table.fst",
+                 as.data.table = TRUE)
+      tbl <-
+        dcast(tbl, sex + qimd ~ smok_quit_yrs, value.var = "pr")
+      nam <- tbl[, paste0(sex, " ", qimd)]
+      tbl <-
+        as.matrix(tbl[, mget(paste0(1:15))], rownames = nam) 
+      
+      dt[between(age, 16, 90) & row_sel,
+         ':='(prb_smok_incid_sc = prb_smok_incid_sc * initiation_multiply, 
+                              prb_smok_cess_sc = prb_smok_cess_sc * cessation_multiply)] # for eligible individual, reset smoking parameters
+
+tbl <- tbl[ relapse = relapse * relapse_multiply] # TODO: this number only use for year after ban - maybe fit 2 simsmoke
+
+simsmok_sc(dt, tbl, design$sim_prm$smoking_relapse_limit)
+
+dt[, c("prb_smok_incid_sc", "prb_smok_cess_sc") := NULL]
+    }
+    return(invisible(dt))
+  }
+}
 
 
 #' @export

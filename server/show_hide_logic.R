@@ -71,7 +71,8 @@ observeEvent(input$cancel_program_checkbox_sc1, {
         "lifestyle_attrition_slider_sc1",
         "ignore_cholesterol_checkbox_sc1",
         "ignore_sbp_checkbox_sc1",
-        "ignore_bmi_checkbox_sc1"
+        "ignore_bmi_checkbox_sc1",
+        "ban_smoke_checkbox_sc1"
       ),
       hideElement,
       anim = TRUE
@@ -106,7 +107,8 @@ observeEvent(input$cancel_program_checkbox_sc1, {
         "px_detailed_checkbox_sc1",
         "ignore_cholesterol_checkbox_sc1",
         "ignore_sbp_checkbox_sc1",
-        "ignore_bmi_checkbox_sc1"
+        "ignore_bmi_checkbox_sc1",
+        "ban_smoke_checkbox_sc1"
       ),
       showElement,
       anim = TRUE
