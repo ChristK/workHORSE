@@ -1503,7 +1503,7 @@ wellPanel(
                bs_embed_popover(title = "Smoking ban on the whole population")
            )
   )
-  ),
+  ), # TODO: add option for users to set the range of prevalence change due to smugling 
   
   br(),
   
@@ -1550,7 +1550,7 @@ wellPanel(
                   ),
                 numericInput(
                   "tax_slider_qimd1_sc1",
-                  "Price changes (%) - QIMD 1 (highest)",
+                  "Price Elasticity (%) - QIMD 1 (highest)",
                   63,
                   0,
                   100,
@@ -1577,7 +1577,7 @@ wellPanel(
            ),
          numericInput(
            "tax_slider_qimd2_sc1",
-           "Price changes (%) - QIMD 2",
+           "Price Elasticity (%) - QIMD 2",
            12,
            0,
            100,
@@ -1605,7 +1605,7 @@ wellPanel(
            ),
          numericInput(
            "tax_slider_qimd3_sc1",
-           "Price changes (%) - QIMD 3",
+           "Price Elasticity (%) - QIMD 3",
            35,
            0,
            100,
@@ -1632,7 +1632,7 @@ wellPanel(
            ),
          numericInput(
            "tax_slider_qimd4_sc1",
-           "Price changes (%) - QIMD 4",
+           "Price Elasticity (%) - QIMD 4",
            63,
            0,
            100,
@@ -1659,7 +1659,7 @@ wellPanel(
            ),
          numericInput(
            "tax_slider_qimd5_sc1",
-           "Price changes (%) - QIMD 5 (lowest QIMD)",
+           "Price Elasticity (%) - QIMD 5 (lowest QIMD)",
            12,
            0,
            100,

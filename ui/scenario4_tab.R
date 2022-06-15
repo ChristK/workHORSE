@@ -1503,14 +1503,14 @@ wellPanel(
                bs_embed_popover(title = "Smoking ban on the whole population")
            )
   )
-  ),
+  ), # TODO: add option for users to set the range of prevalence change due to smugling 
   
   br(),
   
   fluidRow( 
   column(2, 
          numericInput(
-           "smoking_prevalence_sc4",
+           "smoking_prevalence_slider_sc4",
            "Reduction in new smokers (%) - Average ",
            0.5,
            0,
@@ -1537,7 +1537,7 @@ wellPanel(
   ),
          column(2, 
                 numericInput(
-                  "smoking_prevalence_qimd1_sc4",
+                  "smoking_prevalence_slider_qimd1_sc4",
                   "Reduction in new smokers (%) - QIMD 1 (highest)",
                   0.5,
                   0,
@@ -1550,7 +1550,7 @@ wellPanel(
                   ),
                 numericInput(
                   "tax_slider_qimd1_sc4",
-                  "Price changes (%) - QIMD 1 (highest)",
+                  "Price Elasticity (%) - QIMD 1 (highest)",
                   63,
                   0,
                   100,
@@ -1564,7 +1564,7 @@ wellPanel(
   ),
   column(2, 
          numericInput(
-           "smoking_prevalence_qimd2_sc4",
+           "smoking_prevalence_slider_qimd2_sc4",
            "Reduction in new smokers (%) - QIMD 2",
            0.5,
            0,
@@ -1577,7 +1577,7 @@ wellPanel(
            ),
          numericInput(
            "tax_slider_qimd2_sc4",
-           "Price changes (%) - QIMD 2",
+           "Price Elasticity (%) - QIMD 2",
            12,
            0,
            100,
@@ -1592,7 +1592,7 @@ wellPanel(
   
   column(2, 
          numericInput(
-           "smoking_prevalence_qimd3_sc4",
+           "smoking_prevalence_slider_qimd3_sc4",
            "Reduction in new smokers (%) - QIMD 3",
            0.5,
            0,
@@ -1605,7 +1605,7 @@ wellPanel(
            ),
          numericInput(
            "tax_slider_qimd3_sc4",
-           "Price changes (%) - QIMD 3",
+           "Price Elasticity (%) - QIMD 3",
            35,
            0,
            100,
@@ -1619,7 +1619,7 @@ wellPanel(
   ),
   column(2, 
          numericInput(
-           "smoking_prevalence_qimd4_sc4",
+           "smoking_prevalence_slider_qimd4_sc4",
            "Reduction in new smokers (%) - QIMD 4",
            0.5,
            0,
@@ -1632,7 +1632,7 @@ wellPanel(
            ),
          numericInput(
            "tax_slider_qimd4_sc4",
-           "Price changes (%) - QIMD 4",
+           "Price Elasticity (%) - QIMD 4",
            63,
            0,
            100,
@@ -1646,7 +1646,7 @@ wellPanel(
   ),
   column(2, 
          numericInput(
-           "smoking_prevalence_qimd5_sc4",
+           "smoking_prevalence_slider_qimd5_sc4",
            "Reduction in new smokers (%) - QIMD 5 (lowest QIMD)",
            0.5,
            0,
@@ -1659,7 +1659,7 @@ wellPanel(
            ),
          numericInput(
            "tax_slider_qimd5_sc4",
-           "Price changes (%) - QIMD 5 (lowest QIMD)",
+           "Price Elasticity (%) - QIMD 5 (lowest QIMD)",
            12,
            0,
            100,

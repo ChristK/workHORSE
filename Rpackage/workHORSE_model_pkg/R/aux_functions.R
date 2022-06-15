@@ -2285,8 +2285,8 @@ set_tobacco_ban <- function(scenario_parms, dt, design) {
   } else {
     # if any relevant scenario input
     set(dt, NULL, "ban_sc", 0L)
-    dt[(between(year + 2000L, scenario_parms$sc_init_year, scenario_parms$sc_last_year ) & dead == FALSE,
-       ban_sc := "1")] # 1 is ban from smoke onwards
+    dt[between(year + 2000L, scenario_parms$sc_init_year, scenario_parms$sc_last_year) & dead == FALSE,
+       ban_sc := 1L] # 1 is ban from smoke onwards
 
     # smoking ----
     # Assumes that from the smoking initiation/cessation/relapse probabilities
@@ -2298,7 +2298,7 @@ set_tobacco_ban <- function(scenario_parms, dt, design) {
       if (!"smok_quit_yrs_sc" %in% names(dt))
         set(dt, NULL, "smok_quit_yrs_sc", dt$smok_quit_yrs_curr_xps)
       if (!"smok_dur_sc" %in% names(dt))
-        set(dt, NULL, "smok_dur_sc", dt$smok_dur_curr_xps) # TODO: keep?
+        set(dt, NULL, "smok_dur_sc", dt$smok_dur_curr_xps) 
       if (!"smok_cig_sc" %in% names(dt))
         set(dt, NULL, "smok_cig_sc", dt$smok_cig_curr_xps)
       
@@ -2327,13 +2327,11 @@ set_tobacco_ban <- function(scenario_parms, dt, design) {
       tbl <-
         as.matrix(tbl[, mget(paste0(1:15))], rownames = nam) 
       
-      dt[between(age, 16, 90) & 
-           ban_sc := "1")],
+      dt[between(age, 16, 90) & ban_sc == 1L,
           ':='(prb_smok_incid_sc = prb_smok_incid_sc * 0.05, 
                prb_smok_cess_sc = prb_smok_cess_sc * 0.95)] # for eligible individual, reset smoking parameters
 
-      tbl <- tbl[ relapse = relapse * 0.05] # TODO: this number only use for year after ban - maybe fit 2 simsmoke
-
+      tbl <- tbl[ relapse = relapse * 0.05] 
       simsmok_sc(dt, tbl, design$sim_prm$smoking_relapse_limit)
       
       dt[, c("prb_smok_incid_sc", "prb_smok_cess_sc") := NULL]
@@ -2517,7 +2515,7 @@ set_tobacco_price <- function(scenario_parms, dt, design) {
   } else {
     # if any relevant scenario input
     # find price elasticity 
-    price_elasticity =  scenario_parms$sc_tax_change/10 * 0.35
+    price_elasticity =  scenario_parms$sc_tax_change/100 * 0.35
     # # map to initiation from price_elasticity
     # initiation_multiply = 
     #   
@@ -2592,7 +2590,7 @@ set_tobacco_price_qimd <- function(scenario_parms, dt, design) {
     # price_elasticiprice_elasticity_index = scenario_parms$sc_tax_qimd * ??
     
     # find price elasticity 
-    price_elasticity =  scenario_parms$sc_tax_qimd1_change/10 * price_elasticity_index
+    price_elasticity =  scenario_parms$sc_tax_qimd1_change/100 * price_elasticity_index
     # # map to initiation from price_elasticity
     # initiation_multiply = 
     #   
@@ -2729,6 +2727,11 @@ run_scenario <-
       set_structural(scenario_parms[[sc]], dt$pop, design)
       set_social(scenario_parms[[sc]], dt$pop, design)
       set_tobacco(scenario_parms[[sc]], dt$pop, design)
+      set_tobacco_ban(scenario_parms[[sc]], dt$pop, design) 
+      set_tobacco_prevalence(scenario_parms[[sc]], dt$pop, design)  
+      set_tobacco_prevalence_qimd(scenario_parms[[sc]], dt$pop, design)
+      set_tobacco_price(scenario_parms[[sc]], dt$pop, design)
+      set_tobacco_price_qimd(scenario_parms[[sc]], dt$pop, design)
     }
 
     dt$pop[, eligible_sc  := clamp(eligible_sc + hlp$previous_elig)]

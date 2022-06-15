@@ -51,24 +51,24 @@ Currently lognormal and normal are supported.}
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-new}{\code{Exposure$new()}}
-\item \href{#method-read_exps_prm}{\code{Exposure$read_exps_prm()}}
-\item \href{#method-gen_stochastic_effect}{\code{Exposure$gen_stochastic_effect()}}
-\item \href{#method-get_rr}{\code{Exposure$get_rr()}}
-\item \href{#method-clear_cache}{\code{Exposure$clear_cache()}}
-\item \href{#method-validate_rr}{\code{Exposure$validate_rr()}}
-\item \href{#method-get_input_rr}{\code{Exposure$get_input_rr()}}
-\item \href{#method-get_metadata}{\code{Exposure$get_metadata()}}
-\item \href{#method-get_seed}{\code{Exposure$get_seed()}}
-\item \href{#method-write_exps_tmplte_file}{\code{Exposure$write_exps_tmplte_file()}}
-\item \href{#method-convert_from_old_format}{\code{Exposure$convert_from_old_format()}}
-\item \href{#method-print}{\code{Exposure$print()}}
-\item \href{#method-clone}{\code{Exposure$clone()}}
+\item \href{#method-Exposure-new}{\code{Exposure$new()}}
+\item \href{#method-Exposure-read_exps_prm}{\code{Exposure$read_exps_prm()}}
+\item \href{#method-Exposure-gen_stochastic_effect}{\code{Exposure$gen_stochastic_effect()}}
+\item \href{#method-Exposure-get_rr}{\code{Exposure$get_rr()}}
+\item \href{#method-Exposure-clear_cache}{\code{Exposure$clear_cache()}}
+\item \href{#method-Exposure-validate_rr}{\code{Exposure$validate_rr()}}
+\item \href{#method-Exposure-get_input_rr}{\code{Exposure$get_input_rr()}}
+\item \href{#method-Exposure-get_metadata}{\code{Exposure$get_metadata()}}
+\item \href{#method-Exposure-get_seed}{\code{Exposure$get_seed()}}
+\item \href{#method-Exposure-write_exps_tmplte_file}{\code{Exposure$write_exps_tmplte_file()}}
+\item \href{#method-Exposure-convert_from_old_format}{\code{Exposure$convert_from_old_format()}}
+\item \href{#method-Exposure-print}{\code{Exposure$print()}}
+\item \href{#method-Exposure-clone}{\code{Exposure$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\if{latex}{\out{\hypertarget{method-new}{}}}
+\if{html}{\out{<a id="method-Exposure-new"></a>}}
+\if{latex}{\out{\hypertarget{method-Exposure-new}{}}}
 \subsection{Method \code{new()}}{
 Create a new exposure object.
 \subsection{Usage}{
@@ -109,8 +109,8 @@ A new `Exposure` object.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-read_exps_prm"></a>}}
-\if{latex}{\out{\hypertarget{method-read_exps_prm}{}}}
+\if{html}{\out{<a id="method-Exposure-read_exps_prm"></a>}}
+\if{latex}{\out{\hypertarget{method-Exposure-read_exps_prm}{}}}
 \subsection{Method \code{read_exps_prm()}}{
 Reads exposure parameter from file.
 \subsection{Usage}{
@@ -140,8 +140,8 @@ af_stroke$read_exps_prm("./inputs/RR/af_stroke.csvy", design)
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-gen_stochastic_effect"></a>}}
-\if{latex}{\out{\hypertarget{method-gen_stochastic_effect}{}}}
+\if{html}{\out{<a id="method-Exposure-gen_stochastic_effect"></a>}}
+\if{latex}{\out{\hypertarget{method-Exposure-gen_stochastic_effect}{}}}
 \subsection{Method \code{gen_stochastic_effect()}}{
 Generates and write to disk the stochastic effect.
 \subsection{Usage}{
@@ -183,8 +183,8 @@ af_stroke$gen_stochastic_effect(design, TRUE)
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_rr"></a>}}
-\if{latex}{\out{\hypertarget{method-get_rr}{}}}
+\if{html}{\out{<a id="method-Exposure-get_rr"></a>}}
+\if{latex}{\out{\hypertarget{method-Exposure-get_rr}{}}}
 \subsection{Method \code{get_rr()}}{
 Get relative risks from disk.
 \subsection{Usage}{
@@ -211,8 +211,8 @@ A data.table with the stochastic relative risks, if stochastic
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clear_cache"></a>}}
-\if{latex}{\out{\hypertarget{method-clear_cache}{}}}
+\if{html}{\out{<a id="method-Exposure-clear_cache"></a>}}
+\if{latex}{\out{\hypertarget{method-Exposure-clear_cache}{}}}
 \subsection{Method \code{clear_cache()}}{
 Clear the cache for get_rr.
 \subsection{Usage}{
@@ -224,8 +224,8 @@ The `Exposure` object.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-validate_rr"></a>}}
-\if{latex}{\out{\hypertarget{method-validate_rr}{}}}
+\if{html}{\out{<a id="method-Exposure-validate_rr"></a>}}
+\if{latex}{\out{\hypertarget{method-Exposure-validate_rr}{}}}
 \subsection{Method \code{validate_rr()}}{
 Get relative risks from disk.
 \subsection{Usage}{
@@ -237,8 +237,8 @@ A plot with the input and stochastic relative risks.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_input_rr"></a>}}
-\if{latex}{\out{\hypertarget{method-get_input_rr}{}}}
+\if{html}{\out{<a id="method-Exposure-get_input_rr"></a>}}
+\if{latex}{\out{\hypertarget{method-Exposure-get_input_rr}{}}}
 \subsection{Method \code{get_input_rr()}}{
 Get original input relative risks by age and sex.
 \subsection{Usage}{
@@ -250,8 +250,8 @@ A copied data.table with the original relative risks.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_metadata"></a>}}
-\if{latex}{\out{\hypertarget{method-get_metadata}{}}}
+\if{html}{\out{<a id="method-Exposure-get_metadata"></a>}}
+\if{latex}{\out{\hypertarget{method-Exposure-get_metadata}{}}}
 \subsection{Method \code{get_metadata()}}{
 Get original metadata.
 \subsection{Usage}{
@@ -263,8 +263,8 @@ A list with the original metadata.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_seed"></a>}}
-\if{latex}{\out{\hypertarget{method-get_seed}{}}}
+\if{html}{\out{<a id="method-Exposure-get_seed"></a>}}
+\if{latex}{\out{\hypertarget{method-Exposure-get_seed}{}}}
 \subsection{Method \code{get_seed()}}{
 Get seed for RNG.
 \subsection{Usage}{
@@ -277,8 +277,8 @@ A seed for the RNG that is produced by the digest of exposure
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-write_exps_tmplte_file"></a>}}
-\if{latex}{\out{\hypertarget{method-write_exps_tmplte_file}{}}}
+\if{html}{\out{<a id="method-Exposure-write_exps_tmplte_file"></a>}}
+\if{latex}{\out{\hypertarget{method-Exposure-write_exps_tmplte_file}{}}}
 \subsection{Method \code{write_exps_tmplte_file()}}{
 Writes a template exposure file to disk.
 \subsection{Usage}{
@@ -298,8 +298,8 @@ The `Exposure` object.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-convert_from_old_format"></a>}}
-\if{latex}{\out{\hypertarget{method-convert_from_old_format}{}}}
+\if{html}{\out{<a id="method-Exposure-convert_from_old_format"></a>}}
+\if{latex}{\out{\hypertarget{method-Exposure-convert_from_old_format}{}}}
 \subsection{Method \code{convert_from_old_format()}}{
 Convert the old format .csv to the new format .csvy.
 \subsection{Usage}{
@@ -337,8 +337,8 @@ The `Exposure` object.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-print"></a>}}
-\if{latex}{\out{\hypertarget{method-print}{}}}
+\if{html}{\out{<a id="method-Exposure-print"></a>}}
+\if{latex}{\out{\hypertarget{method-Exposure-print}{}}}
 \subsection{Method \code{print()}}{
 Print the simulation parameters.
 \subsection{Usage}{
@@ -350,8 +350,8 @@ The `Exposure` object.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-clone}{}}}
+\if{html}{\out{<a id="method-Exposure-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-Exposure-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{
