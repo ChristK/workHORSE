@@ -24,9 +24,10 @@ tabPanel("About",
 
          p("workHORSE is an implemetation of the IMPACTncd framework, developed
            by Chris Kypridemos with contributions from Peter Crowther (Melandra Ltd),
-           Maria Guzman-Castillo, Amandine Robert, Karl Emmert-Fees, and Piotr Bandosz."),
+           Maria Guzman-Castillo, Amandine Robert, Karl Emmert-Fees,
+           and Piotr Bandosz."),
 
-         p("Copyright (C) 2018-2019 Chris Kypridemos"),
+         p("Copyright (C) 2018-2022 Chris Kypridemos"),
 
          p("workHORSE is free software; you can redistribute it and/or modify
           it under the terms of the GNU General Public License as published by
