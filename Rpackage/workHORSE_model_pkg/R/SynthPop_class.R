@@ -2173,7 +2173,7 @@ SynthPop <-
           # the ncc does not decrease.
 
           dt[, statin_adherence := rBE(.N, design_$sim_prm$statin_adherence, 0.2)]
-          dt[, bpmed_adherence := rBE(.N, design_$sim_prm$statin_adherence, 0.2)]
+          dt[, bpmed_adherence := rBE(.N, design_$sim_prm$bpmed_adherence, 0.2)]
 
           setcolorder(dt, c("pid", "pid_mrk", "year", "age", "sex", "qimd"))
           setkeyv(dt, c("pid", "year"))
