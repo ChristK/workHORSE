@@ -78,13 +78,17 @@ get_beta_par <- function(mu, scale = 1.2, tol = 0.001) { # scale of 1.5 is 50% h
 
 # too small values do not converge I need to multiply scaling factor here and
 # divide just before the end
-disease_epi[, mltp_factor := 1]
-disease_epi[value * uncertainty_space < 1e-1, mltp_factor := 1e1]
-disease_epi[value * uncertainty_space < 1e-2, mltp_factor := 1e2]
-disease_epi[value * uncertainty_space < 1e-3, mltp_factor := 1e3]
-disease_epi[value * uncertainty_space < 1e-4, mltp_factor := 1e4]
-disease_epi[value * uncertainty_space < 1e-5, mltp_factor := 1e5]
-disease_epi[value * uncertainty_space < 1e-6, mltp_factor := 1e6]
+# disease_epi[, mltp_factor := 1]
+# disease_epi[value * uncertainty_space < 1e-1, mltp_factor := 1e1]
+# disease_epi[value * uncertainty_space < 1e-2, mltp_factor := 1e2]
+# disease_epi[value * uncertainty_space < 1e-3, mltp_factor := 1e3]
+# disease_epi[value * uncertainty_space < 1e-4, mltp_factor := 1e4]
+# disease_epi[value * uncertainty_space < 1e-5, mltp_factor := 1e5]
+# disease_epi[value * uncertainty_space < 1e-6, mltp_factor := 1e6]
+disease_epi[, mltp_factor := fifelse(value * uncertainty_space < 1,
+                                     (1/value)*0.8,
+                                     1)]
+# check must be below 1! [, check := value * mltp_factor]
 
 disease_epi[type == "incidence_rates", c("a", "b") := {
   l <- future_lapply(value * mltp_factor, get_beta_par, uncertainty_space, 0.001)
