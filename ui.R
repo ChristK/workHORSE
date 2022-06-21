@@ -45,7 +45,7 @@ ui = tagList(
 
     # Output tab --------------------------
     source(file.path("ui", "output_tab.R"), local = TRUE)$value,
-    br(),
+    # br(), # causes a warning from bslib
 
     navbarMenu("More",
       # Advance settings tab --------------------------
@@ -59,7 +59,8 @@ ui = tagList(
       )$value,
 
       # About tab --------------------------
-      source(file.path("ui", "about_tab.R"), local = TRUE)$value)
+      source(file.path("ui", "about_tab.R"), local = TRUE)$value
+      )
   ),
 
 
