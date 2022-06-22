@@ -29,6 +29,7 @@ uncertainty_space <- 1.05
 
 
 library(data.table)
+library(CKutils)
 library(fst)
 library(future.apply)
 library(dqrng)
@@ -45,7 +46,7 @@ options(
   future.globals.maxSize = +Inf,
   future.globals.onReference = "ignore"
 )
-plan(multiprocess, workers = 20L)
+plan(multicore, workers = 20L)
 
 
 disease_epi <- fread("./disease_epidemiology/disease_epi.csv", stringsAsFactors = TRUE,
