@@ -1421,6 +1421,7 @@ set_px <- function(scenario_parms, dt, mc, design_) {
   setnafill(dt, "c", 0, cols = colnam)
   dt[, (colnam) := hc_effect(statin_px_sc, 0.9749866, pid_mrk)]
 
+
   # 0.9749866 comes from the following study in Wales.
   # King W, Lacey A, White J, Farewell D, Dunstan F, Fone D. Socioeconomic
   # inequality in medication persistence in primary and secondary prevention of
@@ -1451,7 +1452,7 @@ set_px <- function(scenario_parms, dt, mc, design_) {
   # adherence <- rBE(1e6, 0.9, 0.2) # proportion of prescribed dose taken
 
   if (!colnam_bio %in% names(dt)) dt[, (colnam_bio) := tchol_curr_xps]
-  dt[statin_px_sc == 1L &
+  dt[statin_px_sc == 1L & 
        # statin_px_curr_xps == 0L & # Assume GP titrates treatment
        year + 2000L >= scenario_parms$sc_init_year,
      (colnam_bio) := tchol_curr_xps * (1 - atorv_eff * statin_adherence)]
@@ -1507,52 +1508,52 @@ set_lifestyle <-
   function(scenario_parms, dt, design) {
     atte_colnam <- "attendees_sc"
 
-    # PA ----
-    colnam      <- "active_days_sc"
-    colnam_cost <- "active_days_cost_sc"
-    if (!"hc_eff_pa" %in% names(dt))      set(dt, NULL, "hc_eff_pa", 0L)
-    if (!colnam %in% names(dt))        dt[, (colnam) := active_days_curr_xps]
-    if (!colnam_cost %in% names(dt))   set(dt, NULL, colnam_cost, 0)
-    dt[attendees_sc == 1L, hc_eff_pa := rbinom(.N, 1, scenario_parms$sc_ls_papct)]
-    dt[hc_eff_pa == 1L & year + 2000L >= scenario_parms$sc_init_year,
-       (colnam_cost) := scenario_parms$sc_ls_pa_cost_ind]
-    # Cost only the year of referral
-    dt[,
-      hc_eff_pa := hc_effect(hc_eff_pa, (1 - scenario_parms$sc_ls_attrition), pid_mrk)]
-    dt[hc_eff_pa == 1L, (colnam) :=
-         as.integer(round(clamp(active_days_sc + scenario_parms$sc_ls_papincr, 0, 7)))]
+    # # PA ----
+    # colnam      <- "active_days_sc"
+    # colnam_cost <- "active_days_cost_sc"
+    # if (!"hc_eff_pa" %in% names(dt))      set(dt, NULL, "hc_eff_pa", 0L)
+    # if (!colnam %in% names(dt))        dt[, (colnam) := active_days_curr_xps]
+    # if (!colnam_cost %in% names(dt))   set(dt, NULL, colnam_cost, 0)
+    # dt[attendees_sc == 1L, hc_eff_pa := rbinom(.N, 1, scenario_parms$sc_ls_papct)]
+    # dt[hc_eff_pa == 1L & year + 2000L >= scenario_parms$sc_init_year,
+    #    (colnam_cost) := scenario_parms$sc_ls_pa_cost_ind]
+    # # Cost only the year of referral
+    # dt[,
+    #   hc_eff_pa := hc_effect(hc_eff_pa, (1 - scenario_parms$sc_ls_attrition), pid_mrk)]
+    # dt[hc_eff_pa == 1L, (colnam) :=
+    #      as.integer(round(clamp(active_days_sc + scenario_parms$sc_ls_papincr, 0, 7)))]
 
-    # Weight management ----
-    colnam      <- "bmi_sc"
-    colnam_cost <- "bmi_cost_sc"
-    if (!"hc_eff_wm" %in% names(dt)) set(dt, NULL, "hc_eff_wm", 0L)
-    if (!colnam %in% names(dt))      dt[, (colnam) := bmi_curr_xps]
-    if (!colnam_cost %in% names(dt)) set(dt, NULL, colnam_cost, 0)
-    dt[attendees_sc == 1L &
-         bmi_curr_xps > 30, hc_eff_wm := rbinom(.N, 1, scenario_parms$sc_ls_wghtpct)]
-    dt[hc_eff_wm == 1L  & year + 2000L >= scenario_parms$sc_init_year,
-       (colnam_cost) := scenario_parms$sc_ls_wghtloss_cost_ind]
-    # Cost only the year of referral
-    dt[,
-      hc_eff_wm := hc_effect(hc_eff_wm,
-        (1 - scenario_parms$sc_ls_attrition), pid_mrk)]
-    dt[hc_eff_wm == 1L, (colnam) := bmi_sc * (1 - scenario_parms$sc_ls_wghtreduc)]
+    # # Weight management ----
+    # colnam      <- "bmi_sc"
+    # colnam_cost <- "bmi_cost_sc"
+    # if (!"hc_eff_wm" %in% names(dt)) set(dt, NULL, "hc_eff_wm", 0L)
+    # if (!colnam %in% names(dt))      dt[, (colnam) := bmi_curr_xps]
+    # if (!colnam_cost %in% names(dt)) set(dt, NULL, colnam_cost, 0)
+    # dt[attendees_sc == 1L &
+    #      bmi_curr_xps > 30, hc_eff_wm := rbinom(.N, 1, scenario_parms$sc_ls_wghtpct)]
+    # dt[hc_eff_wm == 1L  & year + 2000L >= scenario_parms$sc_init_year,
+    #    (colnam_cost) := scenario_parms$sc_ls_wghtloss_cost_ind]
+    # # Cost only the year of referral
+    # dt[,
+    #   hc_eff_wm := hc_effect(hc_eff_wm,
+    #     (1 - scenario_parms$sc_ls_attrition), pid_mrk)]
+    # dt[hc_eff_wm == 1L, (colnam) := bmi_sc * (1 - scenario_parms$sc_ls_wghtreduc)]
 
-    # Alcohol ----
-    colnam      <- "alcohol_sc"
-    colnam_cost <- "alcohol_cost_sc"
-    if (!"hc_eff_al" %in% names(dt)) set(dt, NULL, "hc_eff_al", 0L)
-    if (!colnam %in% names(dt))      dt[, (colnam) := alcohol_curr_xps]
-    if (!colnam_cost %in% names(dt)) set(dt, NULL, colnam_cost, 0)
-    dt[attendees_sc == 1L &
-         alcohol_curr_xps >= 16, hc_eff_al := rbinom(.N, 1, scenario_parms$sc_ls_alcoholpct)]
-    dt[hc_eff_al == 1L & year + 2000L >= scenario_parms$sc_init_year,
-       (colnam_cost) := scenario_parms$sc_ls_alcoholreduc_cost_ind]
-    # Cost only the year of referral
-    dt[,
-       hc_eff_al := hc_effect(hc_eff_al, (1 - scenario_parms$sc_ls_attrition), pid_mrk)]
-    dt[hc_eff_al == 1L, (colnam) :=
-         as.integer(round(alcohol_sc * (1 - scenario_parms$sc_ls_alcoholreduc)))]
+    # # Alcohol ----
+    # colnam      <- "alcohol_sc"
+    # colnam_cost <- "alcohol_cost_sc"
+    # if (!"hc_eff_al" %in% names(dt)) set(dt, NULL, "hc_eff_al", 0L)
+    # if (!colnam %in% names(dt))      dt[, (colnam) := alcohol_curr_xps]
+    # if (!colnam_cost %in% names(dt)) set(dt, NULL, colnam_cost, 0)
+    # dt[attendees_sc == 1L &
+    #      alcohol_curr_xps >= 16, hc_eff_al := rbinom(.N, 1, scenario_parms$sc_ls_alcoholpct)]
+    # dt[hc_eff_al == 1L & year + 2000L >= scenario_parms$sc_init_year,
+    #    (colnam_cost) := scenario_parms$sc_ls_alcoholreduc_cost_ind]
+    # # Cost only the year of referral
+    # dt[,
+    #    hc_eff_al := hc_effect(hc_eff_al, (1 - scenario_parms$sc_ls_attrition), pid_mrk)]
+    # dt[hc_eff_al == 1L, (colnam) :=
+    #      as.integer(round(alcohol_sc * (1 - scenario_parms$sc_ls_alcoholreduc)))]
 
 
     # Smoking cessation ----
@@ -1700,72 +1701,72 @@ set_structural <-
       dt[, hc_eff := NULL]
 }
 
-    # fv ----
-    if (scenario_parms$sc_str_fv_change != 0) {
-      if (!"fruit_sc" %in% names(dt))
-        set(dt, NULL, "fruit_sc", dt$fruit_curr_xps)
-      if (!"veg_sc" %in% names(dt))
-        set(dt, NULL, "veg_sc", dt$veg_curr_xps)
-      dt[row_sel,
-         `:=`(
-           fruit_sc = as.integer(round(fruit_sc * (
-             1 + scenario_parms$sc_str_fv_change
-           ))),
-           veg_sc = as.integer(round(veg_sc * (
-             1 + scenario_parms$sc_str_fv_change
-           ))))]
-    }
-
-    # alcohol ----
-    if (scenario_parms$sc_str_alcohol_change != 0) {
-      if (!"alcohol_sc" %in% names(dt))
-        set(dt, NULL, "alcohol_sc", dt$alcohol_curr_xps)
-      dt[row_sel,
-         `:=`(
-           alcohol_sc = as.integer(round(alcohol_sc * (
-             1 + scenario_parms$sc_str_alcohol_change
-           )))
-           )]
-    }
-
-    # active_days ----
-    if (scenario_parms$sc_str_pa_change != 0) {
-      if (!"active_days_sc" %in% names(dt))
-        set(dt, NULL, "active_days_sc", dt$active_days_curr_xps)
-      dt[row_sel,
-         `:=`(active_days_sc = active_days_sc + scenario_parms$sc_str_pa_change
-         )]
-    }
-
-    # bmi ----
-    if (scenario_parms$sc_str_bmi_change != 0) {
-      if (!"bmi_sc" %in% names(dt))
-        set(dt, NULL, "bmi_sc", dt$bmi_curr_xps)
-      dt[row_sel,
-         `:=`(
-           bmi_sc = bmi_sc * (1 + scenario_parms$sc_str_bmi_change)
-         )]
-    }
-
-    # sbp ----
-    if (scenario_parms$sc_str_sbp_change != 0) {
-      if (!"sbp_sc" %in% names(dt))
-        set(dt, NULL, "sbp_sc", dt$sbp_curr_xps)
-      dt[row_sel,
-         `:=`(
-           sbp_sc = sbp_sc * (1 + scenario_parms$sc_str_sbp_change)
-         )]
-    }
-
-    # tchol ----
-    if (scenario_parms$sc_str_tchol_change != 0) {
-      if (!"tchol_sc" %in% names(dt))
-        set(dt, NULL, "tchol_sc", dt$tchol_curr_xps)
-      dt[row_sel,
-         `:=`(
-           tchol_sc = tchol_sc * (1 + scenario_parms$sc_str_tchol_change)
-         )]
-    }
+    # # fv ----
+    # if (scenario_parms$sc_str_fv_change != 0) {
+    #   if (!"fruit_sc" %in% names(dt))
+    #     set(dt, NULL, "fruit_sc", dt$fruit_curr_xps)
+    #   if (!"veg_sc" %in% names(dt))
+    #     set(dt, NULL, "veg_sc", dt$veg_curr_xps)
+    #   dt[row_sel,
+    #      `:=`(
+    #        fruit_sc = as.integer(round(fruit_sc * (
+    #          1 + scenario_parms$sc_str_fv_change
+    #        ))),
+    #        veg_sc = as.integer(round(veg_sc * (
+    #          1 + scenario_parms$sc_str_fv_change
+    #        ))))]
+    # }
+    # 
+    # # alcohol ----
+    # if (scenario_parms$sc_str_alcohol_change != 0) {
+    #   if (!"alcohol_sc" %in% names(dt))
+    #     set(dt, NULL, "alcohol_sc", dt$alcohol_curr_xps)
+    #   dt[row_sel,
+    #      `:=`(
+    #        alcohol_sc = as.integer(round(alcohol_sc * (
+    #          1 + scenario_parms$sc_str_alcohol_change
+    #        )))
+    #        )]
+    # }
+    # 
+    # # active_days ----
+    # if (scenario_parms$sc_str_pa_change != 0) {
+    #   if (!"active_days_sc" %in% names(dt))
+    #     set(dt, NULL, "active_days_sc", dt$active_days_curr_xps)
+    #   dt[row_sel,
+    #      `:=`(active_days_sc = active_days_sc + scenario_parms$sc_str_pa_change
+    #      )]
+    # }
+    # 
+    # # bmi ----
+    # if (scenario_parms$sc_str_bmi_change != 0) {
+    #   if (!"bmi_sc" %in% names(dt))
+    #     set(dt, NULL, "bmi_sc", dt$bmi_curr_xps)
+    #   dt[row_sel,
+    #      `:=`(
+    #        bmi_sc = bmi_sc * (1 + scenario_parms$sc_str_bmi_change)
+    #      )]
+    # }
+    # 
+    # # sbp ----
+    # if (scenario_parms$sc_str_sbp_change != 0) {
+    #   if (!"sbp_sc" %in% names(dt))
+    #     set(dt, NULL, "sbp_sc", dt$sbp_curr_xps)
+    #   dt[row_sel,
+    #      `:=`(
+    #        sbp_sc = sbp_sc * (1 + scenario_parms$sc_str_sbp_change)
+    #      )]
+    # }
+    # 
+    # # tchol ----
+    # if (scenario_parms$sc_str_tchol_change != 0) {
+    #   if (!"tchol_sc" %in% names(dt))
+    #     set(dt, NULL, "tchol_sc", dt$tchol_curr_xps)
+    #   dt[row_sel,
+    #      `:=`(
+    #        tchol_sc = tchol_sc * (1 + scenario_parms$sc_str_tchol_change)
+    #      )]
+    # }
 
     invisible(dt)
   }
@@ -1907,163 +1908,163 @@ set_social <- function(scenario_parms, dt, design) {
       dt[row_sel, ets_sc := as.integer(rank < mu)]
     }
 
-    # fv ----
-    if ("fv" %in% scenario_parms$sc_soc_qimd_rf_change) {
-      if (!"fruit_sc" %in% names(dt))
-        set(dt, NULL, "fruit_sc", dt$fruit_curr_xps)
-      if (!"veg_sc" %in% names(dt))
-        set(dt, NULL, "veg_sc", dt$veg_curr_xps)
+    # # fv ----
+    # if ("fv" %in% scenario_parms$sc_soc_qimd_rf_change) {
+    #   if (!"fruit_sc" %in% names(dt))
+    #     set(dt, NULL, "fruit_sc", dt$fruit_curr_xps)
+    #   if (!"veg_sc" %in% names(dt))
+    #     set(dt, NULL, "veg_sc", dt$veg_curr_xps)
+    # 
+    # 
+    #   lutbl <-
+    #     read_fst("./lifecourse_models/frtpor_table.fst",
+    #       as.data.table = TRUE)
+    #   # is_valid_lookup_tbl(lutbl, c("year", "age", "sex", "sha", "qimd", "ethnicity"))
+    #   lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
+    #   dt[row_sel, rank :=
+    #       my_pZISICHEL(fruit_curr_xps / 80,
+    #         mu,
+    #         sigma,
+    #         nu,
+    #         tau,
+    #         n_cpu = design$sim_prm$n_cpu)]
+    #   # rn not uniformly distributed because it is discrete distr. That's expected
+    #   # and without consequences.
+    # 
+    #   setnames(lutbl, "qimd", "qimd_sc")
+    #   lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
+    #   dt[row_sel, fruit_sc :=
+    #       my_qZISICHEL(rank,
+    #         mu, sigma, nu, tau, n_cpu = design$sim_prm$n_cpu) * 80L]  # g/d
+    # 
+    #   lutbl <-
+    #     read_fst("./lifecourse_models/vegpor_table.fst",
+    #       as.data.table = TRUE)
+    #   lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
+    #   dt[row_sel, rank :=
+    #       my_pDEL(veg_curr_xps / 80,
+    #         mu, sigma, nu, n_cpu = design$sim_prm$n_cpu)]
+    # 
+    #   setnames(lutbl, "qimd", "qimd_sc")
+    #   lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
+    #   dt[row_sel, veg_sc :=
+    #       my_qDEL(rank,
+    #         mu, sigma, nu, n_cpu = design$sim_prm$n_cpu) * 80L]  # g/d
+    # }
 
+    # # alcohol ----
+    # if ("alc" %in% scenario_parms$sc_soc_qimd_rf_change) {
+    #   if (!"alcohol_sc" %in% names(dt))
+    #     set(dt, NULL, "alcohol_sc", dt$alcohol_curr_xps)
+    # 
+    #   lutbl <-
+    #     read_fst("./lifecourse_models/alcohol_table.fst",
+    #       as.data.table = TRUE)
+    #   # is_valid_lookup_tbl(lutbl, c("year", "age", "sex", "sha", "qimd", "ethnicity"))
+    #   lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
+    #   dt[row_sel, rank := pZINBI(alcohol_curr_xps, mu, sigma, nu)]
+    # 
+    #   setnames(lutbl, "qimd", "qimd_sc")
+    #   lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
+    #   dt[row_sel, alcohol_sc := qZINBI(rank, mu, sigma, nu)]
+    # }
 
-      lutbl <-
-        read_fst("./lifecourse_models/frtpor_table.fst",
-          as.data.table = TRUE)
-      # is_valid_lookup_tbl(lutbl, c("year", "age", "sex", "sha", "qimd", "ethnicity"))
-      lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
-      dt[row_sel, rank :=
-          my_pZISICHEL(fruit_curr_xps / 80,
-            mu,
-            sigma,
-            nu,
-            tau,
-            n_cpu = design$sim_prm$n_cpu)]
-      # rn not uniformly distributed because it is discrete distr. That's expected
-      # and without consequences.
+    # # active_days ----
+    # if ("pa" %in% scenario_parms$sc_soc_qimd_rf_change) {
+    #   if (!"active_days_sc" %in% names(dt))
+    #     set(dt, NULL, "active_days_sc", dt$active_days_curr_xps)
+    # 
+    #   dt[, c("mu", "sigma", "nu", "tau") := NULL]
+    # 
+    #   lutbl <-
+    #     read_fst("./lifecourse_models/active_days_table.fst",
+    #       as.data.table = TRUE)
+    #   lookup_dt(dt, lutbl)
+    #   dt[row_sel, rank := fcase(
+    #     active_days_curr_xps == 0,
+    #     pa0 - 1e-5,
+    #     # -1e-5 for safety
+    #     active_days_curr_xps == 1,
+    #     pa1 - 1e-5,
+    #     active_days_curr_xps == 2,
+    #     pa2 - 1e-5,
+    #     active_days_curr_xps == 3,
+    #     pa3 - 1e-5,
+    #     active_days_curr_xps == 4,
+    #     pa4 - 1e-5,
+    #     active_days_curr_xps == 5,
+    #     pa5 - 1e-5,
+    #     active_days_curr_xps == 6,
+    #     pa6 - 1e-5,
+    #     active_days_curr_xps == 7,
+    #     1
+    #   )]
+    # 
+    #   setnames(lutbl, "qimd", "qimd_sc")
+    #   lookup_dt(dt, lutbl, exclude_col = (paste0("pa", 0:6)))
+    # 
+    # 
+    #   dt[row_sel, active_days_sc := (rank > pa0) + (rank > pa1) + (rank > pa2) +
+    #       (rank > pa3) + (rank > pa4) + (rank > pa5) + (rank > pa6)]
+    # 
+    #   dt[, (paste0("pa", 0:6)) := NULL]
+    # }
 
-      setnames(lutbl, "qimd", "qimd_sc")
-      lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
-      dt[row_sel, fruit_sc :=
-          my_qZISICHEL(rank,
-            mu, sigma, nu, tau, n_cpu = design$sim_prm$n_cpu) * 80L]  # g/d
+    # # bmi ----
+    # if ("bmi" %in% scenario_parms$sc_soc_qimd_rf_change) {
+    #   if (!"bmi_sc" %in% names(dt))
+    #     set(dt, NULL, "bmi_sc", dt$bmi_curr_xps)
+    # 
+    #   lutbl <-
+    #     read_fst("./lifecourse_models/bmi_table.fst", as.data.table = TRUE)
+    #   lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
+    #   dt[row_sel, rank :=
+    #       my_pBCPEo(bmi_curr_xps, mu, sigma, nu, tau,
+    #         n_cpu = design$sim_prm$n_cpu)]
+    # 
+    #   setnames(lutbl, "qimd", "qimd_sc")
+    #   lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
+    #   dt[row_sel, bmi_sc :=
+    #       my_qBCPEo(rank, mu, sigma, nu, tau, n_cpu = design$sim_prm$n_cpu)]
+    # }
 
-      lutbl <-
-        read_fst("./lifecourse_models/vegpor_table.fst",
-          as.data.table = TRUE)
-      lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
-      dt[row_sel, rank :=
-          my_pDEL(veg_curr_xps / 80,
-            mu, sigma, nu, n_cpu = design$sim_prm$n_cpu)]
+    # # sbp ----
+    # if ("sbp" %in% scenario_parms$sc_soc_qimd_rf_change) {
+    #   if (!"sbp_sc" %in% names(dt))
+    #     set(dt, NULL, "sbp_sc", dt$sbp_curr_xps)
+    # 
+    #   lutbl <-
+    #     read_fst("./lifecourse_models/sbp_table.fst", as.data.table = TRUE)
+    #   lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
+    #   dt[row_sel, rank :=
+    #       my_pBCPEo(sbp_curr_xps, mu, sigma, nu, tau,
+    #         n_cpu = design$sim_prm$n_cpu)]
+    # 
+    #   setnames(lutbl, "qimd", "qimd_sc")
+    #   lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
+    #   dt[row_sel, sbp_sc :=
+    #       my_qBCPEo(rank, mu, sigma, nu, tau, n_cpu = design$sim_prm$n_cpu)]
+    # }
 
-      setnames(lutbl, "qimd", "qimd_sc")
-      lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
-      dt[row_sel, veg_sc :=
-          my_qDEL(rank,
-            mu, sigma, nu, n_cpu = design$sim_prm$n_cpu) * 80L]  # g/d
-    }
-
-    # alcohol ----
-    if ("alc" %in% scenario_parms$sc_soc_qimd_rf_change) {
-      if (!"alcohol_sc" %in% names(dt))
-        set(dt, NULL, "alcohol_sc", dt$alcohol_curr_xps)
-
-      lutbl <-
-        read_fst("./lifecourse_models/alcohol_table.fst",
-          as.data.table = TRUE)
-      # is_valid_lookup_tbl(lutbl, c("year", "age", "sex", "sha", "qimd", "ethnicity"))
-      lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
-      dt[row_sel, rank := pZINBI(alcohol_curr_xps, mu, sigma, nu)]
-
-      setnames(lutbl, "qimd", "qimd_sc")
-      lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
-      dt[row_sel, alcohol_sc := qZINBI(rank, mu, sigma, nu)]
-    }
-
-    # active_days ----
-    if ("pa" %in% scenario_parms$sc_soc_qimd_rf_change) {
-      if (!"active_days_sc" %in% names(dt))
-        set(dt, NULL, "active_days_sc", dt$active_days_curr_xps)
-
-      dt[, c("mu", "sigma", "nu", "tau") := NULL]
-
-      lutbl <-
-        read_fst("./lifecourse_models/active_days_table.fst",
-          as.data.table = TRUE)
-      lookup_dt(dt, lutbl)
-      dt[row_sel, rank := fcase(
-        active_days_curr_xps == 0,
-        pa0 - 1e-5,
-        # -1e-5 for safety
-        active_days_curr_xps == 1,
-        pa1 - 1e-5,
-        active_days_curr_xps == 2,
-        pa2 - 1e-5,
-        active_days_curr_xps == 3,
-        pa3 - 1e-5,
-        active_days_curr_xps == 4,
-        pa4 - 1e-5,
-        active_days_curr_xps == 5,
-        pa5 - 1e-5,
-        active_days_curr_xps == 6,
-        pa6 - 1e-5,
-        active_days_curr_xps == 7,
-        1
-      )]
-
-      setnames(lutbl, "qimd", "qimd_sc")
-      lookup_dt(dt, lutbl, exclude_col = (paste0("pa", 0:6)))
-
-
-      dt[row_sel, active_days_sc := (rank > pa0) + (rank > pa1) + (rank > pa2) +
-          (rank > pa3) + (rank > pa4) + (rank > pa5) + (rank > pa6)]
-
-      dt[, (paste0("pa", 0:6)) := NULL]
-    }
-
-    # bmi ----
-    if ("bmi" %in% scenario_parms$sc_soc_qimd_rf_change) {
-      if (!"bmi_sc" %in% names(dt))
-        set(dt, NULL, "bmi_sc", dt$bmi_curr_xps)
-
-      lutbl <-
-        read_fst("./lifecourse_models/bmi_table.fst", as.data.table = TRUE)
-      lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
-      dt[row_sel, rank :=
-          my_pBCPEo(bmi_curr_xps, mu, sigma, nu, tau,
-            n_cpu = design$sim_prm$n_cpu)]
-
-      setnames(lutbl, "qimd", "qimd_sc")
-      lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
-      dt[row_sel, bmi_sc :=
-          my_qBCPEo(rank, mu, sigma, nu, tau, n_cpu = design$sim_prm$n_cpu)]
-    }
-
-    # sbp ----
-    if ("sbp" %in% scenario_parms$sc_soc_qimd_rf_change) {
-      if (!"sbp_sc" %in% names(dt))
-        set(dt, NULL, "sbp_sc", dt$sbp_curr_xps)
-
-      lutbl <-
-        read_fst("./lifecourse_models/sbp_table.fst", as.data.table = TRUE)
-      lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
-      dt[row_sel, rank :=
-          my_pBCPEo(sbp_curr_xps, mu, sigma, nu, tau,
-            n_cpu = design$sim_prm$n_cpu)]
-
-      setnames(lutbl, "qimd", "qimd_sc")
-      lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
-      dt[row_sel, sbp_sc :=
-          my_qBCPEo(rank, mu, sigma, nu, tau, n_cpu = design$sim_prm$n_cpu)]
-    }
-
-    # tchol ----
-    if ("tchol" %in% scenario_parms$sc_soc_qimd_rf_change) {
-      if (!"tchol_sc" %in% names(dt))
-        set(dt, NULL, "tchol_sc", dt$sbp_curr_xps)
-
-      lutbl <-
-        read_fst("./lifecourse_models/tchol_table.fst", as.data.table = TRUE)
-      lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
-      dt[row_sel, rank :=
-          my_pBCT(tchol_curr_xps, mu, sigma, nu, tau,
-            n_cpu = design$sim_prm$n_cpu)]
-
-      setnames(lutbl, "qimd", "qimd_sc")
-      lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
-      dt[row_sel, tchol_sc :=
-          my_qBCT(rank, mu, sigma, nu, tau, n_cpu = design$sim_prm$n_cpu)]
-
-      dt[, c("mu", "sigma", "nu", "tau", "rank") := NULL]
-    }
+    # # tchol ----
+    # if ("tchol" %in% scenario_parms$sc_soc_qimd_rf_change) {
+    #   if (!"tchol_sc" %in% names(dt))
+    #     set(dt, NULL, "tchol_sc", dt$sbp_curr_xps)
+    # 
+    #   lutbl <-
+    #     read_fst("./lifecourse_models/tchol_table.fst", as.data.table = TRUE)
+    #   lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
+    #   dt[row_sel, rank :=
+    #       my_pBCT(tchol_curr_xps, mu, sigma, nu, tau,
+    #         n_cpu = design$sim_prm$n_cpu)]
+    # 
+    #   setnames(lutbl, "qimd", "qimd_sc")
+    #   lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
+    #   dt[row_sel, tchol_sc :=
+    #       my_qBCT(rank, mu, sigma, nu, tau, n_cpu = design$sim_prm$n_cpu)]
+    # 
+    #   dt[, c("mu", "sigma", "nu", "tau", "rank") := NULL]
+    # }
 
     # case fatality ----
     if (scenario_parms$sc_soc_qimd_fatality_change) {
@@ -2102,63 +2103,63 @@ set_tobacco <- function(scenario_parms, dt, design) {
     scenario_parms$sc_tobacco_mala_change == 18L
   )) {
     return(invisible(dt))
-    
+
   } else {
     # if any relevant scenario input
 
     # TODO: age slider smaller than current age
     set(dt, NULL, "age_sc", dt$age) # create new scenario age
-    # if scenario_parms$sc_tobacco_mala_change_max >= 18 { # below for smoking ban >= 18 yo 
+    # if scenario_parms$sc_tobacco_mala_change_max >= 18 { # below for smoking ban >= 18 yo
     row_sel_id <- # Indices of eligible rows
       dt[between(year + 2000L,
                  scenario_parms$sc_init_year,
                  scenario_parms$sc_last_year) &
-          dead == FALSE & 
-          between(age, 18, 20), 
-          # between(age, 18, scenario_parms$sc_tobacco_mala_change),  
+          dead == FALSE &
+          between(age, 18, 20),
+          # between(age, 18, scenario_parms$sc_tobacco_mala_change),
           unique(pid)]
-    
-    row_sel <- 
+
+    row_sel <-
       dt[between(year + 2000L,
                  scenario_parms$sc_init_year,
                  scenario_parms$sc_last_year) &
         dead == FALSE &
-        pid %in% row_sel_id, 
+        pid %in% row_sel_id,
                   which = TRUE]
-    
+
       dt[between(year + 2000L,
                scenario_parms$sc_init_year,
                scenario_parms$sc_last_year) &
-                dead == FALSE & 
+                dead == FALSE &
                 between(age, 18, scenario_parms$sc_tobacco_mala_change - 1L),
           age_sc := 17L] # set all illegal smoking age to 17 yo
       #}
-      # # if scenario_parms$sc_tobacco_mala_change_max < 18 { 
+      # # if scenario_parms$sc_tobacco_mala_change_max < 18 {
       # row_sel_id <- # Indices of eligible rows
       #   dt[between(year + 2000L,
       #              scenario_parms$sc_init_year,
       #              scenario_parms$sc_last_year) &
-      #        dead == FALSE & 
-      #        between(age, scenario_parms$sc_tobacco_mala_change_min, scenario_parms$sc_tobacco_mala_change_max),  
+      #        dead == FALSE &
+      #        between(age, scenario_parms$sc_tobacco_mala_change_min, scenario_parms$sc_tobacco_mala_change_max),
       #      unique(pid)]
-      # 
-      # row_sel <- 
+      #
+      # row_sel <-
       #   dt[between(year + 2000L,
       #              scenario_parms$sc_init_year,
       #              scenario_parms$sc_last_year) &
       #        dead == FALSE &
-      #        pid %in% row_sel_id, 
+      #        pid %in% row_sel_id,
       #      which = TRUE]
-      # 
+      #
       # dt[between(year + 2000L,
       #            scenario_parms$sc_init_year,
       #            scenario_parms$sc_last_year) &
-      #      dead == FALSE & 
+      #      dead == FALSE &
       #      between(age, scenario_parms$sc_tobacco_mala_change_min, scenario_parms$sc_tobacco_mala_change_max),
       #    age_sc := 17L] # TODO: which age set it to
       # #}
-  
-    
+
+
     # smoking ----
     # Assumes that from the smoking initiation/cessation/relapse probabilities
     # change, not smoking prevalence. Smoking intensity also changes.
@@ -2172,9 +2173,9 @@ set_tobacco <- function(scenario_parms, dt, design) {
         set(dt, NULL, "smok_dur_sc", dt$smok_dur_curr_xps)
       if (!"smok_cig_sc" %in% names(dt))
         set(dt, NULL, "smok_cig_sc", dt$smok_cig_curr_xps)
-      
+
       dt[row_sel, pid_mrk_sc := mk_new_simulant_markers(pid)]
-      
+
       # Assign smok_incid probabilities
       lutbl <-
         read_fst("./lifecourse_models/smok_incid_table.fst",
@@ -2182,14 +2183,14 @@ set_tobacco <- function(scenario_parms, dt, design) {
       # TODO: update to new initiation table
       setnames(lutbl, c("age", "mu"), c("age_sc", "prb_smok_incid_sc"))
       lookup_dt(dt, lutbl)
-      
-      
+
+
       # Assign smok_cessation probabilities
-      # Smoking cessation pr decreasing with age for young ages. That makes the 
+      # Smoking cessation pr decreasing with age for young ages. That makes the
       # method of shifting inappropriate. I will use the study by Fidler & West
       # that found OR 0.87 for reduction in smoking prevalence. I will arbitrarily
       # apply this OR to the cessation probabilities (for now, I will improve later)
-      
+
       lutbl <-
         read_fst("./lifecourse_models/smok_cess_table.fst",
                  as.data.table = TRUE)
@@ -2197,7 +2198,7 @@ set_tobacco <- function(scenario_parms, dt, design) {
         mu := 0.87 * mu]
       setnames(lutbl, c("mu"), c("prb_smok_cess_sc"))
       lookup_dt(dt, lutbl)
-      
+
       # use when the slider is used
       # if(scenario_parms$sc_tobacco_mala_change_max >= 18) {
       #   lutbl <-
@@ -2217,7 +2218,7 @@ set_tobacco <- function(scenario_parms, dt, design) {
       #   setnames(lutbl, c("mu"), c("prb_smok_cess_sc"))
       #   lookup_dt(dt, lutbl)
       # }
-      # 
+      #
       # Handle smok_relapse probabilities
       # No need to use qimd_sc here. It happens at the simsmok_sc side
       tbl <-
@@ -2228,23 +2229,23 @@ set_tobacco <- function(scenario_parms, dt, design) {
       nam <- tbl[, paste0(sex, " ", qimd)]
       tbl <-
         as.matrix(tbl[, mget(paste0(1:15))], rownames = nam)
-      
+
       simsmok_sc(dt, tbl, design$sim_prm$smoking_relapse_limit, row_sel)
-      
+
       dt[, c("prb_smok_incid_sc", "prb_smok_cess_sc") := NULL]
-      
+
       # smok intensity
       lutbl <-
         read_fst("./lifecourse_models/smok_cig_curr_table.fst",
                  as.data.table = TRUE)
       setnames(lutbl, "age", "age_sc")
       lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
-      
+
       dt[row_sel, mrk := TRUE]
-      
+
       dt[(mrk) & smok_status_sc == "4",
          smok_cig_sc := qZINBI(rankstat_smok_cig_curr, mu, sigma, nu)]
-      
+
       lutbl <-
         read_fst("./lifecourse_models/smok_cig_ex_table.fst",
                  as.data.table = TRUE)
@@ -2258,12 +2259,12 @@ set_tobacco <- function(scenario_parms, dt, design) {
                                   nu,
                                   tau,
                                   n_cpu = design$sim_prm$n_cpu)]
-      
+
       simsmok_cig_sc(dt, row_sel) # carry forward smok_cig if smok_status == 3
       dt[smok_cig_sc == 0L & smok_status_sc != "1", smok_cig_sc := 1L]
       dt[, mrk := NULL]
-      
-      
+
+
       dt[, smok_status_sc := factor(smok_status_sc)]
       dt[, smoke_cat_sc := 0L]
       dt[smok_status_sc == "3", smoke_cat_sc := 1L]
@@ -2277,21 +2278,36 @@ set_tobacco <- function(scenario_parms, dt, design) {
 
 set_tobacco_ban <- function(scenario_parms, dt, design) {
   # bypass if irrelevant
-  if (all(
-    scenario_parms$sc_smoke_ban == 0L
-  )) {
-    return(invisible(dt))
-    
-  } else {
+  if (
+    scenario_parms$sc_smoke_ban
+  ) {
     # if any relevant scenario input
-    set(dt, NULL, "ban_sc", 0L)
-    dt[between(year + 2000L, scenario_parms$sc_init_year, scenario_parms$sc_last_year) & dead == FALSE,
-       ban_sc := 1L] # 1 is ban from smoke onwards
+    # set(dt, NULL, "ban_sc", 0L) # TODO: no need this
+    # dt[between(year + 2000L, scenario_parms$sc_init_year, scenario_parms$sc_last_year) & dead == FALSE,
+    #    ban_sc := 1L] # 1 is ban from smoke onwards
 
     # smoking ----
     # Assumes that from the smoking initiation/cessation/relapse probabilities
     # change, not smoking prevalence. Smoking intensity also changes.
     # pid_mrk needs to be recalculated for row_sel
+    
+    row_sel_id <- # Indices of eligible rows
+      dt[between(year + 2000L,
+                 scenario_parms$sc_init_year,
+                 scenario_parms$sc_last_year) &
+           dead == FALSE &
+           between(age, 18, 20),
+         # between(age, 18, scenario_parms$sc_tobacco_mala_change),
+         unique(pid)]
+    
+    row_sel <-
+      dt[between(year + 2000L,
+                 scenario_parms$sc_init_year,
+                 scenario_parms$sc_last_year) &
+           dead == FALSE &
+           pid %in% row_sel_id,
+         which = TRUE]
+    
     if ("smok" %in% scenario_parms$sc_soc_qimd_rf_change) {
       if (!"smok_status_sc" %in% names(dt))
         set(dt, NULL, "smok_status_sc", dt$smok_status_curr_xps)
@@ -2302,7 +2318,8 @@ set_tobacco_ban <- function(scenario_parms, dt, design) {
       if (!"smok_cig_sc" %in% names(dt))
         set(dt, NULL, "smok_cig_sc", dt$smok_cig_curr_xps)
       
-      dt[row_sel, pid_mrk_sc := mk_new_simulant_markers(pid)] # TODO: keep?
+      dt[row_sel, pid_mrk_sc := mk_new_simulant_markers(pid)]
+      
       
       # Assign smok_incid probabilities
       lutbl <-
@@ -2327,128 +2344,60 @@ set_tobacco_ban <- function(scenario_parms, dt, design) {
       tbl <-
         as.matrix(tbl[, mget(paste0(1:15))], rownames = nam) 
       
-      dt[between(age, 16, 90) & ban_sc == 1L,
+      # TODO: population start from the scenario year or not?
+      dt[between(age, 16, 90) & between(year + 2000L, scenario_parms$sc_init_year, scenario_parms$sc_last_year) , # TODO: revise to year > starting year
           ':='(prb_smok_incid_sc = prb_smok_incid_sc * 0.05, 
                prb_smok_cess_sc = prb_smok_cess_sc * 0.95)] # for eligible individual, reset smoking parameters
 
       tbl <- tbl[ relapse = relapse * 0.05] 
-      simsmok_sc(dt, tbl, design$sim_prm$smoking_relapse_limit)
+      simsmok_sc(dt, tbl, design$sim_prm$smoking_relapse_limit, row_sel)
       
       dt[, c("prb_smok_incid_sc", "prb_smok_cess_sc") := NULL]
     }
-    return(invisible(dt))
   }
+  return(invisible(dt))
 }
 
 set_tobacco_prevalence <- function(scenario_parms, dt, design) {
-  # bypass if irrelevant
+  # # bypass if irrelevant
   if (all(
-    scenario_parms$sc_smok_prevalence_change == 0L
+    scenario_parms$sc_smok_initiation_qimd1 == 1L,
+    scenario_parms$sc_smok_initiation_qimd2 == 1L,
+    scenario_parms$sc_smok_initiation_qimd3 == 1L,
+    scenario_parms$sc_smok_initiation_qimd4 == 1L,
+    scenario_parms$sc_smok_initiation_qimd5 == 1L, 
+    scenario_parms$sc_smok_cessation_qimd1 == 1L,
+    scenario_parms$sc_smok_cessation_qimd2 == 1L,
+    scenario_parms$sc_smok_cessation_qimd3 == 1L,
+    scenario_parms$sc_smok_cessation_qimd4 == 1L,
+    scenario_parms$sc_smok_cessation_qimd5 == 1L,
+    scenario_parms$ssc_smok_relapse_qimd1 == 1L,
+    scenario_parms$sc_smok_relapse_qimd2 == 1L,
+    scenario_parms$sc_smok_relapse_qimd3 == 1L,
+    scenario_parms$sc_smok_relapse_qimd4 == 1L,
+    scenario_parms$sc_smok_relapse_qimd5 == 1L
+    
   )) {
     return(invisible(dt))
-    
   } else {
-    # if any relevant scenario input
-    # # map to initiation from prevalence
-    # initiation_multiply = 
-    #   
-    # # map to cessation from prevalence
-    # cessation_multiply = 
-    # 
-    # # map to relapse from prevalence
-    # relapse_multiply = 
     
-    # smoking ----
-    if ("smok" %in% scenario_parms$sc_soc_qimd_rf_change) {
-      if (!"smok_status_sc" %in% names(dt))
-        set(dt, NULL, "smok_status_sc", dt$smok_status_curr_xps)
-      if (!"smok_quit_yrs_sc" %in% names(dt))
-        set(dt, NULL, "smok_quit_yrs_sc", dt$smok_quit_yrs_curr_xps)
-      if (!"smok_dur_sc" %in% names(dt))
-        set(dt, NULL, "smok_dur_sc", dt$smok_dur_curr_xps) # TODO: keep?
-      if (!"smok_cig_sc" %in% names(dt))
-        set(dt, NULL, "smok_cig_sc", dt$smok_cig_curr_xps)
-      
-      dt[row_sel, pid_mrk_sc := mk_new_simulant_markers(pid)] # TODO: keep?
-      
-      # Assign smok_incid probabilities
-      lutbl <-
-        read_fst("./lifecourse_models/smok_incid_table.fst",
-                 as.data.table = TRUE)
-      # TODO: update to new initiation table
-      setnames(lutbl, c("age", "mu"), c("age_sc", "prb_smok_incid_sc"))
-      lookup_dt(dt, lutbl)
-      
-      lutbl <-
-        read_fst("./lifecourse_models/smok_cess_table.fst",
-                 as.data.table = TRUE)
-      setnames(lutbl, c("mu"), c("prb_smok_cess_sc"))
-      lookup_dt(dt, lutbl)
-      
-      tbl <-
-        read_fst("./lifecourse_models/smok_relapse_table.fst",
-                 as.data.table = TRUE)
-      tbl <-
-        dcast(tbl, sex + qimd ~ smok_quit_yrs, value.var = "pr")
-      nam <- tbl[, paste0(sex, " ", qimd)]
-      tbl <-
-        as.matrix(tbl[, mget(paste0(1:15))], rownames = nam) 
-      
-      dt[between(age, 16, 90) & 
-           between(year, scenario_parms$sc_init_year, scenario_parms$sc_last_year),
-         ':='(prb_smok_incid_sc = prb_smok_incid_sc * initiation_multiply, 
-              prb_smok_cess_sc = prb_smok_cess_sc * cessation_multiply)] # for eligible individual, reset smoking parameters
-      
-      tbl <- tbl[ relapse = relapse * relapse_multiply] # TODO: this number only use for year after ban - maybe fit 2 simsmoke
-      
-      simsmok_sc(dt, tbl, design$sim_prm$smoking_relapse_limit)
-      
-      dt[, c("prb_smok_incid_sc", "prb_smok_cess_sc") := NULL]
-    }
-    return(invisible(dt))
-  }
-}
-
-set_tobacco_prevalence_qimd <- function(scenario_parms, dt, design) {
-  # bypass if irrelevant
-  if (all(
-    scenario_parms$sc_smok_prevalence_qimd_change == 0L
-  )) {
-    return(invisible(dt))
-    
-  } else {
-    # if any relevant scenario input
-    # #TODO: find price_elasticity_group 
-    # TODO: how to extract smok_prevalence_qimd group
-    
-    # find which group with prevalence change
-
-    # # map to initiation from prevalence
-    # initiation_multiply = 
-    #   
-    # # map to cessation from prevalence
-    # cessation_multiply = 
-    # 
-    # # map to relapse from prevalence
-    # relapse_multiply = 
-    
-    # if scenario_parms$sc_tobacco_mala_change_max >= 18 { # below for smoking ban >= 18 yo 
+    # TODO : check below
     row_sel_id <- # Indices of eligible rows
       dt[between(year + 2000L,
                  scenario_parms$sc_init_year,
                  scenario_parms$sc_last_year) &
-           dead == FALSE & 
-           qimd == scenario_parms$sc_smok_prevalence_qimd_change, 
+           dead == FALSE &
+           between(age, 18, 20),
+         # between(age, 18, scenario_parms$sc_tobacco_mala_change),
          unique(pid)]
     
-    row_sel <- 
+    row_sel <-
       dt[between(year + 2000L,
                  scenario_parms$sc_init_year,
                  scenario_parms$sc_last_year) &
            dead == FALSE &
-           qimd == scenario_parms$sc_smok_prevalence_qimd_change & 
-           pid %in% row_sel_id, 
-         which = TRUE] # TODO: what is this function?
+           pid %in% row_sel_id,
+         which = TRUE]
     
     # smoking ----
     if ("smok" %in% scenario_parms$sc_soc_qimd_rf_change) {
@@ -2461,12 +2410,21 @@ set_tobacco_prevalence_qimd <- function(scenario_parms, dt, design) {
       if (!"smok_cig_sc" %in% names(dt))
         set(dt, NULL, "smok_cig_sc", dt$smok_cig_curr_xps)
       
-      dt[row_sel, pid_mrk_sc := mk_new_simulant_markers(pid)] # TODO: what is this command?
-      
+      # TODO : check below
+      dt[row_sel, pid_mrk_sc := mk_new_simulant_markers(pid)]
+
+     
       # Assign smok_incid probabilities
       lutbl <-
         read_fst("./lifecourse_models/smok_incid_table.fst",
                  as.data.table = TRUE)
+      
+      lutbl[qimd == '1 most deprived', mu := mu*scenario_parms$sc_smok_initiation_qimd1]
+      lutbl[qimd == '2', mu := mu*scenario_parms$sc_smok_initiation_qimd2]
+      lutbl[qimd == '3', mu := mu*scenario_parms$sc_smok_initiation_qimd3]
+      lutbl[qimd == '4', mu := mu*scenario_parms$sc_smok_initiation_qimd4]
+      lutbl[qimd == '5 least deprived', mu := mu*scenario_parms$sc_smok_initiation_qimd5]
+      
       # TODO: update to new initiation table
       setnames(lutbl, c("age", "mu"), c("age_sc", "prb_smok_incid_sc"))
       lookup_dt(dt, lutbl)
@@ -2474,200 +2432,39 @@ set_tobacco_prevalence_qimd <- function(scenario_parms, dt, design) {
       lutbl <-
         read_fst("./lifecourse_models/smok_cess_table.fst",
                  as.data.table = TRUE)
+      
+      lutbl[qimd == '1 most deprived', mu := mu*scenario_parms$sc_smok_cessation_qimd1]
+      lutbl[qimd == '2', mu := mu*scenario_parms$sc_smok_cessation_qimd2]
+      lutbl[qimd == '3', mu := mu*scenario_parms$sc_smok_cessation_qimd3]
+      lutbl[qimd == '4', mu := mu*scenario_parms$sc_smok_cessation_qimd4]
+      lutbl[qimd == '5 least deprived', mu := mu*scenario_parms$sc_smok_cessation_qimd5]
+      
       setnames(lutbl, c("mu"), c("prb_smok_cess_sc"))
       lookup_dt(dt, lutbl)
       
       tbl <-
         read_fst("./lifecourse_models/smok_relapse_table.fst",
                  as.data.table = TRUE)
+      
+      tbl[qimd == '1 most deprived', pr := pr*scenario_parms$sc_smok_relapse_qimd1]
+      tbl[qimd == '2', pr := pr*scenario_parms$sc_smok_relapse_qimd2]
+      tbl[qimd == '3', pr := pr*scenario_parms$sc_smok_relapse_qimd3]
+      tbl[qimd == '4', pr := pr*scenario_parms$sc_smok_relapse_qimd4]
+      tbl[qimd == '5 least deprived', pr := pr*scenario_parms$sc_smok_relapse_qimd5]
+      
       tbl <-
         dcast(tbl, sex + qimd ~ smok_quit_yrs, value.var = "pr")
       nam <- tbl[, paste0(sex, " ", qimd)]
       tbl <-
         as.matrix(tbl[, mget(paste0(1:15))], rownames = nam) 
       
-      dt[between(age, 16, 90) & row_sel,
-         ':='(prb_smok_incid_sc = prb_smok_incid_sc * initiation_multiply, 
-              prb_smok_cess_sc = prb_smok_cess_sc * cessation_multiply)] # for eligible individual, reset smoking parameters
-      
-      tbl <- tbl[ relapse = relapse * relapse_multiply] # TODO: this number only use for year after ban - maybe fit 2 simsmoke
-      
-      simsmok_sc(dt, tbl, design$sim_prm$smoking_relapse_limit)
+      simsmok_sc(dt, tbl, design$sim_prm$smoking_relapse_limit, row_sel)
       
       dt[, c("prb_smok_incid_sc", "prb_smok_cess_sc") := NULL]
-    }
+    } # if
     return(invisible(dt))
   }
 }
-
-
-
-
-
-
-set_tobacco_price <- function(scenario_parms, dt, design) {
-  # bypass if irrelevant
-  if (all(
-    scenario_parms$sc_tax_change == 0L
-  )) {
-    return(invisible(dt))
-    
-  } else {
-    # if any relevant scenario input
-    # find price elasticity 
-    price_elasticity =  scenario_parms$sc_tax_change/100 * 0.35
-    # # map to initiation from price_elasticity
-    # initiation_multiply = 
-    #   
-    # # map to cessation from price_elasticity
-    # cessation_multiply = 
-    # 
-    # # map to relapse from price_elasticity
-    # relapse_multiply = 
-    
-    # smoking ----
-    if ("smok" %in% scenario_parms$sc_soc_qimd_rf_change) {
-      if (!"smok_status_sc" %in% names(dt))
-        set(dt, NULL, "smok_status_sc", dt$smok_status_curr_xps)
-      if (!"smok_quit_yrs_sc" %in% names(dt))
-        set(dt, NULL, "smok_quit_yrs_sc", dt$smok_quit_yrs_curr_xps)
-      if (!"smok_dur_sc" %in% names(dt))
-        set(dt, NULL, "smok_dur_sc", dt$smok_dur_curr_xps) # TODO: keep?
-      if (!"smok_cig_sc" %in% names(dt))
-        set(dt, NULL, "smok_cig_sc", dt$smok_cig_curr_xps)
-      
-      dt[row_sel, pid_mrk_sc := mk_new_simulant_markers(pid)] # TODO: keep?
-      
-      # Assign smok_incid probabilities
-      lutbl <-
-        read_fst("./lifecourse_models/smok_incid_table.fst",
-                 as.data.table = TRUE)
-      # TODO: update to new initiation table
-      setnames(lutbl, c("age", "mu"), c("age_sc", "prb_smok_incid_sc"))
-      lookup_dt(dt, lutbl)
-      
-      lutbl <-
-        read_fst("./lifecourse_models/smok_cess_table.fst",
-                 as.data.table = TRUE)
-      setnames(lutbl, c("mu"), c("prb_smok_cess_sc"))
-      lookup_dt(dt, lutbl)
-      
-      tbl <-
-        read_fst("./lifecourse_models/smok_relapse_table.fst",
-                 as.data.table = TRUE)
-      tbl <-
-        dcast(tbl, sex + qimd ~ smok_quit_yrs, value.var = "pr")
-      nam <- tbl[, paste0(sex, " ", qimd)]
-      tbl <-
-        as.matrix(tbl[, mget(paste0(1:15))], rownames = nam) 
-      
-      dt[between(age, 16, 90) & 
-          between(year, scenario_parms$sc_init_year, scenario_parms$sc_last_year),
-         ':='(prb_smok_incid_sc = prb_smok_incid_sc * initiation_multiply, 
-                              prb_smok_cess_sc = prb_smok_cess_sc * cessation_multiply)] # for eligible individual, reset smoking parameters
-
-tbl <- tbl[ relapse = relapse * relapse_multiply] # TODO: this number only use for year after ban - maybe fit 2 simsmoke
-
-simsmok_sc(dt, tbl, design$sim_prm$smoking_relapse_limit)
-
-dt[, c("prb_smok_incid_sc", "prb_smok_cess_sc") := NULL]
-    }
-    return(invisible(dt))
-  }
-}
-
-set_tobacco_price_qimd <- function(scenario_parms, dt, design) {
-  # bypass if irrelevant
-  if (all(
-    scenario_parms$sc_tax_qimd1_change == 0L
-  )) {
-    return(invisible(dt))
-    
-  } else {
-    # if any relevant scenario input
-    # #TODO: find price_elasticity_group 
-    # TODO: how to extract tax_qimd group
-    # price_elasticiprice_elasticity_index = scenario_parms$sc_tax_qimd * ??
-    
-    # find price elasticity 
-    price_elasticity =  scenario_parms$sc_tax_qimd1_change/100 * price_elasticity_index
-    # # map to initiation from price_elasticity
-    # initiation_multiply = 
-    #   
-    # # map to cessation from price_elasticity
-    # cessation_multiply = 
-    # 
-    # # map to relapse from price_elasticity
-    # relapse_multiply = 
-
-    # if scenario_parms$sc_tobacco_mala_change_max >= 18 { # below for smoking ban >= 18 yo 
-    row_sel_id <- # Indices of eligible rows
-      dt[between(year + 2000L,
-                 scenario_parms$sc_init_year,
-                 scenario_parms$sc_last_year) &
-           dead == FALSE & 
-           qimd == scenario_parms$sc_tax_qimd, 
-         unique(pid)]
-    
-    row_sel <- 
-      dt[between(year + 2000L,
-                 scenario_parms$sc_init_year,
-                 scenario_parms$sc_last_year) &
-           dead == FALSE &
-           qimd == scenario_parms$sc_tax_qimd & 
-           pid %in% row_sel_id, 
-         which = TRUE] # TODO: what is this function?
-    
-    # smoking ----
-    if ("smok" %in% scenario_parms$sc_soc_qimd_rf_change) {
-      if (!"smok_status_sc" %in% names(dt))
-        set(dt, NULL, "smok_status_sc", dt$smok_status_curr_xps)
-      if (!"smok_quit_yrs_sc" %in% names(dt))
-        set(dt, NULL, "smok_quit_yrs_sc", dt$smok_quit_yrs_curr_xps)
-      if (!"smok_dur_sc" %in% names(dt))
-        set(dt, NULL, "smok_dur_sc", dt$smok_dur_curr_xps) # TODO: keep?
-      if (!"smok_cig_sc" %in% names(dt))
-        set(dt, NULL, "smok_cig_sc", dt$smok_cig_curr_xps)
-      
-      dt[row_sel, pid_mrk_sc := mk_new_simulant_markers(pid)] # TODO: what is this command?
-      
-      # Assign smok_incid probabilities
-      lutbl <-
-        read_fst("./lifecourse_models/smok_incid_table.fst",
-                 as.data.table = TRUE)
-      # TODO: update to new initiation table
-      setnames(lutbl, c("age", "mu"), c("age_sc", "prb_smok_incid_sc"))
-      lookup_dt(dt, lutbl)
-      
-      lutbl <-
-        read_fst("./lifecourse_models/smok_cess_table.fst",
-                 as.data.table = TRUE)
-      setnames(lutbl, c("mu"), c("prb_smok_cess_sc"))
-      lookup_dt(dt, lutbl)
-      
-      tbl <-
-        read_fst("./lifecourse_models/smok_relapse_table.fst",
-                 as.data.table = TRUE)
-      tbl <-
-        dcast(tbl, sex + qimd ~ smok_quit_yrs, value.var = "pr")
-      nam <- tbl[, paste0(sex, " ", qimd)]
-      tbl <-
-        as.matrix(tbl[, mget(paste0(1:15))], rownames = nam) 
-      
-      dt[between(age, 16, 90) & row_sel,
-         ':='(prb_smok_incid_sc = prb_smok_incid_sc * initiation_multiply, 
-                              prb_smok_cess_sc = prb_smok_cess_sc * cessation_multiply)] # for eligible individual, reset smoking parameters
-
-tbl <- tbl[ relapse = relapse * relapse_multiply] # TODO: this number only use for year after ban - maybe fit 2 simsmoke
-
-simsmok_sc(dt, tbl, design$sim_prm$smoking_relapse_limit)
-
-dt[, c("prb_smok_incid_sc", "prb_smok_cess_sc") := NULL]
-    }
-    return(invisible(dt))
-  }
-}
-
 
 #' @export
 run_scenario <-
@@ -2722,16 +2519,29 @@ run_scenario <-
       set_eligible(scenario_parms[[sc]], dt$pop, hlp)
       set_invitees(scenario_parms[[sc]], dt$pop, hlp)
       set_attendees(scenario_parms[[sc]], dt$pop, scenario_nam, parameters_dt, design, hlp)
-      set_px(scenario_parms[[sc]], dt$pop, mc, design) # slow
+      # set_px(scenario_parms[[sc]], dt$pop, mc, design) # slow
+      dt$pop[, statin_px_sc := statin_px_curr_xps]
+      dt$pop[, active_days_sc := active_days_curr_xps]
+      dt$pop[, fruit_sc := fruit_curr_xps]
+      dt$pop[, veg_sc := veg_curr_xps]
+      dt$pop[, alcohol_sc := alcohol_curr_xps]
+      dt$pop[, bmi_sc := bmi_curr_xps]
+      dt$pop[, sbp_sc := sbp_curr_xps]
+      dt$pop[, bpmed_sc := bpmed_curr_xps]
+      dt$pop[, tchol_sc := tchol_curr_xps]
+      dt$pop[, af_dgn_sc := af_dgn_curr_xps]
+      dt$pop[, af_prvl_sc := af_prvl_curr_xps]
+      dt$pop[, ckd_prvl_sc := ckd_prvl_curr_xps]
+      dt$pop[, t2dm_prvl_sc := t2dm_prvl_curr_xps]
       set_lifestyle(scenario_parms[[sc]], dt$pop, design)
-      set_structural(scenario_parms[[sc]], dt$pop, design)
+      # set_structural(scenario_parms[[sc]], dt$pop, design) # TODO: troubleshoot
       set_social(scenario_parms[[sc]], dt$pop, design)
       set_tobacco(scenario_parms[[sc]], dt$pop, design)
       set_tobacco_ban(scenario_parms[[sc]], dt$pop, design) 
       set_tobacco_prevalence(scenario_parms[[sc]], dt$pop, design)  
-      set_tobacco_prevalence_qimd(scenario_parms[[sc]], dt$pop, design)
-      set_tobacco_price(scenario_parms[[sc]], dt$pop, design)
-      set_tobacco_price_qimd(scenario_parms[[sc]], dt$pop, design)
+      # set_tobacco_prevalence_qimd(scenario_parms[[sc]], dt$pop, design)
+      # set_tobacco_price(scenario_parms[[sc]], dt$pop, design)
+      # set_tobacco_price_qimd(scenario_parms[[sc]], dt$pop, design)
     }
 
     dt$pop[, eligible_sc  := clamp(eligible_sc + hlp$previous_elig)]
@@ -3339,10 +3149,12 @@ run_simulation <- function(parameters, design, final = FALSE) {
   }
 
   # calculate useful cost indices
+  # output[, policy_cost := invitation_cost + attendees_cost +
+  #          active_days_cost + bmi_cost + alcohol_cost + smoking_cost +
+  #          alcoholreduc_ovrhd_cost + smkcess_ovrhd_cost +
+  #          wghtloss_ovrhd_cost + pa_ovrhd_cost]
   output[, policy_cost := invitation_cost + attendees_cost +
-           active_days_cost + bmi_cost + alcohol_cost + smoking_cost +
-           alcoholreduc_ovrhd_cost + smkcess_ovrhd_cost +
-           wghtloss_ovrhd_cost + pa_ovrhd_cost]
+           smoking_cost + smkcess_ovrhd_cost]
 
   setkey(output, year, friendly_name)
 

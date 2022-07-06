@@ -514,37 +514,77 @@ fromGUI_scenario_parms <- function(scenario_nam, parameters_dt) {
       parameters_dt[scenario == scenario_nam &
                       input_names %flike% "ban_smoke_checkbox", as.logical(value1)]
 
-    # for MALA policy    
+    # for MALA policy
     l$sc_tobacco_mala_change <-
       parameters_dt[scenario == scenario_nam &
                       input_names %flike% "mala_slider",
                     as.integer(value1)]
-    
+
     # for smoking prevalence 
-    l$sc_smok_prevalence_change <-
+    l$sc_smok_initiation_qimd1 <-
       parameters_dt[scenario == scenario_nam &
-                      input_names %like% "smoking_prevalence_slider",
-                    as.numeric(value1)]
-    l$sc_smok_prevalence_qimd1_change <-
+                      input_names %like% "smoking_initiation_qimd1_textbox",
+                    as.numeric(value1)/100]
+    l$sc_smok_initiation_qimd2 <-
       parameters_dt[scenario == scenario_nam &
-                      input_names %like% "smoking_prevalence_slider_qimd1",
-                    as.numeric(value1)]
-    l$sc_smok_prevalence_qimd2_change <-
+                      input_names %like% "smoking_initiation_qimd2_textbox",
+                    as.numeric(value1)/100]
+    l$sc_smok_initiation_qimd3 <-
       parameters_dt[scenario == scenario_nam &
-                      input_names %like% "smoking_prevalence_slider_qimd1",
-                    as.numeric(value1)]
-    l$sc_smok_prevalence_qimd3_change <-
+                      input_names %like% "smoking_initiation_qimd3_textbox",
+                    as.numeric(value1)/100]
+    l$sc_smok_initiation_qimd4 <-
       parameters_dt[scenario == scenario_nam &
-                      input_names %like% "smoking_prevalence_slider_qimd1",
-                    as.numeric(value1)]
-    l$sc_smok_prevalence_qimd4_change <-
+                      input_names %like% "smoking_initiation_qimd4_textbox",
+                    as.numeric(value1)/100]
+    l$sc_smok_initiation_qimd5 <-
       parameters_dt[scenario == scenario_nam &
-                      input_names %like% "smoking_prevalence_slider_qimd1",
-                    as.numeric(value1)]
-    l$sc_smok_prevalence_qimd5_change <-
+                      input_names %like% "smoking_initiation_qimd5_textbox",
+                    as.numeric(value1)/100]
+    
+    # for smoking cessation
+    l$sc_smok_cessation_qimd1 <-
       parameters_dt[scenario == scenario_nam &
-                      input_names %like% "smoking_prevalence_slider_qimd1",
-                    as.numeric(value1)]
+                      input_names %like% "smoking_cessation_qimd1_textbox",
+                    as.numeric(value1)/100]
+    l$sc_smok_cessation_qimd2 <-
+      parameters_dt[scenario == scenario_nam &
+                      input_names %like% "smoking_cessation_qimd2_textbox",
+                    as.numeric(value1)/100]
+    l$sc_smok_cessation_qimd3 <-
+      parameters_dt[scenario == scenario_nam &
+                      input_names %like% "smoking_cessation_qimd3_textbox",
+                    as.numeric(value1)/100]
+    l$sc_smok_cessation_qimd4 <-
+      parameters_dt[scenario == scenario_nam &
+                      input_names %like% "smoking_cessation_qimd4_textbox",
+                    as.numeric(value1)/100]
+    l$sc_smok_cessation_qimd5 <-
+      parameters_dt[scenario == scenario_nam &
+                      input_names %like% "smoking_cessation_qimd5_textbox",
+                    as.numeric(value1)/100]
+    
+    # for smoking relapse
+    l$sc_smok_relapse_qimd1 <-
+      parameters_dt[scenario == scenario_nam &
+                      input_names %like% "smoking_relapse_qimd1_textbox",
+                    as.numeric(value1)/100]
+    l$sc_smok_relapse_qimd2 <-
+      parameters_dt[scenario == scenario_nam &
+                      input_names %like% "smoking_relapse_qimd2_textbox",
+                    as.numeric(value1)/100]
+    l$sc_smok_relapse_qimd3 <-
+      parameters_dt[scenario == scenario_nam &
+                      input_names %like% "smoking_relapse_qimd3_textbox",
+                    as.numeric(value1)/100]
+    l$sc_smok_relapse_qimd4 <-
+      parameters_dt[scenario == scenario_nam &
+                      input_names %like% "smoking_relapse_qimd4_textbox",
+                    as.numeric(value1)/100]
+    l$sc_smok_relapse_qimd5 <-
+      parameters_dt[scenario == scenario_nam &
+                      input_names %like% "smoking_relapse_qimd5_textbox",
+                    as.numeric(value1)/100]
     
     # for price elascity  
     l$sc_tax_change <-

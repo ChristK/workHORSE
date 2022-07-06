@@ -293,7 +293,7 @@ bsCollapsePanel(
         numericInput(
           "coverage_cost_qimd0_sc8",
           "Cost per invitation",
-          20,
+          0,
           0,
           500,
           1
@@ -310,7 +310,7 @@ bsCollapsePanel(
         numericInput(
           "overhead_cost_qimd0_sc8",
           "Overhead Cost",
-          20,
+          0,
           0,
           500,
           1
@@ -362,7 +362,7 @@ bsCollapsePanel(
       numericInput(
         "coverage_cost_qimd1_sc8",
         "Cost per invitation in QIMD 1 (most deprived)",
-        20,
+        0,
         0,
         500,
         1
@@ -401,7 +401,7 @@ bsCollapsePanel(
       numericInput(
         "coverage_cost_qimd2_sc8",
         "Cost per invitation in QIMD 2",
-        20,
+        0,
         0,
         500,
         1
@@ -440,7 +440,7 @@ bsCollapsePanel(
       numericInput(
         "coverage_cost_qimd3_sc8",
         "Cost per invitation in QIMD 3",
-        20,
+        0,
         0,
         500,
         1
@@ -475,7 +475,7 @@ bsCollapsePanel(
       numericInput(
         "coverage_cost_qimd4_sc8",
         "Cost per invitation in QIMD 4",
-        20,
+        0,
         0,
         500,
         1
@@ -510,7 +510,7 @@ bsCollapsePanel(
       numericInput(
         "coverage_cost_qimd5_sc8",
         "Cost per invitation in QIMD 5 (least deprived)",
-        20,
+        0,
         0,
         500,
         1
@@ -554,7 +554,7 @@ bsCollapsePanel("Health Checks Received (%)",
                     column(
                       4,
                       numericInput("uptake_cost_sc8",
-                                   "Cost per completed Health Check", 20, 0, 500, 1)
+                                   "Cost per completed Health Check", 0, 0, 500, 1)
                       %>%
                         shinyInput_label_embed(
                           icon("info") %>%
@@ -1383,82 +1383,6 @@ fluidRow(
     ), # end column
   )),
 
-# wellPanel(
-#   fluidRow(
-#     ## Smoking Parameters ----
-#     h5("Smoking Parameters"),
-#     HTML("<br>")
-#   ),
-#   
-#   fluidRow( 
-#     column(4, 
-#            numericInput(
-#              "smoking_initiation_sc8",
-#              "Changes in smoking initiation (%)",
-#              (0.5),
-#              (-1),
-#              1,
-#              (0.1)
-#            )%>%
-#              shinyInput_label_embed(
-#                icon("info") %>%
-#                  bs_embed_popover(title = "changes in smoking initiation")
-#              )
-#     ),
-#     column(4, 
-#            numericInput(
-#              "smoking_cessation_sc8",
-#              "Changes in smoking cessation (%)",
-#              0.5,
-#              (-1),
-#              1,
-#              (0.1)
-#            )%>%
-#              shinyInput_label_embed(
-#                icon("info") %>%
-#                  bs_embed_popover(title = "changes in smoking cessation")
-#              )
-#     ),
-#     column(4, 
-#            numericInput(
-#              "smoking_relapse_sc8",
-#              "Changes in smoking relapse (%) ",
-#              0.5,
-#              (-1),
-#              1,
-#              (0.1)
-#            )%>%
-#              shinyInput_label_embed(
-#                icon("info") %>%
-#                  bs_embed_popover(title = "changes in smoking relapse")
-#              )
-#     )
-#   )
-#   ,
-# 
-# fluidRow(
-#   tags$head(tags$style("html, body {overflow: visible; }")),
-#   box(
-#     title = "Smoking Prevalence Tab",
-#     solidHeader = TRUE,
-#     collapsible = FALSE,
-#     fluidRow(
-#       column(12, offset = 0,
-#              plotlyOutput("prevalence_baseline_plot"))
-#     )
-#   ),
-#   box(
-#     title = "Smoking Prevalence Modified Tab",
-#     solidHeader = TRUE,
-#     collapsible = FALSE,
-#     fluidRow(
-#       column(12, offset = 0,
-#              plotlyOutput("prevalence_modified_plot"))
-#     )
-#   )
-# )
-# ), # end wellPanel
-
 wellPanel(
   fluidRow(
     ## Tobacco Policies ----
@@ -1508,170 +1432,228 @@ wellPanel(
   br(),
   
   fluidRow( 
-  column(2, 
-         numericInput(
-           "smoking_prevalence_slider_sc8",
-           "Reduction in new smokers (%) - Average ",
-           0.5,
-           0,
-           100,
-           1
-         )%>%
-           shinyInput_label_embed(
-             icon("info") %>%
-               bs_embed_popover(title = "annual reduction of the smoking prevalences")
-           ),
-         numericInput(
-           "tax_slider_sc8",
-           "Price changes (%) - Average",
-           35,
-           0,
-           100,
-           0.1
-         )
-         %>%
-           shinyInput_label_embed(
-             icon("info") %>%
-               bs_embed_popover(title = "10% of tobacco price reduction impact on precentage of smoking prevalence reduction")
-           )
-  ),
          column(2, 
                 numericInput(
-                  "smoking_prevalence_slider_qimd1_sc8",
-                  "Reduction in new smokers (%) - QIMD 1 (highest)",
-                  0.5,
+                  "smoking_initiation_qimd1_textbox_sc8",
+                  "Changes in smoking initiation (%) - QIMD 1 (highest)",
+                  100,
                   0,
                   100,
                   1
                 )%>%
                   shinyInput_label_embed(
                     icon("info") %>%
-                      bs_embed_popover(title = "annual reduction  of the smoking prevalences among high SES groups")
-                  ),
-                numericInput(
-                  "tax_slider_qimd1_sc8",
-                  "Price Elasticity (%) - QIMD 1 (highest)",
-                  63,
-                  0,
-                  100,
-                  0.1
-                )
-                %>%
-                  shinyInput_label_embed(
-                    icon("info") %>%
-                      bs_embed_popover(title = "10% of tobacco price reduction impact on precentage of smoking prevalence reduction among high SES groups")
+                      bs_embed_popover(title = "annual reduction  of the smoking initiation")
                   )
   ),
   column(2, 
          numericInput(
-           "smoking_prevalence_slider_qimd2_sc8",
-           "Reduction in new smokers (%) - QIMD 2",
-           0.5,
+           "smoking_initiation_qimd2_textbox_sc8",
+           "Changes in smoking initiation (%) - QIMD 2",
+           100,
            0,
            100,
            1
          )%>%
            shinyInput_label_embed(
              icon("info") %>%
-               bs_embed_popover(title = "annual reduction  of the smoking prevalence among the lowest SES groups")
-           ),
-         numericInput(
-           "tax_slider_qimd2_sc8",
-           "Price Elasticity (%) - QIMD 2",
-           12,
-           0,
-           100,
-           0.1
-         )
-         %>%
-           shinyInput_label_embed(
-             icon("info") %>%
-               bs_embed_popover(title = "10% of tobacco price reduction impact on precentage of smoking prevalence reduction among the lowest SES groups")
-           )
-  ),
-  
-  column(2, 
-         numericInput(
-           "smoking_prevalence_slider_qimd3_sc8",
-           "Reduction in new smokers (%) - QIMD 3",
-           0.5,
-           0,
-           100,
-           1
-         )%>%
-           shinyInput_label_embed(
-             icon("info") %>%
-               bs_embed_popover(title = "annual reduction of the smoking prevalences")
-           ),
-         numericInput(
-           "tax_slider_qimd3_sc8",
-           "Price Elasticity (%) - QIMD 3",
-           35,
-           0,
-           100,
-           0.1
-         )
-         %>%
-           shinyInput_label_embed(
-             icon("info") %>%
-               bs_embed_popover(title = "10% of tobacco price reduction impact on precentage of smoking prevalence reduction")
+               bs_embed_popover(title = "annual reduction  of the smoking initiation")
            )
   ),
   column(2, 
          numericInput(
-           "smoking_prevalence_slider_qimd4_sc8",
-           "Reduction in new smokers (%) - QIMD 4",
-           0.5,
+           "smoking_initiation_qimd3_textbox_sc8",
+           "Changes in smoking initiation (%) - QIMD 3",
+           100,
            0,
            100,
            1
          )%>%
            shinyInput_label_embed(
              icon("info") %>%
-               bs_embed_popover(title = "annual reduction  of the smoking prevalences among high SES groups")
-           ),
-         numericInput(
-           "tax_slider_qimd4_sc8",
-           "Price Elasticity (%) - QIMD 4",
-           63,
-           0,
-           100,
-           0.1
-         )
-         %>%
-           shinyInput_label_embed(
-             icon("info") %>%
-               bs_embed_popover(title = "10% of tobacco price reduction impact on precentage of smoking prevalence reduction among high SES groups")
+               bs_embed_popover(title = "annual reduction of the smoking initiation")
            )
   ),
   column(2, 
          numericInput(
-           "smoking_prevalence_slider_qimd5_sc8",
-           "Reduction in new smokers (%) - QIMD 5 (lowest QIMD)",
-           0.5,
+           "smoking_initiation_qimd4_textbox_sc8",
+           "Changes in smoking initiation (%) - QIMD 4",
+           100,
            0,
            100,
            1
          )%>%
            shinyInput_label_embed(
              icon("info") %>%
-               bs_embed_popover(title = "annual reduction  of the smoking prevalence among the lowest SES groups")
-           ),
+               bs_embed_popover(title = "annual reduction  of the smoking initiation")
+           )
+  ),
+  column(2, 
          numericInput(
-           "tax_slider_qimd5_sc8",
-           "Price Elasticity (%) - QIMD 5 (lowest QIMD)",
-           12,
+           "smoking_initiation_qimd5_textbox_sc8",
+           "Changes in smoking initiation (%) - QIMD 5 (lowest QIMD)",
+           100,
            0,
            100,
-           0.1
-         )
-         %>%
+           1
+         )%>%
            shinyInput_label_embed(
              icon("info") %>%
-               bs_embed_popover(title = "10% of tobacco price reduction impact on precentage of smoking prevalence reduction among the lowest SES groups")
+               bs_embed_popover(title = "annual reduction  of the smoking initiation")
            )
   )
-)) # end wellPanel
+), # fluidRow
+  
+  br(),
+  
+  fluidRow( 
+    column(2, 
+           numericInput(
+             "smoking_cessation_qimd1_textbox_sc8",
+             "Changes in smoking cessation (%) - QIMD 1 (highest)",
+             100,
+             0,
+             100,
+             1
+           )%>%
+             shinyInput_label_embed(
+               icon("info") %>%
+                 bs_embed_popover(title = "annual change  of the smoking cessation ")
+             )
+    ),
+    column(2, 
+           numericInput(
+             "smoking_cessation_qimd2_textbox_sc8",
+             "Changes in smoking cessation (%) - QIMD 2",
+             100,
+             0,
+             100,
+             1
+           )%>%
+             shinyInput_label_embed(
+               icon("info") %>%
+                 bs_embed_popover(title = "annual change  of the smoking cessation ")
+             )
+    ),
+    column(2, 
+           numericInput(
+             "smoking_cessation_qimd3_textbox_sc8",
+             "Changes in smoking cessation (%) - QIMD 3",
+             100,
+             0,
+             100,
+             1
+           )%>%
+             shinyInput_label_embed(
+               icon("info") %>%
+                 bs_embed_popover(title = "annual change  of the smoking cessation")
+             )
+    ),
+    column(2, 
+           numericInput(
+             "smoking_cessation_qimd4_textbox_sc8",
+             "Changes in smoking cessation (%) - QIMD 4",
+             100,
+             0,
+             100,
+             1
+           )%>%
+             shinyInput_label_embed(
+               icon("info") %>%
+                 bs_embed_popover(title = "annual change  of the smoking cessation")
+             )
+    ),
+    column(2, 
+           numericInput(
+             "smoking_cessation_qimd5_textbox_sc8",
+             "Changes in smoking cessation (%) - QIMD 5 (lowest QIMD)",
+             100,
+             0,
+             100,
+             1
+           )%>%
+             shinyInput_label_embed(
+               icon("info") %>%
+                 bs_embed_popover(title = "annual change of the smoking cessation")
+             )
+      ) 
+    ), # fluidRow
+
+br(),
+
+fluidRow( 
+  column(2, 
+         numericInput(
+           "smoking_relapse_qimd1_textbox_sc8",
+           "Changes in smoking relapse (%) - QIMD 1 (highest)",
+           100,
+           0,
+           100,
+           1
+         )%>%
+           shinyInput_label_embed(
+             icon("info") %>%
+               bs_embed_popover(title = "annual change  of the smoking relapse ")
+           )
+  ),
+  column(2, 
+         numericInput(
+           "smoking_relapse_qimd2_textbox_sc8",
+           "Changes in smoking relapse (%) - QIMD 2",
+           100,
+           0,
+           100,
+           1
+         )%>%
+           shinyInput_label_embed(
+             icon("info") %>%
+               bs_embed_popover(title = "annual change  of the smoking relapse ")
+           )
+  ),
+  column(2, 
+         numericInput(
+           "smoking_relapse_qimd3_textbox_sc8",
+           "Changes in smoking relapse (%) - QIMD 3",
+           100,
+           0,
+           100,
+           1
+         )%>%
+           shinyInput_label_embed(
+             icon("info") %>%
+               bs_embed_popover(title = "annual change  of the smoking relapse")
+           )
+  ),
+  column(2, 
+         numericInput(
+           "smoking_relapse_qimd4_textbox_sc8",
+           "Changes in smoking relapse (%) - QIMD 4",
+           100,
+           0,
+           100,
+           1
+         )%>%
+           shinyInput_label_embed(
+             icon("info") %>%
+               bs_embed_popover(title = "annual change  of the smoking relapse")
+           )
+  ),
+  column(2, 
+         numericInput(
+           "smoking_relapse_qimd5_textbox_sc8",
+           "Changes in smoking relapse (%) - QIMD 5 (lowest QIMD)",
+           100,
+           0,
+           100,
+           1
+         )%>%
+           shinyInput_label_embed(
+             icon("info") %>%
+               bs_embed_popover(title = "annual change of the smoking relapse")
+           )
+  ) 
+)# fluidRow
+  ) # end wellPanel
 ),
 
 

@@ -37,7 +37,7 @@ tabPanel(
         menuItem(
           "Dashboard",
           tabName = "dashboard",
-          icon = icon("dashboard")
+          icon = icon("tachometer-alt")
         ),
         menuItem(
           "Cost-effectiveness",
@@ -239,7 +239,7 @@ tabPanel(
                     style = "unite",
                     status = "primary",
                     size = "sm",
-                    icon = icon("gear", class = "fa-xs"),
+                    icon = icon("cog", class = "fa-xs"),
                     width = "200px"
                     #tooltip = tooltipOptions(title = "Click to chose the way you want to see the results !")
                   )
@@ -279,7 +279,7 @@ tabPanel(
                     status = "primary",
                     size = "sm",
                     right = TRUE,
-                    icon = icon("gear", class = "fa-xs"),
+                    icon = icon("cog", class = "fa-xs"),
                     width = "200px"
                     #tooltip = tooltipOptions(title = "Click to chose the way you want to see the results !")
                   )
@@ -334,7 +334,7 @@ tabPanel(
                     style = "unite",
                     status = "primary",
                     size = "sm",
-                    icon = icon("gear", class = "fa-xs"),
+                    icon = icon("cog", class = "fa-xs"),
                     width = "200px"
                     #tooltip = tooltipOptions(title = "Click to chose the way you want to see the results !")
                   )
@@ -432,7 +432,7 @@ tabPanel(
                             style = "unite",
                             status = "primary",
                             size = "sm",
-                            icon = icon("gear", class = "fa-xs"),
+                            icon = icon("cog", class = "fa-xs"),
                             width = "200px"
                             #tooltip = tooltipOptions(title = "Click to chose the way you want to see the results !")
                           )
@@ -469,7 +469,7 @@ tabPanel(
                             style = "unite",
                             status = "primary",
                             size = "sm",
-                            icon = icon("gear", class = "fa-xs"),
+                            icon = icon("cog", class = "fa-xs"),
                             width = "200px"
                             #tooltip = tooltipOptions(title = "Click to chose the way you want to see the results !")
                           )
@@ -662,7 +662,7 @@ tabPanel(
                              status = "primary",
                              size = "sm",
                              up = TRUE,
-                             icon = icon("gear", class = "fa-xs"),
+                             icon = icon("cog", class = "fa-xs"),
                              width = "200px"
                              #tooltip = tooltipOptions(title = "Click to chose the way you want to see the results !")
                            )
@@ -720,7 +720,7 @@ tabPanel(
                       status = "primary",
                       size = "sm",
                       up = TRUE,
-                      icon = icon("gear", class = "fa-xs"),
+                      icon = icon("cog", class = "fa-xs"),
                       width = "200px"
                       #tooltip = tooltipOptions(title = "Click to chose the way you want to see the results !")
                     )
@@ -756,7 +756,7 @@ tabPanel(
                              size = "sm",
                              right = TRUE,
                              up = TRUE,
-                             icon = icon("gear", class = "fa-xs"),
+                             icon = icon("cog", class = "fa-xs"),
                              width = "200px"
                            )
                          )
@@ -785,7 +785,7 @@ tabPanel(
                              size = "sm",
                              right = TRUE,
                              up = TRUE,
-                             icon = icon("gear", class = "fa-xs"),
+                             icon = icon("cog", class = "fa-xs"),
                              width = "200px"
                            )
                          )

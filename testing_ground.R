@@ -11,7 +11,7 @@ design$get_lags(mc_iter)
 dt <- SynthPop$new(mc_iter, design) #run until ncc , with problems on 5(frt, veg, smok all, hdl, alcohol)
 dt0 <- SynthPop$new(0, design)
 
-output_chunk  <- list()
+output_chunk  <- list() # quicker way to start from: here + dt <- SynthPop
 output_chunk <- sapply(
   sort(fromGUI_scenario_names(parameters_dt)$true_scenario),
   # parameters_dt[grepl("^sc[1-9]", scenario), sort(unique(scenario))],

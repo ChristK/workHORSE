@@ -45,7 +45,6 @@ ui = tagList(
 
     # Output tab --------------------------
     source(file.path("ui", "output_tab.R"), local = TRUE)$value,
-    br(),
 
     navbarMenu("More",
       # Advance settings tab --------------------------

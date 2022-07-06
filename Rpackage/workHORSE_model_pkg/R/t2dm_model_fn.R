@@ -50,17 +50,18 @@ t2dm_model <-
       colnam_dgn               <- "t2dm_dgn_sc"
 
       # incidence
+
+      
       dt[, (c(colnam_prb_incd_nocvd, colnam_incd_cvd_mltp)) :=
-          QDiabetes_vec_inputs(age, sex, cst_prvl,
-            # fifelse(bpmed_px_sc == 1L | bpmed_curr_xps == 1L, 1L, 0L),
-            bpmed_curr_xps,
-            # above disabled as produced disproportionally high diabetes cases
-            # and it is not necesarily causally related. Instead I explicitly
-            # model the statin effect on diabetes, below
-
-            bmi_sc, ethnicity, fam_t2dm, smoke_cat_sc, tds)]
-
-
+           QDiabetes_vec_inputs(age, sex, cst_prvl,
+                                # fifelse(bpmed_px_sc == 1L | bpmed_curr_xps == 1L, 1L, 0L),
+                                bpmed_curr_xps,
+                                # above disabled as produced disproportionally high diabetes cases
+                                # and it is not necesarily causally related. Instead I explicitly
+                                # model the statin effect on diabetes, below
+                                
+                                bpmed_curr_xps,
+                                ethnicity, fam_t2dm, smoke_cat_sc, tds)]
 
       # OR for statins on t2dm from Sattar N, Preiss D, Murray HM, Welsh P,
       # Buckley BM, de Craen AJ, et al. Statins and risk of incident diabetes: a
@@ -77,8 +78,8 @@ t2dm_model <-
             dt[, shift_bypid(get(exps_tolag[i]), design_$lags_mc$statin_t2dm_lag, pid, 0L)])
       }
 
-      dt[statin_px_sc_lagged == 1L & statin_px_curr_xps_lagged == 0L,
-         (c("prb_t2dm_incd_nocvd_sc", "t2dm_incd_cvd_mltp_sc")) :=
+      dt[statin_px_sc_lagged == 1L & statin_px_curr_xps_lagged == 0L, 
+       (c("prb_t2dm_incd_nocvd_sc", "t2dm_incd_cvd_mltp_sc")) :=
            .(tt * prb_t2dm_incd_nocvd_sc, tt * t2dm_incd_cvd_mltp_sc)]
       # no link to adherence because "Meta-regression showed that risk of
       # development of diabetes with statins was highest in trials with older
