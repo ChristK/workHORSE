@@ -1,6 +1,114 @@
 parameters <- qread("./output/parameters.qs")
 input <- qread("./output/input.qs")
 
+tt <- read_fst("./output/results.fst", as.data.table = TRUE)[]
+tt <- sum_dt(tt)
+
+
+setkey(tt, year, friendly_name, mc)
+tt[,
+   `:=` (
+     smoke_prevalence = smoker_prvl/pops,
+     invitation_cost_cml = round(cumsum(invitation_cost)),
+     attendees_cost_cml = round(cumsum(attendees_cost)),
+     # active_days_cost_cml = round(cumsum(active_days_cost)), # 14 Jul 2022
+     # bmi_cost_cml = round(cumsum(bmi_cost)), # 14 Jul 2022
+     # alcohol_cost_cml = round(cumsum(alcohol_cost)), # 14 Jul 2022
+     smoking_cost_cml = round(cumsum(smoking_cost)),
+     nonmodelled_mrtl_cml = round(cumsum(nonmodelled_mrtl)),
+     cvd_prvl_cml = round(cumsum(cvd_prvl)),
+     stroke_prvl_cml = round(cumsum(stroke_prvl)),
+     stroke_dgn_cml = round(cumsum(stroke_dgn)),
+     stroke_mrtl_cml = round(cumsum(stroke_mrtl)),
+     chd_prvl_cml = round(cumsum(chd_prvl)),
+     chd_dgn_cml = round(cumsum(chd_dgn)),
+     chd_mrtl_cml = round(cumsum(chd_mrtl)),
+     t2dm_prvl_cml = round(cumsum(t2dm_prvl)),
+     t2dm_dgn_cml = round(cumsum(t2dm_dgn)),
+     af_prvl_cml = round(cumsum(af_prvl)),
+     af_dgn_cml = round(cumsum(af_dgn)),
+     # htn_prvl_cml = round(cumsum(htn_prvl)),
+     # htn_dgn_cml = round(cumsum(htn_dgn)),
+     all_cause_mrtl_cml = round(cumsum(all_cause_mrtl)),
+     eq5d_cml = cumsum(eq5d),
+     healthcare_cost_cml = round(cumsum(healthcare_cost)),
+     socialcare_cost_cml = round(cumsum(socialcare_cost)),
+     productivity_cost_cml = round(cumsum(productivity_cost)),
+     informal_care_cost_cml = round(cumsum(informal_care_cost)),
+     cvd_incd_cml = round(cumsum(cvd_incd)),
+     stroke_incd_cml = round(cumsum(stroke_incd)),
+     chd_incd_cml = round(cumsum(chd_incd)),
+     t2dm_incd_cml = round(cumsum(t2dm_incd)),
+     af_incd_cml = round(cumsum(af_incd)),
+     # htn_incd_cml = round(cumsum(htn_incd)),
+     pops_cml = round(cumsum(pops)),
+     smkcess_ovrhd_cost_cml = round(cumsum(smkcess_ovrhd_cost)),
+     wghtloss_ovrhd_cost_cml = round(cumsum(wghtloss_ovrhd_cost)),
+     pa_ovrhd_cost_cml = round(cumsum(pa_ovrhd_cost)),
+     alcoholreduc_ovrhd_cost_cml = round(cumsum(alcoholreduc_ovrhd_cost)),
+     policy_cost_cml = round(cumsum(policy_cost)),
+     net_utility_cml = signif(cumsum(net_utility), 2L),
+     net_policy_cost_cml = round(cumsum(net_policy_cost)),
+     net_healthcare_cost_cml = round(cumsum(net_healthcare_cost)),
+     net_socialcare_cost_cml = round(cumsum(net_socialcare_cost)),
+     net_informal_care_cost_cml = round(cumsum(net_informal_care_cost)),
+     net_productivity_cost_cml = round(cumsum(net_productivity_cost)),
+     cpp_cvd_cml = round(cumsum(cpp_cvd)),
+     cpp_chd_cml = round(cumsum(cpp_chd)),
+     cpp_stroke_cml = round(cumsum(cpp_stroke)),
+     cpp_poststroke_dementia_cml = round(cumsum(cpp_poststroke_dementia)),
+     # cpp_htn_cml = round(cumsum(cpp_htn)),
+     cpp_copd_cml = round(cumsum(cpp_copd)),
+     # cpp_af_cml = round(cumsum(cpp_af)),
+     cpp_t2dm_cml = round(cumsum(cpp_t2dm)),
+     cpp_lung_ca_cml = round(cumsum(cpp_lung_ca)),
+     cpp_colon_ca_cml = round(cumsum(cpp_colon_ca)),
+     cpp_breast_ca_cml = round(cumsum(cpp_breast_ca)),
+     
+     cypp_cvd_cml = round(cumsum(cypp_cvd)),
+     cypp_chd_cml = round(cumsum(cypp_chd)),
+     cypp_stroke_cml = round(cumsum(cypp_stroke)),
+     cypp_poststroke_dementia_cml = round(cumsum(cypp_poststroke_dementia)),
+     # cypp_htn_cml = round(cumsum(cypp_htn)),
+     # cypp_af_cml = round(cumsum(cypp_af)),
+     cypp_copd_cml = round(cumsum(cypp_copd)),
+     cypp_t2dm_cml = round(cumsum(cypp_t2dm)),
+     cypp_lung_ca_cml = round(cumsum(cypp_lung_ca)),
+     cypp_colon_ca_cml = round(cumsum(cypp_colon_ca)),
+     cypp_breast_ca_cml = round(cumsum(cypp_breast_ca)),
+     
+     dpp_nonmodelled_cml = round(cumsum(dpp_nonmodelled)),
+     dpp_chd_cml = round(cumsum(dpp_chd)),
+     dpp_stroke_cml = round(cumsum(dpp_stroke)),
+     dpp_copd_cml = round(cumsum(dpp_copd)),
+     dpp_lung_ca_cml = round(cumsum(dpp_lung_ca)),
+     dpp_colon_ca_cml = round(cumsum(dpp_colon_ca)),
+     dpp_breast_ca_cml = round(cumsum(dpp_breast_ca)),
+     dpp_all_cause_cml = round(cumsum(dpp_all_cause)),
+     total_hcp_cost_cml = round(cumsum(total_hcp_cost)),
+     total_hscp_cost_cml = round(cumsum(total_hscp_cost)),
+     societal_cost_cml = round(cumsum(societal_cost))
+   ),
+   by = c("friendly_name", "mc")
+]
+
+tt <- tt[, .(year,smoke_prevalence,
+                     mc,
+                     friendly_name = factor(friendly_name))
+][, median_dt(.SD, c("friendly_name", "year"), "mc", digits = 3)] #TODO: should there be year < filter year?
+
+plot_ly(
+  tt,
+  x = ~ year,
+  y = ~ smoke_prevalence,
+  type = 'scatter', 
+  mode = 'lines',
+  color = ~ friendly_name) 
+# %>% 
+  # layout( xaxis = list(range = c(2020,2040)),
+  #         yaxis = list(range = c(0.04, 0.16)))
+
+
 out <- function() read_fst("./output/results.fst", as.data.table = TRUE)[]
 
 out_proc <- function() {
@@ -56,11 +164,12 @@ out_proc <- function() {
     setkey(dt, year, friendly_name, mc)
     dt[,
       `:=` (
+        smoke_prevalence = smoker_prvl/pops,
         invitation_cost_cml = round(cumsum(invitation_cost)),
         attendees_cost_cml = round(cumsum(attendees_cost)),
-        active_days_cost_cml = round(cumsum(active_days_cost)),
-        bmi_cost_cml = round(cumsum(bmi_cost)),
-        alcohol_cost_cml = round(cumsum(alcohol_cost)),
+        # active_days_cost_cml = round(cumsum(active_days_cost)), # 14 Jul 2022
+        # bmi_cost_cml = round(cumsum(bmi_cost)), # 14 Jul 2022
+        # alcohol_cost_cml = round(cumsum(alcohol_cost)), # 14 Jul 2022
         smoking_cost_cml = round(cumsum(smoking_cost)),
         nonmodelled_mrtl_cml = round(cumsum(nonmodelled_mrtl)),
         cvd_prvl_cml = round(cumsum(cvd_prvl)),
@@ -196,11 +305,12 @@ out_proc_qimd <- function () {
     setkey(dt, year, friendly_name, qimd, mc)
     dt[,
       `:=` (
+        smoke_prevalence = smoker_prvl/pops,
         invitation_cost_cml = round(cumsum(invitation_cost)),
         attendees_cost_cml = round(cumsum(attendees_cost)),
-        active_days_cost_cml = round(cumsum(active_days_cost)),
-        bmi_cost_cml = round(cumsum(bmi_cost)),
-        alcohol_cost_cml = round(cumsum(alcohol_cost)),
+        # active_days_cost_cml = round(cumsum(active_days_cost)),
+        # bmi_cost_cml = round(cumsum(bmi_cost)),
+        # alcohol_cost_cml = round(cumsum(alcohol_cost)),
         smoking_cost_cml = round(cumsum(smoking_cost)),
         nonmodelled_mrtl_cml = round(cumsum(nonmodelled_mrtl)),
         cvd_prvl_cml = round(cumsum(cvd_prvl)),

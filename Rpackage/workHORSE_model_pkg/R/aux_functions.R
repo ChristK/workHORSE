@@ -2295,8 +2295,7 @@ set_tobacco_ban <- function(scenario_parms, dt, design) {
       dt[between(year + 2000L,
                  scenario_parms$sc_init_year,
                  scenario_parms$sc_last_year) &
-           dead == FALSE &
-           between(age, 18, 20),
+           dead == FALSE,
          # between(age, 18, scenario_parms$sc_tobacco_mala_change),
          unique(pid)]
     
@@ -2349,7 +2348,7 @@ set_tobacco_ban <- function(scenario_parms, dt, design) {
           ':='(prb_smok_incid_sc = prb_smok_incid_sc * 0.05, 
                prb_smok_cess_sc = prb_smok_cess_sc * 0.95)] # for eligible individual, reset smoking parameters
 
-      tbl <- tbl[ relapse = relapse * 0.05] 
+      tbl <- tbl * 0.05
       simsmok_sc(dt, tbl, design$sim_prm$smoking_relapse_limit, row_sel)
       
       dt[, c("prb_smok_incid_sc", "prb_smok_cess_sc") := NULL]
@@ -2386,8 +2385,7 @@ set_tobacco_prevalence <- function(scenario_parms, dt, design) {
       dt[between(year + 2000L,
                  scenario_parms$sc_init_year,
                  scenario_parms$sc_last_year) &
-           dead == FALSE &
-           between(age, 18, 20),
+           dead == FALSE,
          # between(age, 18, scenario_parms$sc_tobacco_mala_change),
          unique(pid)]
     
@@ -3035,8 +3033,13 @@ run_simulation <- function(parameters, design, final = FALSE) {
     output_chunk[, scenario := factor(scenario)]
     export_smok(mc_ = mc_aggr, dt = output_chunk) # export smoking prevalence
     generate_health_econ(output_chunk, mc_aggr)
-    output_chunk[, c("ncc", "pid", "income", "education", "smok_status", 
-      "smok_cig", "smok_quit_yrs", "smok_dur") := NULL]
+    
+    output_chunk[, smoker_prvl := 0L]
+    output_chunk[smok_status == 4L, smoker_prvl := 1L]
+    # TODO ex and never smoker
+    
+    output_chunk[, c("ncc", "pid", "income", "education", 
+                     "smok_status",  "smok_cig", "smok_quit_yrs", "smok_dur") := NULL]
 
     # gen incd
     for (nam in grep("_prvl$", names(output_chunk), value = TRUE)) {

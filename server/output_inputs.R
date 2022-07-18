@@ -152,6 +152,7 @@ out_proc_raw <- reactive(
     )
     ][,
       `:=` (
+        smoke_prevalence = smoker_prvl/pops,
         invitation_cost_cml = round(cumsum(invitation_cost)),
         attendees_cost_cml = round(cumsum(attendees_cost)),
         # active_days_cost_cml = round(cumsum(active_days_cost)),
@@ -300,6 +301,7 @@ out_proc <- reactive(
     setkey(dt, year, friendly_name, mc)
     dt[,
        `:=` (
+         smoke_prevalence = smoker_prvl/pops,
          invitation_cost_cml = round(cumsum(invitation_cost)),
          attendees_cost_cml = round(cumsum(attendees_cost)),
          # active_days_cost_cml = round(cumsum(active_days_cost)),
@@ -450,6 +452,7 @@ out_proc_qimd <- reactive(
     setkey(dt, year, friendly_name, qimd, mc)
     dt[,
        `:=` (
+         smoke_prevalence = smoker_prvl/pops,
          invitation_cost_cml = round(cumsum(invitation_cost)),
          attendees_cost_cml = round(cumsum(attendees_cost)),
          # active_days_cost_cml = round(cumsum(active_days_cost)),
@@ -1994,6 +1997,22 @@ output$download_summary <- downloadHandler(
 #       )
 #   )
 # })
+ 
+output$smokeprevalence <- renderPlotly({
+  tt <- out_proc()[, .(year,smoke_prevalence,
+                       mc,
+                       friendly_name = factor(friendly_name))
+  ][, median_dt(.SD, c("friendly_name", "year"), "mc", digits = 3)]
+  
+  plot_ly(
+    tt,
+    x = ~ year,
+    y = ~ smoke_prevalence,
+    type = 'scatter', 
+    mode = 'lines',
+    color = ~ friendly_name)
+
+})
 
 
 outputOptions(output, "out_scenario_select", suspendWhenHidden = FALSE)

@@ -1438,7 +1438,7 @@ wellPanel(
                   "Changes in smoking initiation (%) - QIMD 1 (highest)",
                   100,
                   0,
-                  100,
+                  200,
                   1
                 )%>%
                   shinyInput_label_embed(
@@ -1452,7 +1452,7 @@ wellPanel(
            "Changes in smoking initiation (%) - QIMD 2",
            100,
            0,
-           100,
+           200,
            1
          )%>%
            shinyInput_label_embed(
@@ -1466,7 +1466,7 @@ wellPanel(
            "Changes in smoking initiation (%) - QIMD 3",
            100,
            0,
-           100,
+           200,
            1
          )%>%
            shinyInput_label_embed(
@@ -1480,7 +1480,7 @@ wellPanel(
            "Changes in smoking initiation (%) - QIMD 4",
            100,
            0,
-           100,
+           200,
            1
          )%>%
            shinyInput_label_embed(
@@ -1494,7 +1494,7 @@ wellPanel(
            "Changes in smoking initiation (%) - QIMD 5 (lowest QIMD)",
            100,
            0,
-           100,
+           200,
            1
          )%>%
            shinyInput_label_embed(
@@ -1513,7 +1513,7 @@ wellPanel(
              "Changes in smoking cessation (%) - QIMD 1 (highest)",
              100,
              0,
-             100,
+             200,
              1
            )%>%
              shinyInput_label_embed(
@@ -1527,7 +1527,7 @@ wellPanel(
              "Changes in smoking cessation (%) - QIMD 2",
              100,
              0,
-             100,
+             200,
              1
            )%>%
              shinyInput_label_embed(
@@ -1541,7 +1541,7 @@ wellPanel(
              "Changes in smoking cessation (%) - QIMD 3",
              100,
              0,
-             100,
+             200,
              1
            )%>%
              shinyInput_label_embed(
@@ -1555,7 +1555,7 @@ wellPanel(
              "Changes in smoking cessation (%) - QIMD 4",
              100,
              0,
-             100,
+             200,
              1
            )%>%
              shinyInput_label_embed(
@@ -1569,7 +1569,7 @@ wellPanel(
              "Changes in smoking cessation (%) - QIMD 5 (lowest QIMD)",
              100,
              0,
-             100,
+             200,
              1
            )%>%
              shinyInput_label_embed(
@@ -1588,7 +1588,7 @@ fluidRow(
            "Changes in smoking relapse (%) - QIMD 1 (highest)",
            100,
            0,
-           100,
+           200,
            1
          )%>%
            shinyInput_label_embed(
@@ -1602,7 +1602,7 @@ fluidRow(
            "Changes in smoking relapse (%) - QIMD 2",
            100,
            0,
-           100,
+           200,
            1
          )%>%
            shinyInput_label_embed(
@@ -1616,7 +1616,7 @@ fluidRow(
            "Changes in smoking relapse (%) - QIMD 3",
            100,
            0,
-           100,
+           200,
            1
          )%>%
            shinyInput_label_embed(
@@ -1630,7 +1630,7 @@ fluidRow(
            "Changes in smoking relapse (%) - QIMD 4",
            100,
            0,
-           100,
+           200,
            1
          )%>%
            shinyInput_label_embed(
@@ -1644,7 +1644,7 @@ fluidRow(
            "Changes in smoking relapse (%) - QIMD 5 (lowest QIMD)",
            100,
            0,
-           100,
+           200,
            1
          )%>%
            shinyInput_label_embed(

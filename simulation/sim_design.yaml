@@ -1,7 +1,8 @@
 # iteration_n: 10
-iteration_n: 2
+iteration_n: 5
+# iteration_n: 2
 iteration_n_final: 100
-clusternumber: 4 # explicit parallelisation
+clusternumber: 10 # explicit parallelisation
 # clusternumber: 10 # explicit parallelisation
 n_cpus: 1 # implicit parallelisation
 logs: yes
