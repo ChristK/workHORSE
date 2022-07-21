@@ -35,7 +35,7 @@ if (!require(workHORSEmisc)) {
   library(workHORSEmisc)
 }
 options(future.fork.enable = TRUE) # enable fork in Rstudio
-plan(multiprocess)
+plan(multicore)
 
 hor <- 35L # maximum simulation horizon
 

@@ -43,23 +43,23 @@ first generated, then saved to disk, and then loaded from disk.}
 \section{Methods}{
 \subsection{Public methods}{
 \itemize{
-\item \href{#method-new}{\code{SynthPop$new()}}
-\item \href{#method-delete_synthpop}{\code{SynthPop$delete_synthpop()}}
-\item \href{#method-delete_incomplete_synthpop}{\code{SynthPop$delete_incomplete_synthpop()}}
-\item \href{#method-check_integridy}{\code{SynthPop$check_integridy()}}
-\item \href{#method-count_synthpop}{\code{SynthPop$count_synthpop()}}
-\item \href{#method-get_checksum}{\code{SynthPop$get_checksum()}}
-\item \href{#method-get_filename}{\code{SynthPop$get_filename()}}
-\item \href{#method-get_design}{\code{SynthPop$get_design()}}
-\item \href{#method-get_dir}{\code{SynthPop$get_dir()}}
-\item \href{#method-write_synthpop}{\code{SynthPop$write_synthpop()}}
-\item \href{#method-print}{\code{SynthPop$print()}}
-\item \href{#method-clone}{\code{SynthPop$clone()}}
+\item \href{#method-SynthPop-new}{\code{SynthPop$new()}}
+\item \href{#method-SynthPop-delete_synthpop}{\code{SynthPop$delete_synthpop()}}
+\item \href{#method-SynthPop-delete_incomplete_synthpop}{\code{SynthPop$delete_incomplete_synthpop()}}
+\item \href{#method-SynthPop-check_integridy}{\code{SynthPop$check_integridy()}}
+\item \href{#method-SynthPop-count_synthpop}{\code{SynthPop$count_synthpop()}}
+\item \href{#method-SynthPop-get_checksum}{\code{SynthPop$get_checksum()}}
+\item \href{#method-SynthPop-get_filename}{\code{SynthPop$get_filename()}}
+\item \href{#method-SynthPop-get_design}{\code{SynthPop$get_design()}}
+\item \href{#method-SynthPop-get_dir}{\code{SynthPop$get_dir()}}
+\item \href{#method-SynthPop-write_synthpop}{\code{SynthPop$write_synthpop()}}
+\item \href{#method-SynthPop-print}{\code{SynthPop$print()}}
+\item \href{#method-SynthPop-clone}{\code{SynthPop$clone()}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-new"></a>}}
-\if{latex}{\out{\hypertarget{method-new}{}}}
+\if{html}{\out{<a id="method-SynthPop-new"></a>}}
+\if{latex}{\out{\hypertarget{method-SynthPop-new}{}}}
 \subsection{Method \code{new()}}{
 Create a new SynthPop object.
 If a synthpop file in \code{\link[fst]{fst-package}} format already
@@ -113,8 +113,8 @@ POP$get_filename()
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-delete_synthpop"></a>}}
-\if{latex}{\out{\hypertarget{method-delete_synthpop}{}}}
+\if{html}{\out{<a id="method-SynthPop-delete_synthpop"></a>}}
+\if{latex}{\out{\hypertarget{method-SynthPop-delete_synthpop}{}}}
 \subsection{Method \code{delete_synthpop()}}{
 Delete (all) synthpop files in the synthpop directory.
 \subsection{Usage}{
@@ -140,8 +140,8 @@ The invisible `SynthPop` object.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-delete_incomplete_synthpop"></a>}}
-\if{latex}{\out{\hypertarget{method-delete_incomplete_synthpop}{}}}
+\if{html}{\out{<a id="method-SynthPop-delete_incomplete_synthpop"></a>}}
+\if{latex}{\out{\hypertarget{method-SynthPop-delete_incomplete_synthpop}{}}}
 \subsection{Method \code{delete_incomplete_synthpop()}}{
 Check that every synthpop file has a metafile and an index file. Delete
 any orphan files.
@@ -162,8 +162,8 @@ The invisible `SynthPop` object.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-check_integridy"></a>}}
-\if{latex}{\out{\hypertarget{method-check_integridy}{}}}
+\if{html}{\out{<a id="method-SynthPop-check_integridy"></a>}}
+\if{latex}{\out{\hypertarget{method-SynthPop-check_integridy}{}}}
 \subsection{Method \code{check_integridy()}}{
 Check the integrity of (and optionally delete) .fst files by checking
 their metadata are readable.
@@ -187,8 +187,8 @@ The invisible `SynthPop` object.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-count_synthpop"></a>}}
-\if{latex}{\out{\hypertarget{method-count_synthpop}{}}}
+\if{html}{\out{<a id="method-SynthPop-count_synthpop"></a>}}
+\if{latex}{\out{\hypertarget{method-SynthPop-count_synthpop}{}}}
 \subsection{Method \code{count_synthpop()}}{
 Count the synthpop files in a directory. It includes files without
 metafiles and index files.
@@ -201,8 +201,8 @@ The invisible `SynthPop` object.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_checksum"></a>}}
-\if{latex}{\out{\hypertarget{method-get_checksum}{}}}
+\if{html}{\out{<a id="method-SynthPop-get_checksum"></a>}}
+\if{latex}{\out{\hypertarget{method-SynthPop-get_checksum}{}}}
 \subsection{Method \code{get_checksum()}}{
 Get the synthpop file paths.
 \subsection{Usage}{
@@ -222,8 +222,8 @@ The invisible `SynthPop` object.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_filename"></a>}}
-\if{latex}{\out{\hypertarget{method-get_filename}{}}}
+\if{html}{\out{<a id="method-SynthPop-get_filename"></a>}}
+\if{latex}{\out{\hypertarget{method-SynthPop-get_filename}{}}}
 \subsection{Method \code{get_filename()}}{
 Get the synthpop file paths.
 \subsection{Usage}{
@@ -245,8 +245,8 @@ The invisible `SynthPop` object.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_design"></a>}}
-\if{latex}{\out{\hypertarget{method-get_design}{}}}
+\if{html}{\out{<a id="method-SynthPop-get_design"></a>}}
+\if{latex}{\out{\hypertarget{method-SynthPop-get_design}{}}}
 \subsection{Method \code{get_design()}}{
 Get the synthpop design.
 \subsection{Usage}{
@@ -258,8 +258,8 @@ The invisible `SynthPop` object.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-get_dir"></a>}}
-\if{latex}{\out{\hypertarget{method-get_dir}{}}}
+\if{html}{\out{<a id="method-SynthPop-get_dir"></a>}}
+\if{latex}{\out{\hypertarget{method-SynthPop-get_dir}{}}}
 \subsection{Method \code{get_dir()}}{
 Get the synthpop dir.
 \subsection{Usage}{
@@ -271,8 +271,8 @@ The invisible `SynthPop` object.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-write_synthpop"></a>}}
-\if{latex}{\out{\hypertarget{method-write_synthpop}{}}}
+\if{html}{\out{<a id="method-SynthPop-write_synthpop"></a>}}
+\if{latex}{\out{\hypertarget{method-SynthPop-write_synthpop}{}}}
 \subsection{Method \code{write_synthpop()}}{
 Generate synthpop files in parallel, using foreach, and writes them to
 disk. It skips files that are already on disk.
@@ -296,8 +296,8 @@ The invisible `SynthPop` object.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-print"></a>}}
-\if{latex}{\out{\hypertarget{method-print}{}}}
+\if{html}{\out{<a id="method-SynthPop-print"></a>}}
+\if{latex}{\out{\hypertarget{method-SynthPop-print}{}}}
 \subsection{Method \code{print()}}{
 Prints the synthpop object metadata.
 \subsection{Usage}{
@@ -309,8 +309,8 @@ The invisible `SynthPop` object.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-clone"></a>}}
-\if{latex}{\out{\hypertarget{method-clone}{}}}
+\if{html}{\out{<a id="method-SynthPop-clone"></a>}}
+\if{latex}{\out{\hypertarget{method-SynthPop-clone}{}}}
 \subsection{Method \code{clone()}}{
 The objects of this class are cloneable with this method.
 \subsection{Usage}{

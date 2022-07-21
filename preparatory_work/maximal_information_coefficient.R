@@ -44,7 +44,7 @@ dependencies(
 )
 options(future.fork.enable = TRUE) # enable fork in Rstudio
 
-plan(multiprocess, workers = 20L)
+plan(multicore, workers = 20L)
 
 if (file.exists("./preparatory_work/HSE_ts.fst")) {
   HSE_ts <-

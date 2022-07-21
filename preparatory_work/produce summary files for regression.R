@@ -37,7 +37,7 @@ options(
   "scipen" = 999,
   "digits" = 4
 )
-plan(multiprocess, workers = 20L)
+plan(multicore, workers = 20L)
 
 if (file.exists("./preparatory_work/HSE_ts.fst")) {
   HSE_ts <- read_fst("./preparatory_work/HSE_ts.fst", as.data.table = TRUE)

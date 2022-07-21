@@ -104,7 +104,7 @@ parameters <- fromGUI_prune(parameters) # TODO delete for production
 design$update_fromGUI(parameters)
 
 options(future.fork.enable = TRUE) # enable fork in Rstudio TODO remove for production
-plan(multiprocess, workers = design$sim_prm$clusternumber)
+plan(multicore, workers = design$sim_prm$clusternumber)
 
 
 pr <-

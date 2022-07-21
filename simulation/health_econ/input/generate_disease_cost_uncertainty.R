@@ -50,7 +50,7 @@ options(
   future.globals.maxSize = +Inf,
   future.globals.onReference = "ignore"
 )
-plan(multiprocess, workers = 20L)
+plan(multicore, workers = 20L)
 
 
 dqRNGkind("pcg64")

@@ -1549,6 +1549,15 @@ set_lifestyle <-
        (colnam_cost) := scenario_parms$sc_ls_smkcess_cost_ind]
     # Cost only the year of referral
 
+
+
+    # troubleshooting
+    if (is.na(scenario_parms$sc_ls_smkcess_cost_ind)) stop("scenario_parms$sc_ls_smkcess_cost_ind is NA")
+
+    if (anyNA(dt$smoking_cost_sc)) stop("dt$smoking_cost_sc has NAs")
+
+
+
     # Handle smok_relapse probabilities
     tbl <-
       read_fst("./lifecourse_models/smok_relapse_table.fst",
