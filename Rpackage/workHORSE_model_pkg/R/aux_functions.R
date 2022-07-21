@@ -2346,7 +2346,7 @@ set_tobacco_ban <- function(scenario_parms, dt, design) {
       # TODO: population start from the scenario year or not?
       dt[between(age, 16, 90) & between(year + 2000L, scenario_parms$sc_init_year, scenario_parms$sc_last_year) , # TODO: revise to year > starting year
           ':='(prb_smok_incid_sc = prb_smok_incid_sc * 0.05, 
-               prb_smok_cess_sc = prb_smok_cess_sc * 0.95)] # for eligible individual, reset smoking parameters
+               prb_smok_cess_sc = 0.95)] # for eligible individual, reset smoking parameters
 
       tbl <- tbl * 0.05
       simsmok_sc(dt, tbl, design$sim_prm$smoking_relapse_limit, row_sel)
