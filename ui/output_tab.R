@@ -37,16 +37,16 @@ tabPanel(
         menuItem(
           "Dashboard",
           tabName = "dashboard",
-          icon = icon("tachometer-alt") # replaced from dashboard
+          icon = icon("gauge-high") # replaced from dashboard
         ),
         menuItem(
           "Cost-effectiveness",
-          icon = icon("pound-sign"),
+          icon = icon("sterling-sign"),
           tabName = "cost_effectiveness"
         ),
         menuItem(
           "Health Inequalities",
-          icon = icon("balance-scale"),
+          icon = icon("scale-balanced"),
           tabName = "equity"
         ),
         menuItem(
@@ -238,7 +238,7 @@ tabPanel(
                     style = "unite",
                     status = "primary",
                     size = "sm",
-                    icon = icon("cog", class = "fa-xs"), # replace cog with cog
+                    icon = icon("gear", class = "fa-xs"), # replace cog with gear
                     width = "200px"
                     #tooltip = tooltipOptions(title = "Click to chose the way you want to see the results !")
                   )
@@ -278,7 +278,7 @@ tabPanel(
                     status = "primary",
                     size = "sm",
                     right = TRUE,
-                    icon = icon("cog", class = "fa-xs"),
+                    icon = icon("gear", class = "fa-xs"),
                     width = "200px"
                     #tooltip = tooltipOptions(title = "Click to chose the way you want to see the results !")
                   )
@@ -333,7 +333,7 @@ tabPanel(
                     style = "unite",
                     status = "primary",
                     size = "sm",
-                    icon = icon("cog", class = "fa-xs"),
+                    icon = icon("gear", class = "fa-xs"),
                     width = "200px"
                     #tooltip = tooltipOptions(title = "Click to chose the way you want to see the results !")
                   )
@@ -431,7 +431,7 @@ tabPanel(
                             style = "unite",
                             status = "primary",
                             size = "sm",
-                            icon = icon("cog", class = "fa-xs"),
+                            icon = icon("gear", class = "fa-xs"),
                             width = "200px"
                             #tooltip = tooltipOptions(title = "Click to chose the way you want to see the results !")
                           )
@@ -468,7 +468,7 @@ tabPanel(
                             style = "unite",
                             status = "primary",
                             size = "sm",
-                            icon = icon("cog", class = "fa-xs"),
+                            icon = icon("gear", class = "fa-xs"),
                             width = "200px"
                             #tooltip = tooltipOptions(title = "Click to chose the way you want to see the results !")
                           )
@@ -661,7 +661,7 @@ tabPanel(
                              status = "primary",
                              size = "sm",
                              up = TRUE,
-                             icon = icon("cog", class = "fa-xs"),
+                             icon = icon("gear", class = "fa-xs"),
                              width = "200px"
                              #tooltip = tooltipOptions(title = "Click to chose the way you want to see the results !")
                            )
@@ -719,7 +719,7 @@ tabPanel(
                       status = "primary",
                       size = "sm",
                       up = TRUE,
-                      icon = icon("cog", class = "fa-xs"),
+                      icon = icon("gear", class = "fa-xs"),
                       width = "200px"
                       #tooltip = tooltipOptions(title = "Click to chose the way you want to see the results !")
                     )
@@ -755,7 +755,7 @@ tabPanel(
                              size = "sm",
                              right = TRUE,
                              up = TRUE,
-                             icon = icon("cog", class = "fa-xs"),
+                             icon = icon("gear", class = "fa-xs"),
                              width = "200px"
                            )
                          )
@@ -784,7 +784,7 @@ tabPanel(
                              size = "sm",
                              right = TRUE,
                              up = TRUE,
-                             icon = icon("cog", class = "fa-xs"),
+                             icon = icon("gear", class = "fa-xs"),
                              width = "200px"
                            )
                          )
@@ -887,5 +887,5 @@ tabPanel(
       )
     )
   ),
-  icon = icon("poll")
+  icon = icon("square-poll-vertical")
 )

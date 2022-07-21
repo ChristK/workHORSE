@@ -44,7 +44,7 @@ tabPanel(
       # actionButton(
       #   "locality_select_validator",
       #   "Confirm area selection",
-      #   icon = icon("check-circle"),
+      #   icon = icon("circle-check"),
       #   style = "color: #fff; background-color: #337ab7; border-color: #2e6da4",
       #   #class = "btn-info",
       #   width = "auto"
@@ -139,5 +139,5 @@ tabPanel(
   #         bs_embed_popover(title = "Please choose if you would like the results to be presented at the Ward level")
   #     ))
   )),
-  icon = icon("user-cog")
+  icon = icon("user-gear")
 )

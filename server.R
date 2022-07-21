@@ -139,6 +139,12 @@ server = function(input, output, session) {
 
 
 # Run simulation ----
+
+  # TODO add chech of user inputs to make sure no NAs. By default all numeric
+  # values are initialised, but the used can delete the default values without
+  # replacing them with another value. Hence these values in the simulation is
+  # now NAs which distort the outputs.
+
   out <-
     eventReactive(input[[paste0("run_simulation_sc", input$scenarios_number_slider)]],
       {
@@ -406,14 +412,14 @@ server = function(input, output, session) {
 # Output tab --------------------------------------------------------
   output$most_cost_effective_box <- renderInfoBox({
     infoBox(
-      "Most Cost-Effective", most_cost_effective(out_proc()), icon = icon("pound-sign"),
+      "Most Cost-Effective", most_cost_effective(out_proc()), icon = icon("sterling-sign"),
       color = "aqua", fill = FALSE
     )
   })
 
   output$most_equitable_box <- renderInfoBox({
     infoBox(
-      "Most Equitable", most_equitable(out_proc_qimd()), icon = icon("balance-scale"),
+      "Most Equitable", most_equitable(out_proc_qimd()), icon = icon("scale-balanced"),
       color = "purple"
     )
   })

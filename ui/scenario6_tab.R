@@ -120,7 +120,7 @@ bsCollapsePanel(
       div(downloadButton(
         "save_sc6",
         "Save scenario         ",
-        icon = icon("save"),
+        icon = icon("floppy-disk"),
         # class = "btn-info",
         labelWidth = "100%"
       ), style='vertical-align:center;'),
@@ -1266,7 +1266,7 @@ conditionalPanel(condition = "input.level <= input.scenarios_number_slider",
                         actionButton(
                           "previous_sc6",
                           "Go to previous scenario",
-                          icon = icon("step-backward"),
+                          icon = icon("backward-step"),
                           #style = "color: #fff; background-color: #337ab7; border-color: #2e6da4",
                           class = "btn btn-primary",
                           width = "100%"
@@ -1276,7 +1276,7 @@ conditionalPanel(condition = "input.level <= input.scenarios_number_slider",
                    actionButton(
                      "next_sc6",
                      "Go to next scenario",
-                     icon = icon("step-forward"),
+                     icon = icon("forward-step"),
                      #style = "color: #fff; background-color: #337ab7; border-color: #2e6da4",
                      class = "btn btn-primary",
                      width = "100%"
