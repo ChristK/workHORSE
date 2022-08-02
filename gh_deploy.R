@@ -10,6 +10,7 @@ if (interactive()) {
   dir.create("./simulation/health_econ", showWarnings = FALSE, recursive = TRUE)
   dir.create("./lifecourse_models", showWarnings = FALSE, recursive = TRUE)
 
+
   pb_download("disease_epi_l.fst",
               "disease_epidemiology/",
               repo = repo,
@@ -40,6 +41,7 @@ if (interactive()) {
 } else { # used with Rscript
   # i.e. Rscript /root/workHORSE/gh_deploy.R "/root/workHORSE/"
   args <- commandArgs(TRUE)
+
   dir.create(file.path(args, "disease_epidemiology"), showWarnings = FALSE, recursive = TRUE)
   dir.create(file.path(args, "simulation", "health_econ"), showWarnings = FALSE, recursive = TRUE)
   dir.create(file.path(args, "lifecourse_models"), showWarnings = FALSE, recursive = TRUE)
