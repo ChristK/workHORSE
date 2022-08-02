@@ -2,13 +2,75 @@ library(piggyback)
 tag <- "v0.0.2"
 repo <- "ChristK/workHORSE"
 
+
+
 if (interactive()) {
   print("interactive")
-  pb_download(repo = repo, tag = tag, show_progress = TRUE)
+  dir.create("./disease_epidemiology", recursive = TRUE)
+  dir.create("./simulation/health_econ", recursive = TRUE)
+  dir.create("./lifecourse_models", recursive = TRUE)
+
+  pb_download("disease_epi_l.fst",
+              "disease_epidemiology/",
+              repo = repo,
+              tag = tag)
+  pb_download(
+    "informal_care_costs_l.fst",
+    "simulation/health_econ/",
+    repo = repo,
+    tag = tag
+  )
+  pb_download(
+    "productivity_costs_l.fst",
+    "simulation/health_econ/",
+    repo = repo,
+    tag = tag
+  )
+  pb_download(
+    NULL,
+    "lifecourse_models/",
+    ignore = c(
+      "disease_epi_l.fst",
+      "informal_care_costs_l.fst",
+      "productivity_costs_l.fst"
+    ),
+    repo = repo,
+    tag = tag
+  )
 } else { # used with Rscript
   # i.e. Rscript /root/workHORSE/gh_deploy.R "/root/workHORSE/"
   args <- commandArgs(TRUE)
-  pb_download(dest = args, repo = repo, tag = tag, show_progress = FALSE)
+  dir.create(file.path(args, "disease_epidemiology"), recursive = TRUE)
+  dir.create(file.path(args, "simulation", "health_econ"), recursive = TRUE)
+  dir.create(file.path(args, "lifecourse_models"), recursive = TRUE)
+
+  pb_download("disease_epi_l.fst",
+              file.path(args, "disease_epidemiology"),
+              repo = repo,
+              tag = tag)
+  pb_download(
+    "informal_care_costs_l.fst",
+    file.path(args, "simulation", "health_econ"),
+    repo = repo,
+    tag = tag
+  )
+  pb_download(
+    "productivity_costs_l.fst",
+    file.path(args, "simulation", "health_econ"),
+    repo = repo,
+    tag = tag
+  )
+  pb_download(
+    NULL,
+    file.path(args, "lifecourse_models"),
+    ignore = c(
+      "disease_epi_l.fst",
+      "informal_care_costs_l.fst",
+      "productivity_costs_l.fst"
+    ),
+    repo = repo,
+    tag = tag
+  )
 }
 
 
