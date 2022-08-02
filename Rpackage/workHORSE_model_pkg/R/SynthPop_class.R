@@ -495,6 +495,7 @@ SynthPop <-
           foreach(
             mc_iter = mc_,
             .inorder = FALSE,
+            .options.multicore = list(preschedule = FALSE),
             .verbose = FALSE,
             .packages = c(
               "R6",
@@ -563,6 +564,7 @@ SynthPop <-
           foreach(
             mc_iter = mc_,
             .inorder = FALSE,
+            .options.multicore = list(preschedule = FALSE),
             .verbose = FALSE,
             .packages = c(
               "R6",

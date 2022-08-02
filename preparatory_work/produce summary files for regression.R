@@ -1960,6 +1960,7 @@ salt.rq.coef <- vector("list", 500)
 salt.rq.coef <-
   foreach(jj = 1 : 500,
           .inorder = F,
+          .options.multicore = list(preschedule = FALSE),
           .verbose = T,
           .packages = c("data.table",
                         "dplyr",

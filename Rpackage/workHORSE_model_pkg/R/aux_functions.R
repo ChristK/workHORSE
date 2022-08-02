@@ -2180,6 +2180,7 @@ run_simulation <- function(parameters, design, final = FALSE) {
                      design$sim_prm$iteration_n) *
                    design$sim_prm$n_synthpop_aggregation),
     .inorder = FALSE,
+    .options.multicore = list(preschedule = FALSE),
     .verbose = TRUE,
     .packages = c(
       "R6",
@@ -2272,7 +2273,8 @@ run_simulation <- function(parameters, design, final = FALSE) {
                            .SDcols = patterns("_prvl$|_dgn$|_mrtl$")])
     if ("lqimd" %in% names(output_chunk)) {
       output_chunk[, ("lqimd") := NULL]
-    } else {
+    }
+    if ("nqimd" %in% names(output_chunk)) {
       output_chunk[, ("nqimd") := NULL]
     }
 
