@@ -36,7 +36,7 @@ security
 
 We offer two ways to deploy workHORSE app. The first, will allow only one user
 to access the app (single-user deployment). The second, leverages
-[ShinyProxy][www.shinyproxy.io] to allow multiple users to access workHORSE app
+[ShinyProxy](www.shinyproxy.io) to allow multiple users to access workHORSE app
 concurrently, independently of each other (multi-user deployment).
 
 We provide deployment instruction for two operating systems: Windows 10 (Pro,
