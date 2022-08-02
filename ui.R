@@ -67,7 +67,7 @@ ui = tagList(
   # Add version number to the right
   HTML(
     "<script>var parent = document.getElementsByClassName('navbar-nav');
-parent[0].insertAdjacentHTML( 'afterend', '<ul class=\"nav navbar-nav navbar-right\"><li class=\"disabled\"><a href=\"#\">v0.99b</a></li></ul>' );</script>"
+parent[0].insertAdjacentHTML( 'afterend', '<ul class=\"nav navbar-nav navbar-right\"><li class=\"disabled\"><a href=\"#\">v0.99.220801</a></li></ul>' );</script>"
   )
 )
 
