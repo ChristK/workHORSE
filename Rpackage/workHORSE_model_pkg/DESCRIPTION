@@ -26,4 +26,4 @@ Imports: Rcpp (>= 1.0.2),
          foreach
 LinkingTo: Rcpp, 
            dqrng
-RoxygenNote: 7.2.0
+RoxygenNote: 7.2.1
