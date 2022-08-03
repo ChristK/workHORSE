@@ -138,6 +138,7 @@ for (i in seq_along(RR)) {
   RR[[i]]$gen_stochastic_effect(design, overwrite = FALSE, smooth = FALSE)
 }
 
+# shiny::runApp()
 # dockerfile_object <- containerit::dockerfile()
 # dockerfile_object
 # containerit::write(dockerfile_object, file = "./dockerfile")

@@ -2281,18 +2281,6 @@ run_simulation <- function(parameters, design, final = FALSE) {
     output_chunk[, year := year + 2000L]
     to_agegrp(output_chunk, 20L, 89L, "age", "agegrp", TRUE, 30L) # TODO use case_when
 
-
-
-
-
-
-
-
-    if (design$sim_prm$logs) write_fst(output_chunk, output_dir(paste0(mc_aggr, "_intermediate_out1.fst")))
-
-
-
-
     # Scale-up to ONS population projections
     # output_chunk[, sum(wt), keyby = .(year, scenario)]
     for (nam in grep("_prvl$|_dgn$|_incd|_mrtl$|_cost$|^eq5d",
@@ -2300,15 +2288,6 @@ run_simulation <- function(parameters, design, final = FALSE) {
                      value = TRUE)) {
       set(output_chunk, NULL, nam, output_chunk[[nam]] * output_chunk$wt)
     } # TODO loop over numeric indices rather than col names
-
-
-
-
-
-    if (design$sim_prm$logs) write_fst(output_chunk, output_dir(paste0(mc_aggr, "_intermediate_out2.fst")))
-
-
-
 
 
     # summarise by strata

@@ -140,7 +140,7 @@ server = function(input, output, session) {
 
 # Run simulation ----
 
-  # TODO add chech of user inputs to make sure no NAs. By default all numeric
+  # TODO add check of user inputs to make sure no NAs. By default all numeric
   # values are initialised, but the used can delete the default values without
   # replacing them with another value. Hence these values in the simulation is
   # now NAs which distort the outputs.

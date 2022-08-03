@@ -165,7 +165,7 @@ Design <-
         self$sim_prm$sim_horizon_fromGUI <-
           fromGUI_timeframe(GUI_prm)["horizon"]
         self$sim_prm$locality <- GUI_prm$locality_select
-        if (!GUI_prm$national_qimd_checkbox) {
+        if (!GUI_prm$national_qimd_checkbox && "lqimd" %in% self$sim_prm$cols_for_output) {
           self$sim_prm$cols_for_output <-
             c(setdiff(self$sim_prm$cols_for_output, "lqimd"), "nqimd")
         }

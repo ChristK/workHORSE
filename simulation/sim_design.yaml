@@ -39,7 +39,6 @@ cols_for_output:
 - sex
 - qimd
 - wt
-- lqimd
 - income
 - education
 - ncc
