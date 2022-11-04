@@ -2010,7 +2010,9 @@ output$smokeprevalence <- renderPlotly({
     y = ~ smoke_prevalence,
     type = 'scatter', 
     mode = 'lines',
-    color = ~ friendly_name)
+    color = ~ friendly_name,
+    colors = "Set2" # https://stackoverflow.com/questions/70739633/plotly-warning-rcolorbrewerbrewer-paln-set2
+    ) 
 
 })
 

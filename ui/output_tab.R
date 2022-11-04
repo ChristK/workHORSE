@@ -28,8 +28,7 @@ tabPanel(
     dashboardSidebar(
       tags$head(tags$style(
         HTML(
-          "right-side,
-                        .sidebar-toggle {height: 100vh; overflow: hidden;}"
+          "right-side, .sidebar-toggle {height: 100vh; overflow: hidden;}"
         )
       )),
       sidebarMenu(
@@ -37,16 +36,16 @@ tabPanel(
         menuItem(
           "Dashboard",
           tabName = "dashboard",
-          icon = icon("tachometer-alt")
+          icon = icon("gauge-high") # replaced from dashboard
         ),
         menuItem(
           "Cost-effectiveness",
-          icon = icon("pound-sign"),
+          icon = icon("sterling-sign"),
           tabName = "cost_effectiveness"
         ),
         menuItem(
           "Health Inequalities",
-          icon = icon("balance-scale"),
+          icon = icon("scale-balanced"),
           tabName = "equity"
         ),
         menuItem(
@@ -59,8 +58,8 @@ tabPanel(
         menuItem(
           "Tables",
           icon = icon("table"),
-          menuSubItem("Summarised results", tabName = "summarised_results"),
-          menuSubItem("Raw model output", tabName = "raw_output")
+          menuSubItem("Summarised results", tabName = "summarised_results", icon = icon("angles-right")),
+          menuSubItem("Raw model output", tabName = "raw_output", icon = icon("angles-right"))
 
         ),
         menuItem(
@@ -215,7 +214,7 @@ tabPanel(
                     title = "Explanation of this cost-effectiveness plane",
                     body = textOutput("info_ce_plane")
                   ),
-                  shiny_iconlink() %>%
+                  shiny_iconlink(name = "circle-info") %>%
                     bs_attach_modal(id_modal = "modal_cep")
                 ),
                 #var_out_proc_use_ui("plot1"),
@@ -239,7 +238,7 @@ tabPanel(
                     style = "unite",
                     status = "primary",
                     size = "sm",
-                    icon = icon("cog", class = "fa-xs"),
+                    icon = icon("gear", class = "fa-xs"),
                     width = "200px"
                     #tooltip = tooltipOptions(title = "Click to chose the way you want to see the results !")
                   )
@@ -258,7 +257,7 @@ tabPanel(
                     title = "Explications of this equity plane",
                     body = textOutput("info_equ_plane")
                   ),
-                  shiny_iconlink() %>%
+                  shiny_iconlink(name = "circle-info") %>%
                     bs_attach_modal(id_modal = "modal_equ")
                 ),
                 column(10, offset = 1,
@@ -279,7 +278,7 @@ tabPanel(
                     status = "primary",
                     size = "sm",
                     right = TRUE,
-                    icon = icon("cog", class = "fa-xs"),
+                    icon = icon("gear", class = "fa-xs"),
                     width = "200px"
                     #tooltip = tooltipOptions(title = "Click to chose the way you want to see the results !")
                   )
@@ -324,7 +323,7 @@ tabPanel(
                     title = "Explications of this Cost-effectiveness plane",
                     body = textOutput("info_ce1_plane")
                   ),
-                  shiny_iconlink() %>%
+                  shiny_iconlink(name = "circle-info") %>%
                     bs_attach_modal(id_modal = "modal_cep1_1")
                 ),
                 column(10, offset = 1,
@@ -345,7 +344,7 @@ tabPanel(
                     style = "unite",
                     status = "primary",
                     size = "sm",
-                    icon = icon("cog", class = "fa-xs"),
+                    icon = icon("gear", class = "fa-xs"),
                     width = "200px"
                     #tooltip = tooltipOptions(title = "Click to chose the way you want to see the results !")
                   )
@@ -373,7 +372,7 @@ tabPanel(
                   title = "Explications of this Cost saving policy plane",
                   body = textOutput("info_cepcs_plane")
                 ),
-                shiny_iconlink() %>%
+                shiny_iconlink(name = "circle-info") %>%
                   bs_attach_modal(id_modal = "modal_cep_p_cs"),
                 plotlyOutput("cep_p_cs")
               ),
@@ -384,7 +383,7 @@ tabPanel(
                   title = "Explications of this Cost-effective policy plane",
                   body = textOutput("info_cepce_plane")
                 ),
-                shiny_iconlink() %>%
+                shiny_iconlink(name = "circle-info") %>%
                   bs_attach_modal(id_modal = "modal_cep_p_ce"),
                 plotlyOutput("cep_p_ce")
               )
@@ -398,7 +397,7 @@ tabPanel(
                 title = "Explications of this Cost-effectiveness over time plane",
                 body = textOutput("info_cep_anim_plane")
               ),
-              shiny_iconlink() %>%
+              shiny_iconlink(name = "circle-info") %>%
                 bs_attach_modal(id_modal = "modal_cep_anim"),
               plotlyOutput("cep_anim")
             )
@@ -423,7 +422,7 @@ tabPanel(
                             title = "Explications of this relative health inequalities plane concerning equity",
                             body = textOutput("info_equ_rel_plane")
                           ),
-                          shiny_iconlink() %>%
+                          shiny_iconlink(name = "circle-info") %>%
                             bs_attach_modal(id_modal = "modal_equ_rel")
                         ),
                         column(10, offset = 1,
@@ -443,7 +442,7 @@ tabPanel(
                             style = "unite",
                             status = "primary",
                             size = "sm",
-                            icon = icon("cog", class = "fa-xs"),
+                            icon = icon("gear", class = "fa-xs"),
                             width = "200px"
                             #tooltip = tooltipOptions(title = "Click to chose the way you want to see the results !")
                           )
@@ -460,7 +459,7 @@ tabPanel(
                             title = "Explications of this absolute health inequalities plane concerning equity",
                             body = textOutput("info_equ1_1_plane")
                           ),
-                          shiny_iconlink() %>%
+                          shiny_iconlink(name = "circle-info") %>%
                             bs_attach_modal(id_modal = "modal_equ1_1")
                         ),
                         column(10, offset = 1,
@@ -480,7 +479,7 @@ tabPanel(
                             style = "unite",
                             status = "primary",
                             size = "sm",
-                            icon = icon("cog", class = "fa-xs"),
+                            icon = icon("gear", class = "fa-xs"),
                             width = "200px"
                             #tooltip = tooltipOptions(title = "Click to chose the way you want to see the results !")
                           )
@@ -509,7 +508,7 @@ tabPanel(
                         title = "Explications of this relative health inequalities plane concerning equitable policy",
                         body = textOutput("info_equ_p_rel_plane")
                       ),
-                      shiny_iconlink() %>%
+                      shiny_iconlink(name = "circle-info") %>%
                         bs_attach_modal(id_modal = "modal_equ_p_rel"),
                       plotlyOutput("equ_p_rel")
                     ),
@@ -520,7 +519,7 @@ tabPanel(
                         title = "Explications of this absolute health inequalities plane concerning equitable policy",
                         body = textOutput("info_equ_p_abs_plane")
                       ),
-                      shiny_iconlink() %>%
+                      shiny_iconlink(name = "circle-info") %>%
                         bs_attach_modal(id_modal = "modal_equ_p_abs"),
                       plotlyOutput("equ_p_abs")
                     )
@@ -537,7 +536,7 @@ tabPanel(
                         title = "Explications of this relative health inequalities plane concerning equity over time",
                         body = textOutput("info_equ_anim_rel_plane")
                       ),
-                      shiny_iconlink() %>%
+                      shiny_iconlink(name = "circle-info") %>%
                         bs_attach_modal(id_modal = "modal_equ_anim_rel"),
                       plotlyOutput("equ_anim_rel")
                     ),
@@ -548,7 +547,7 @@ tabPanel(
                         title = "Explications of this absolute health inequalities plane concerning equity over time",
                         body = textOutput("info_equ_anim_abs_plane")
                       ),
-                      shiny_iconlink() %>%
+                      shiny_iconlink(name = "circle-info") %>%
                         bs_attach_modal(id_modal = "modal_equ_anim_abs"),
                       plotlyOutput("equ_anim_abs")
                     )
@@ -570,7 +569,7 @@ tabPanel(
                   title = "Explications",
                   body = textOutput("info_dpp_1_chart")
                 ),
-                shiny_iconlink() %>%
+                shiny_iconlink(name = "circle-info") %>%
                   bs_attach_modal(id_modal = "modal_dpp_1"),
                 plotlyOutput("dpp_1")
               ),
@@ -581,7 +580,7 @@ tabPanel(
                   title = "Explications",
                   body = textOutput("info_cypp_1_chart")
                 ),
-                shiny_iconlink() %>%
+                shiny_iconlink(name = "circle-info") %>%
                   bs_attach_modal(id_modal = "modal_cppy_1"),
                 plotlyOutput("cypp_1")
               ),
@@ -592,7 +591,7 @@ tabPanel(
                   title = "Explications",
                   body = textOutput("info_cpp_1_chart")
                 ),
-                shiny_iconlink() %>%
+                shiny_iconlink(name = "circle-info") %>%
                   bs_attach_modal(id_modal = "modal_cpp_1"),
                 plotlyOutput("cpp_1")
               )
@@ -618,7 +617,7 @@ tabPanel(
                   title = "Explications",
                   body = textOutput("info_dppy_spline")
                 ),
-                shiny_iconlink() %>%
+                shiny_iconlink(name = "circle-info") %>%
                   bs_attach_modal(id_modal = "modal_dppy_spline"),
                 plotlyOutput("dppy_spline")
               ),
@@ -631,7 +630,7 @@ tabPanel(
                              title = "Explications",
                              body = textOutput("info_cyppy_spline")
                            ),
-                           shiny_iconlink() %>%
+                           shiny_iconlink(name = "circle-info") %>%
                              bs_attach_modal(id_modal = "modal_cyppy_spline")
                          ),
                          column(10, offset = 1,
@@ -673,7 +672,7 @@ tabPanel(
                              status = "primary",
                              size = "sm",
                              up = TRUE,
-                             icon = icon("cog", class = "fa-xs"),
+                             icon = icon("gear", class = "fa-xs"),
                              width = "200px"
                              #tooltip = tooltipOptions(title = "Click to chose the way you want to see the results !")
                            )
@@ -689,7 +688,7 @@ tabPanel(
                       title = "Explications",
                       body = textOutput("info_cppy_spline")
                     ),
-                    shiny_iconlink() %>%
+                    shiny_iconlink(name = "circle-info") %>%
                       bs_attach_modal(id_modal = "modal_cppy_spline")
                   ),
                   column(10, offset = 1,
@@ -731,7 +730,7 @@ tabPanel(
                       status = "primary",
                       size = "sm",
                       up = TRUE,
-                      icon = icon("cog", class = "fa-xs"),
+                      icon = icon("gear", class = "fa-xs"),
                       width = "200px"
                       #tooltip = tooltipOptions(title = "Click to chose the way you want to see the results !")
                     )
@@ -752,7 +751,7 @@ tabPanel(
                              title = "Explications",
                              body = textOutput("info_case_years_stack")
                            ),
-                           shiny_iconlink() %>%
+                           shiny_iconlink(name = "circle-info") %>%
                              bs_attach_modal(id_modal = "modal_case_year")
                          ),
                          column(10, offset = 1,
@@ -767,7 +766,7 @@ tabPanel(
                              size = "sm",
                              right = TRUE,
                              up = TRUE,
-                             icon = icon("cog", class = "fa-xs"),
+                             icon = icon("gear", class = "fa-xs"),
                              width = "200px"
                            )
                          )
@@ -781,7 +780,7 @@ tabPanel(
                              title = "Explications",
                              body = textOutput("info_cases_stack")
                            ),
-                           shiny_iconlink() %>%
+                           shiny_iconlink(name = "circle-info") %>%
                              bs_attach_modal(id_modal = "modal_cases")
                          ),
                          column(10, offset = 1,
@@ -796,13 +795,13 @@ tabPanel(
                              size = "sm",
                              right = TRUE,
                              up = TRUE,
-                             icon = icon("cog", class = "fa-xs"),
+                             icon = icon("gear", class = "fa-xs"),
                              width = "200px"
                            )
                          )
                        ))
               # , bs_modal(id = "modal_cpp_1", title = "Explications", body = textOutput("info_cpp_1_chart")),
-              # shiny_iconlink() %>%
+              # shiny_iconlink(name = "circle-info") %>%
               #   bs_attach_modal(id_modal = "modal_cpp_1"), plotlyOutput("cpp_1"))
 
             )
@@ -819,11 +818,11 @@ tabPanel(
               id = "out_equ_plane",
               tabPanel("A 1st tab"),
               # , bs_modal(id = "modal_equ_rel", title = "Explications of this relative health inequalities plane concerning equity", body = textOutput("info_equ_rel_plane")),
-              #          shiny_iconlink() %>%
+              #          shiny_iconlink(name = "circle-info") %>%
               #            bs_attach_modal(id_modal = "modal_equ_rel"), plotlyOutput("equ_rel")),
               tabPanel("A 2nd tab")
               # , bs_modal(id = "modal_equ1_1", title = "Explications of this absolute health inequalities plane concerning equity", body = textOutput("info_equ1_1_plane")),
-              #          shiny_iconlink() %>%
+              #          shiny_iconlink(name = "circle-info") %>%
               #            bs_attach_modal(id_modal = "modal_equ1_1"), plotlyOutput("equ1_1"))
             ),
             box(
@@ -842,11 +841,11 @@ tabPanel(
               id = "out_equ_p",
               tabPanel("A 1st tab"),
               # , bs_modal(id = "modal_equ_p_rel", title = "Explications of this relative health inequalities plane concerning equitable policy", body = textOutput("info_equ_p_rel_plane")),
-              #          shiny_iconlink() %>%
+              #          shiny_iconlink(name = "circle-info") %>%
               #            bs_attach_modal(id_modal = "modal_equ_p_rel"), plotlyOutput("equ_p_rel")),
               tabPanel("A 2nd tab")
               # , bs_modal(id = "modal_equ_p_abs", title = "Explications of this absolute health inequalities plane concerning equitable policy", body = textOutput("info_equ_p_abs_plane")),
-              #          shiny_iconlink() %>%
+              #          shiny_iconlink(name = "circle-info") %>%
               #            bs_attach_modal(id_modal = "modal_equ_p_abs"), plotlyOutput("equ_p_abs"))
             ),
             tabBox(
@@ -856,11 +855,11 @@ tabPanel(
               id = "out_equ_anim",
               tabPanel("A 1st tab"),
               # , bs_modal(id = "modal_equ_anim_rel", title = "Explications of this relative health inequalities plane concerning equity over time", body = textOutput("info_equ_anim_rel_plane")),
-              #          shiny_iconlink() %>%
+              #          shiny_iconlink(name = "circle-info") %>%
               #            bs_attach_modal(id_modal = "modal_equ_anim_rel"), plotlyOutput("equ_anim_rel")),
               tabPanel("A 2nd tab")
               # , bs_modal(id = "modal_equ_anim_abs", title = "Explications of this absolute health inequalities plane concerning equity over time", body = textOutput("info_equ_anim_abs_plane")),
-              #          shiny_iconlink() %>%
+              #          shiny_iconlink(name = "circle-info") %>%
               #            bs_attach_modal(id_modal = "modal_equ_anim_abs"), plotlyOutput("equ_anim_abs"))
             )
           )
@@ -899,5 +898,5 @@ tabPanel(
       )
     )
   ),
-  icon = icon("poll")
+  icon = icon("square-poll-vertical")
 )

@@ -37,7 +37,7 @@ options(
   "scipen" = 999,
   "digits" = 4
 )
-plan(multiprocess, workers = 20L)
+plan(multicore, workers = 20L)
 
 if (file.exists("./preparatory_work/HSE_ts.fst")) {
   HSE_ts <- read_fst("./preparatory_work/HSE_ts.fst", as.data.table = TRUE)
@@ -1961,6 +1961,7 @@ salt.rq.coef <-
   foreach(jj = 1 : 500,
           .inorder = F,
           .verbose = T,
+          .options.multicore = list(preschedule = FALSE),
           .packages = c("data.table",
                         "dplyr",
                         "quantreg")

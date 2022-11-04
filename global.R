@@ -22,47 +22,26 @@
 # file.remove(list.files("./output/", full.names = TRUE, recursive = TRUE))
 
 cat("Initialising workHORSE model...\n\n")
-if (interactive() && !nzchar(system.file(package = "CKutils"))) {
-  if (!nzchar(system.file(package = "remotes"))) install.packages("remotes")
+if (!require(CKutils)) {
+  if (!require(remotes))
+    install.packages("remotes")
   remotes::install_github("ChristK/CKutils", force = TRUE, upgrade = "never")
+  library(CKutils)
 }
 
-library(CKutils)
+# TODO add better logic to insrall package when needed (copy from calibration?)
+# if (!require(workHORSEmisc)) {
+  if (!require(remotes))
+    install.packages("remotes")
+  roxygen2::roxygenise("./Rpackage/workHORSE_model_pkg/", clean = TRUE)
+  # TODO remove before deployment
+  remotes::install_local("./Rpackage/workHORSE_model_pkg/", force = TRUE,
+                         upgrade = "never")
+  library(workHORSEmisc)
+# }
+
 options(rgl.useNULL = TRUE)  # suppress error by demography in rstudio server
 dependencies(yaml::read_yaml("./dependencies.yaml"))
-
-if (interactive()) {
-  snapshot <-
-    # TODO add logic when .workHORSE_model_pkg_snapshot.qs missing
-    changedFiles(qread("./Rpackage/.workHORSE_model_pkg_snapshot.qs"))
-
-  if (!nzchar(system.file(package = "workHORSEmisc")) |
-      any(nzchar(snapshot$added),
-        nzchar(snapshot$deleted),
-        nzchar(snapshot$changed))) {
-    if (!nzchar(system.file(package = "remotes")))
-      install.packages("remotes")
-    if (nzchar(system.file(package = "roxygen2")))
-      roxygen2::roxygenise("./Rpackage/workHORSE_model_pkg/", clean = TRUE)
-    remotes::install_local("./Rpackage/workHORSE_model_pkg/",
-      force = TRUE,
-      upgrade = "never")
-
-    qsave(
-      fileSnapshot(
-        "./Rpackage/workHORSE_model_pkg/",
-        timestamp = NULL,
-        # tempfile("timestamp"),
-        md5sum = TRUE,
-        recursive = TRUE
-      ),
-      "./Rpackage/.workHORSE_model_pkg_snapshot.qs"
-    )
-  }
-}
-library(workHORSEmisc)
-
-
 
 design <- Design$new("./simulation/sim_design.yaml")
 

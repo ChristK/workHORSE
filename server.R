@@ -122,8 +122,8 @@ server = function(input, output, session) {
   # and https://github.com/rstudio/promises/issues/23
      plan(list(
        # 1 worker for GUI and one for parallel population write.
-       tweak(multiprocess, workers = 2L), # outer loop
-       tweak(multiprocess, workers = design$sim_prm$clusternumber) # inner loop
+       tweak(multicore, workers = 2L), # outer loop
+       tweak(multicore, workers = design$sim_prm$clusternumber) # inner loop
        # Because from the outer loop 1 worker never parallelises the inner loop,
        # the inner loop need not be cpu/2. But RAM usage is excess.
      ))
@@ -142,7 +142,7 @@ server = function(input, output, session) {
   out <-
     eventReactive(input[[paste0("run_simulation_sc", input$scenarios_number_slider)]],
       {
-        plan(multiprocess, workers = design$sim_prm$clusternumber)
+        plan(multicore, workers = design$sim_prm$clusternumber)
         parameters <- fromGUI_prune(reactiveValuesToList(input))
         design$update_fromGUI(parameters)
 
@@ -176,7 +176,7 @@ server = function(input, output, session) {
 
   # Report button ----
   out_report <- eventReactive(input$produce_report, {
-    plan(multiprocess, workers = design$sim_prm$clusternumber)
+    plan(multicore, workers = design$sim_prm$clusternumber)
 
     parameters <- fromGUI_prune(reactiveValuesToList(input))
     design$update_fromGUI(parameters)
@@ -413,14 +413,14 @@ server = function(input, output, session) {
 # Output tab --------------------------------------------------------
   output$most_cost_effective_box <- renderInfoBox({
     infoBox(
-      "Most Cost-Effective", most_cost_effective(out_proc()), icon = icon("pound-sign"),
+      "Most Cost-Effective", most_cost_effective(out_proc()), icon = icon("sterling-sign"),
       color = "aqua", fill = FALSE
     )
   })
 
   output$most_equitable_box <- renderInfoBox({
     infoBox(
-      "Most Equitable", most_equitable(out_proc_qimd()), icon = icon("balance-scale"),
+      "Most Equitable", most_equitable(out_proc_qimd()), icon = icon("scale-balanced"),
       color = "purple"
     )
   })

@@ -45,7 +45,7 @@ options(
   future.globals.maxSize = +Inf,
   future.globals.onReference = "ignore"
 )
-plan(multiprocess, workers = 20L)
+plan(multicore, workers = 20L)
 
 
 disease_epi <- fread("./disease_epidemiology/disease_epi.csv", stringsAsFactors = TRUE,

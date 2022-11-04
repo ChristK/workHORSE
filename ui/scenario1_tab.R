@@ -120,7 +120,7 @@ bsCollapsePanel(
       div(downloadButton(
         "save_sc1",
         "Save scenario         ",
-        icon = icon("save"),
+        icon = icon("floppy-disk"),
         # class = "btn-info",
         labelWidth = "100%"
       ), style='vertical-align:center;'),
@@ -604,8 +604,7 @@ bsCollapsePanel("Health Checks Received (%)",
 # Prescription rate panel  ------------------------------------------------
 bsCollapsePanel(
   "Prescription Rate",
-  style = "success"
-  ,
+  style = "success",
   wellPanel(
     fluidRow(
       ## col 1 ----
@@ -1368,10 +1367,10 @@ fluidRow(
           ),
         direction = "vertical",
         status = "default",
-        checkIcon = list(
-          yes = icon("check-square"),
-          no = icon("square-o")
-        ),
+        # checkIcon = list(
+        #   yes = icon("square-check"),
+        #   no = icon("square-o")
+        # ),
         justified = TRUE,
         individual = FALSE
         )
@@ -1684,7 +1683,7 @@ conditionalPanel(condition = "input.level <= input.scenarios_number_slider",
                         actionButton(
                           "previous_sc1",
                           "Go to previous scenario",
-                          icon = icon("step-backward"),
+                          icon = icon("backward-step"),
                           #style = "color: #fff; background-color: #337ab7; border-color: #2e6da4",
                           class = "btn btn-primary",
                           width = "100%"
@@ -1694,7 +1693,7 @@ conditionalPanel(condition = "input.level <= input.scenarios_number_slider",
                    actionButton(
                      "next_sc1",
                      "Go to next scenario",
-                     icon = icon("step-forward"),
+                     icon = icon("forward-step"),
                      #style = "color: #fff; background-color: #337ab7; border-color: #2e6da4",
                      class = "btn btn-primary",
                      width = "100%"

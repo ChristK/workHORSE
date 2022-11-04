@@ -120,7 +120,7 @@ bsCollapsePanel(
       div(downloadButton(
         "save_sc2",
         "Save scenario         ",
-        icon = icon("save"),
+        icon = icon("floppy-disk"),
         # class = "btn-info",
         labelWidth = "100%"
       ), style='vertical-align:center;'),
@@ -604,8 +604,7 @@ bsCollapsePanel("Health Checks Received (%)",
 # Prescription rate panel  ------------------------------------------------
 bsCollapsePanel(
   "Prescription Rate",
-  style = "success"
-  ,
+  style = "success",
   wellPanel(
     fluidRow(
       ## col 1 ----
@@ -1368,10 +1367,10 @@ fluidRow(
           ),
         direction = "vertical",
         status = "default",
-        checkIcon = list(
-          yes = icon("check-square"),
-          no = icon("square-o")
-        ),
+        # checkIcon = list(
+        #   yes = icon("square-check"),
+        #   no = icon("square-o")
+        # ),
         justified = TRUE,
         individual = FALSE
         )
@@ -1438,7 +1437,7 @@ wellPanel(
                   "Changes in smoking initiation (%) - QIMD 1 (highest)",
                   100,
                   0,
-                  100,
+                  200,
                   1
                 )%>%
                   shinyInput_label_embed(
@@ -1452,7 +1451,7 @@ wellPanel(
            "Changes in smoking initiation (%) - QIMD 2",
            100,
            0,
-           100,
+           200,
            1
          )%>%
            shinyInput_label_embed(
@@ -1466,7 +1465,7 @@ wellPanel(
            "Changes in smoking initiation (%) - QIMD 3",
            100,
            0,
-           100,
+           200,
            1
          )%>%
            shinyInput_label_embed(
@@ -1480,7 +1479,7 @@ wellPanel(
            "Changes in smoking initiation (%) - QIMD 4",
            100,
            0,
-           100,
+           200,
            1
          )%>%
            shinyInput_label_embed(
@@ -1494,7 +1493,7 @@ wellPanel(
            "Changes in smoking initiation (%) - QIMD 5 (lowest QIMD)",
            100,
            0,
-           100,
+           200,
            1
          )%>%
            shinyInput_label_embed(
@@ -1513,7 +1512,7 @@ wellPanel(
              "Changes in smoking cessation (%) - QIMD 1 (highest)",
              100,
              0,
-             100,
+             200,
              1
            )%>%
              shinyInput_label_embed(
@@ -1527,7 +1526,7 @@ wellPanel(
              "Changes in smoking cessation (%) - QIMD 2",
              100,
              0,
-             100,
+             200,
              1
            )%>%
              shinyInput_label_embed(
@@ -1541,7 +1540,7 @@ wellPanel(
              "Changes in smoking cessation (%) - QIMD 3",
              100,
              0,
-             100,
+             200,
              1
            )%>%
              shinyInput_label_embed(
@@ -1555,7 +1554,7 @@ wellPanel(
              "Changes in smoking cessation (%) - QIMD 4",
              100,
              0,
-             100,
+             200,
              1
            )%>%
              shinyInput_label_embed(
@@ -1569,7 +1568,7 @@ wellPanel(
              "Changes in smoking cessation (%) - QIMD 5 (lowest QIMD)",
              100,
              0,
-             100,
+             200,
              1
            )%>%
              shinyInput_label_embed(
@@ -1588,7 +1587,7 @@ fluidRow(
            "Changes in smoking relapse (%) - QIMD 1 (highest)",
            100,
            0,
-           100,
+           200,
            1
          )%>%
            shinyInput_label_embed(
@@ -1602,7 +1601,7 @@ fluidRow(
            "Changes in smoking relapse (%) - QIMD 2",
            100,
            0,
-           100,
+           200,
            1
          )%>%
            shinyInput_label_embed(
@@ -1616,7 +1615,7 @@ fluidRow(
            "Changes in smoking relapse (%) - QIMD 3",
            100,
            0,
-           100,
+           200,
            1
          )%>%
            shinyInput_label_embed(
@@ -1630,7 +1629,7 @@ fluidRow(
            "Changes in smoking relapse (%) - QIMD 4",
            100,
            0,
-           100,
+           200,
            1
          )%>%
            shinyInput_label_embed(
@@ -1644,7 +1643,7 @@ fluidRow(
            "Changes in smoking relapse (%) - QIMD 5 (lowest QIMD)",
            100,
            0,
-           100,
+           200,
            1
          )%>%
            shinyInput_label_embed(
@@ -1684,7 +1683,7 @@ conditionalPanel(condition = "input.level <= input.scenarios_number_slider",
                         actionButton(
                           "previous_sc2",
                           "Go to previous scenario",
-                          icon = icon("step-backward"),
+                          icon = icon("backward-step"),
                           #style = "color: #fff; background-color: #337ab7; border-color: #2e6da4",
                           class = "btn btn-primary",
                           width = "100%"
@@ -1694,7 +1693,7 @@ conditionalPanel(condition = "input.level <= input.scenarios_number_slider",
                    actionButton(
                      "next_sc2",
                      "Go to next scenario",
-                     icon = icon("step-forward"),
+                     icon = icon("forward-step"),
                      #style = "color: #fff; background-color: #337ab7; border-color: #2e6da4",
                      class = "btn btn-primary",
                      width = "100%"

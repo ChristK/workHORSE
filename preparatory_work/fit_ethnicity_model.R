@@ -44,7 +44,7 @@ if (!require(workHORSEmisc)) {
 }
 dependencies(c("qs", "fst", "MASS", "nnet", "splines", "reldist", "future", "future.apply", "data.table"))
 options(future.fork.enable = TRUE) # enable fork in Rstudio
-plan(multiprocess)
+plan(multicore)
 
 if (file.exists("./preparatory_work/HSE_ts.fst")) {
   HSE_ts <- read_fst("./preparatory_work/HSE_ts.fst", as.data.table = TRUE)

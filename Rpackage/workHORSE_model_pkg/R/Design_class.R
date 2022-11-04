@@ -211,7 +211,7 @@ Design <-
       #'   `lags_mc` and `max_lag_mc`
       get_lags = function(mc_) {
         if ((!is.na(private$mc_aggr) && mc_ != private$mc_aggr) ||
-            is.na(self$lags_mc) || is.na(self$max_lag_mc)) {
+            anyNA(self$lags_mc) || is.na(self$max_lag_mc)) {
           # for n_synthpop_aggregation > 1 we need RR and disease epi to change
           # every n_synthpop_aggregation, not in every mc_
           # n_synthpop_aggregation is handled at runtime. The line below is not

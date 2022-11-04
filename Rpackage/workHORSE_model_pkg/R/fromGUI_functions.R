@@ -342,32 +342,6 @@ fromGUI_scenario_parms <- function(scenario_nam, parameters_dt) {
     l$sc_uptake_all_cost <-
       parameters_dt[scenario == scenario_nam &
                       input_names %flike% "uptake_cost", as.numeric(value1)]
-    l$sc_px_statins <-
-      parameters_dt[scenario == scenario_nam &
-                      input_names %flike% "statin_px_slider", as.numeric(value1)/100]
-    l$sc_px_antihtn <-
-      parameters_dt[scenario == scenario_nam &
-                      input_names %flike% "antihtn_px_slider", as.numeric(value1)/100]
-    l$sc_px_detailed <-
-      parameters_dt[scenario == scenario_nam &
-                      input_names %flike% "px_detailed_checkbox", as.logical(value1)]
-    if (l$sc_px_detailed) {
-      l$sc_px_statins_wt <- fromGUI_statins_table(scenario_nam = scenario_nam,
-                                                  parameters_dt = parameters_dt)
-      setnafill(l$sc_px_statins_wt, "c", 0L, cols = "val")
-      l$sc_px_statins_wt[val == 0, val := 1e-6]
-      l$sc_px_statins_wt[, val := val/sum(val)] # no reaso to * l$sc_px_statins
-      setnames(l$sc_px_statins_wt, "val", "px_statins_wt")
-
-      l$sc_px_antihtn_wt <- fromGUI_antihtn_table(scenario_nam = scenario_nam,
-                                                  parameters_dt = parameters_dt)
-      setnafill(l$sc_px_antihtn_wt, "c", 0, cols = "val")
-      l$sc_px_antihtn_wt[val == 0, val := 1e-6]
-
-      l$sc_px_antihtn_wt[, val := val/sum(val)] # no reason to l$sc_px_antihtn
-      setnames(l$sc_px_antihtn_wt, "val", "px_antihtn_wt")
-    }
-
     l$sc_ls_smkcess <-
       parameters_dt[scenario == scenario_nam &
                       input_names %flike% "smkcess_slider",
@@ -396,10 +370,6 @@ fromGUI_scenario_parms <- function(scenario_nam, parameters_dt) {
       parameters_dt[scenario == scenario_nam &
                       input_names %flike% "wghtloss_cost_ovrhd",
                     as.numeric(value1)]
-    l$sc_ls_papct <-
-      parameters_dt[scenario == scenario_nam &
-                      input_names %flike% "papct_slider",
-                    as.numeric(value1)/100]
     l$sc_ls_papincr <-
       parameters_dt[scenario == scenario_nam &
                       input_names %flike% "papincr_slider",

@@ -30,5 +30,5 @@ tabPanel("Scenario parameters",
   source(file.path("ui", "scenario7_tab.R"), local = TRUE)$value,
   source(file.path("ui", "scenario8_tab.R"), local = TRUE)$value,
   source(file.path("ui", "scenario9_tab.R"), local = TRUE)$value,
-  icon = icon("sliders-h")
+  icon = icon("sliders")
 )

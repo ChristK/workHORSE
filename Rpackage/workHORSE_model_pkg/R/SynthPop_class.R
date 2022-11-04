@@ -502,6 +502,7 @@ SynthPop <-
             mc_iter = mc_,
             .inorder = FALSE,
             .verbose = FALSE,
+            .options.multicore = list(preschedule = FALSE),
             .packages = c(
               "R6",
               "gamlss.dist",
@@ -570,6 +571,7 @@ SynthPop <-
             mc_iter = mc_,
             .inorder = FALSE,
             .verbose = FALSE,
+            .options.multicore = list(preschedule = FALSE),
             .packages = c(
               "R6",
               "gamlss.dist",

@@ -34,7 +34,7 @@ if (!require(CKutils)) {
 }
 dependencies(c("qs", "fst", "MASS", "splines", "reldist", "future", "future.apply", "data.table"))
 options(future.fork.enable = TRUE)
-plan(multiprocess)
+plan(multicore)
 
 if (file.exists("./preparatory_work/HSE_ts.fst")) {
   HSE_ts <- read_fst("./preparatory_work/HSE_ts.fst", as.data.table = TRUE)

@@ -41,7 +41,7 @@ if (!require(workHORSEmisc)) {
 dependencies(c("Rcpp", "dqrng", "fst", "qs", "gamlss.dist", "future",
                "future.apply", "ggplot2", "data.table"))
 options(future.fork.enable = TRUE) # enable fork in Rstudio
-plan(multiprocess, workers = n_cpu)
+plan(multicore, workers = n_cpu)
 
 if (file.exists("./preparatory_work/HSE_ts.fst")) {
   HSE_ts <- read_fst("./preparatory_work/HSE_ts.fst", as.data.table = TRUE)[between(age, 20L, 90L)]

@@ -218,7 +218,7 @@ tabPanel("Advanced settings",
     actionButton(
       "delete_logs_gui",
       "Delete logs",
-      icon = icon("trash-alt"),
+      icon = icon("trash-can"),
       class = "btn-danger",
       width = "100%"
     )
@@ -233,7 +233,7 @@ tabPanel("Advanced settings",
     actionButton(
       "locality_select_validator",
       "Produce synthpops for area selection",
-      icon = icon("check-circle"),
+      icon = icon("circle-check"),
       style = "color: #fff; background-color: #337ab7; border-color: #2e6da4",
       #class = "btn-info",
       width = "100%" # "auto"
@@ -246,7 +246,7 @@ tabPanel("Advanced settings",
     actionButton(
       "check_synthpops_gui",
       "Check the integridy of the synthpop files and delete any orphan or malformed files",
-      icon = icon("trash-alt"),
+      icon = icon("trash-can"),
       class = "btn-warning",
       width = "100%"
     ),
@@ -256,7 +256,7 @@ tabPanel("Advanced settings",
     actionButton(
       "check_synthpops_gui_check_checksum",
       "Check the integridy of the synthpop files, which produced from parameters same as in the GUI, and delete any orphan or malformed files",
-      icon = icon("trash-alt"),
+      icon = icon("trash-can"),
       class = "btn-warning",
       width = "100%"
     ),
@@ -266,7 +266,7 @@ tabPanel("Advanced settings",
     actionButton(
       "delete_synthpops_gui_spare_primer",
       "Delete synthpop files which produced from parameters same as in the GUI,  sparing the primer files",
-      icon = icon("trash-alt"),
+      icon = icon("trash-can"),
       class = "btn-danger",
       width = "100%"
     ),
@@ -274,7 +274,7 @@ tabPanel("Advanced settings",
     actionButton(
       "delete_synthpops_gui_check_checksum",
       "Delete synthpop files which produced from parameters same as in the GUI, including the primer files",
-      icon = icon("trash-alt"),
+      icon = icon("trash-can"),
       class = "btn-danger",
       width = "100%"
     ),
@@ -282,7 +282,7 @@ tabPanel("Advanced settings",
     actionButton(
       "delete_synthpops_gui_all",
       "Delete everything in the synthpop folder!",
-      icon = icon("trash-alt"),
+      icon = icon("trash-can"),
       class = "btn-danger",
       width = "100%"
     )
