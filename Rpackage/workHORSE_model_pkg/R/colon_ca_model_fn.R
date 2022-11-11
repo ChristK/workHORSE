@@ -36,8 +36,8 @@ colon_ca_model <-
       # first run for scenario ""
 
       # Calculate pack years
-      dt[, smok_packyrs_curr_xps := smok_cig_curr_xps * smok_dur_curr_xps / 20]
-
+      dt[, smok_packyrs_curr_xps := as.integer(floor(smok_cig_curr_xps * smok_dur_curr_xps / 20))]
+      
       # Lagged exposures
       exps_tolag <-
         grep("^smok_pack|^active_|^bmi_|^alcohol_|^t2dm_prvl_curr_xps",
@@ -50,8 +50,8 @@ colon_ca_model <-
 
     } else {
       # Calculate pack years
-      dt[, smok_packyrs_sc := smok_cig_sc * smok_dur_sc / 20]
-
+      dt[, smok_packyrs_sc := as.integer(floor(smok_cig_sc * smok_dur_sc / 20))]
+      
       exps_tolag <-
         c(paste0(
           c(
@@ -129,7 +129,7 @@ colon_ca_model <-
     #cat("Estimating colon_ca PAF...\n")
     if (!"p0_colon_ca" %in% names(dt)) {
       colon_caparf <-
-        dt[between(age, design_$sim_prm$ageL, design_$sim_prm$ageH) &
+        dt[between(age, max(design_$sim_prm$ageL, 30L), design_$sim_prm$ageH) &
             colon_ca_prvl == 0 & year == design_$sim_prm$init_year,
           .(parf = 1 - 1 / (sum(
             packyears_rr * alcohol_rr * pa_rr * bmi_rr *
@@ -145,8 +145,7 @@ colon_ca_model <-
 
       absorb_dt(
         colon_caparf,
-        get_disease_epi_mc(mc, "colon_ca", "i", "v", design_$sim_prm$stochastic)
-      )
+        get_disease_epi_mc(mc, "colon_ca", "i", "v", design_$sim_prm$stochastic))
       colon_caparf[, p0_colon_ca := incidence * (1 - parf)]
       # colon_caparf[, summary(p0_colon_ca)]
       colon_caparf[is.na(p0_colon_ca), p0_colon_ca := incidence]

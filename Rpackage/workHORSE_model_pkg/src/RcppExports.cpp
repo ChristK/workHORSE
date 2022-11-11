@@ -692,13 +692,12 @@ BEGIN_RCPP
 END_RCPP
 }
 // simsmok_cig_sc
-void simsmok_cig_sc(DataFrame& df, const IntegerVector& row_sel);
-RcppExport SEXP _workHORSEmisc_simsmok_cig_sc(SEXP dfSEXP, SEXP row_selSEXP) {
+void simsmok_cig_sc(DataFrame& df);
+RcppExport SEXP _workHORSEmisc_simsmok_cig_sc(SEXP dfSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< DataFrame& >::type df(dfSEXP);
-    Rcpp::traits::input_parameter< const IntegerVector& >::type row_sel(row_selSEXP);
-    simsmok_cig_sc(df, row_sel);
+    simsmok_cig_sc(df);
     return R_NilValue;
 END_RCPP
 }
@@ -828,7 +827,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_workHORSEmisc_simsmok_sc", (DL_FUNC) &_workHORSEmisc_simsmok_sc, 4},
     {"_workHORSEmisc_simsmok_postcalibration", (DL_FUNC) &_workHORSEmisc_simsmok_postcalibration, 1},
     {"_workHORSEmisc_simsmok_cig", (DL_FUNC) &_workHORSEmisc_simsmok_cig, 1},
-    {"_workHORSEmisc_simsmok_cig_sc", (DL_FUNC) &_workHORSEmisc_simsmok_cig_sc, 2},
+    {"_workHORSEmisc_simsmok_cig_sc", (DL_FUNC) &_workHORSEmisc_simsmok_cig_sc, 1},
     {"_workHORSEmisc_simsmok_cessation", (DL_FUNC) &_workHORSEmisc_simsmok_cessation, 10},
     {"_workHORSEmisc_simsmok_policy_impact_incr", (DL_FUNC) &_workHORSEmisc_simsmok_policy_impact_incr, 5},
     {"_workHORSEmisc_simsmok_policy_impact_decr", (DL_FUNC) &_workHORSEmisc_simsmok_policy_impact_decr, 6},

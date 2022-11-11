@@ -29,7 +29,7 @@ if (!require(CKutils)) {
   library(CKutils)
 }
 
-# TODO add better logic to insrall package when needed (copy from calibration?)
+# TODO add better logic to install package when needed (copy from calibration?)
 # if (!require(workHORSEmisc)) {
   if (!require(remotes))
     install.packages("remotes")

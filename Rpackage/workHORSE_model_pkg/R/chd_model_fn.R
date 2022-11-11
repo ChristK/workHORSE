@@ -57,11 +57,11 @@ chd_model <-
             "sbp_",
             "tchol_",
             "smok_status_",
-            "t2dm_prvl_"
+            "t2dm_prvl_", 
+            "ets_"
           ),
           "sc"
         ),
-          "ets_curr_xps",
           "fruit_curr_xps",
           "veg_curr_xps")
 
@@ -218,7 +218,7 @@ chd_model <-
     # alcohol)
     if (!"p0_chd" %in% names(dt)) {
       chdparf <-
-        dt[between(age, design_$sim_prm$ageL, design_$sim_prm$ageH) &
+        dt[between(age, max(design_$sim_prm$ageL, 30L), design_$sim_prm$ageH) &
             chd_prvl == 0 & year == design_$sim_prm$init_year,
           .(parf = 1 - 1 / (
             sum(

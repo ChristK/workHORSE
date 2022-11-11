@@ -122,6 +122,7 @@ nonmodelled_model <- function(
     # }
     # , keyby = .(sex, qimd)]
 
+    # TODO check to what ages mortality is applied to. Does it need to b [age >= 30L]
     tt <- get_lifetable_all(mc, "nonmodelled", design_$sim_prm, "qx")[year == design_$sim_prm$init_year][, year := NULL]
     absorb_dt(nonmodelledparf, tt)
     nonmodelledparf[, p0_nonmodelled := qx_mc * (1 - parf)]

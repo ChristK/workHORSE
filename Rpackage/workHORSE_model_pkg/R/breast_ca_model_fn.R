@@ -48,17 +48,17 @@ breast_ca_model <-
       }
     } else {
       exps_tolag <-
-        c(paste0(
+        paste0(
           c(
             "active_days_",
             "alcohol_",
             "bmi_",
             "smok_status_",
-            "t2dm_prvl_"
+            "t2dm_prvl_", 
+            "ets_"
           ),
           "sc"
-        ),
-          "ets_curr_xps")
+        )
 
       exps_nam <-
         gsub("_curr_xps$|_sc$",
@@ -140,7 +140,7 @@ breast_ca_model <-
     #cat("Estimating breast_ca PAF...\n")
     if (!"p0_breast_ca" %in% names(dt)) {
       breast_caparf <-
-        dt[between(age, design_$sim_prm$ageL, design_$sim_prm$ageH) &
+        dt[between(age, max(design_$sim_prm$ageL, 30L), design_$sim_prm$ageH) &
             breast_ca_prvl == 0 & year == design_$sim_prm$init_year,
           .(parf = 1 - 1 / (
             sum(tobacco_rr * ets_rr * alcohol_rr * pa_rr * bmi_rr *

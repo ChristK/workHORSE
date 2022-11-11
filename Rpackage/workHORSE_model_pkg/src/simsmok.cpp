@@ -144,10 +144,14 @@ void simsmok_sc(
         {
           smok_status[i] = 4;
           smok_dur[i] = 1;
+          smok_quit_yrs[i] = 0;
         }
         else
         {
           smok_status[i] = 1;
+          smok_dur[i] = 0;
+          smok_quit_yrs[i] = 0;
+          
         }
       }
 
@@ -260,19 +264,18 @@ void simsmok_cig(DataFrame& df) {
 
 //' @export
 // [[Rcpp::export]]
-void simsmok_cig_sc(DataFrame& df, const IntegerVector& row_sel) {
+void simsmok_cig_sc(DataFrame& df) {
 
   //access the df columns
   IntegerVector smok_status     = df["smok_status_sc"];
   IntegerVector smok_cig        = df["smok_cig_sc"];
-  LogicalVector new_pid         = df["pid_mrk_sc"];
+  LogicalVector new_pid         = df["pid_mrk"]; // not _sc
 
   // id should be sorted by year
-  const int n = row_sel.size();
+  const int n = df.nrows();
   int i = 0;
-  for (int j = 0; j < n; j++)
+  for (int i = 0; i < n; i++)
   {
-    i = row_sel[j] - 1;
     if (!new_pid[i]) // if not a new simulant
     { // if smok_status[i] == 3 then previous year was either 3 or 4. In both cases smog_cig should carry forward
       if (smok_status[i] == 3) smok_cig[i] = smok_cig[i-1];

@@ -226,8 +226,8 @@ simsmok_cig <- function(df) {
 }
 
 #' @export
-simsmok_cig_sc <- function(df, row_sel) {
-    invisible(.Call('_workHORSEmisc_simsmok_cig_sc', PACKAGE = 'workHORSEmisc', df, row_sel))
+simsmok_cig_sc <- function(df) {
+    invisible(.Call('_workHORSEmisc_simsmok_cig_sc', PACKAGE = 'workHORSEmisc', df))
 }
 
 #' @export

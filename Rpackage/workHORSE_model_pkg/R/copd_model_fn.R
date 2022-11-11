@@ -32,10 +32,10 @@ copd_model <-
     message("Loading COPD (J40-J47) model...")
     if (timing)
       ptm <- proc.time()
-
+    
     if (!nzchar(scenario_nam)) { # first run for scenario ""
       # Calculate pack years
-      dt[, smok_packyrs_curr_xps := smok_cig_curr_xps * smok_dur_curr_xps / 20]
+      dt[, smok_packyrs_curr_xps := as.integer(floor(smok_cig_curr_xps * smok_dur_curr_xps / 20))]
 
     # Lagged exposures
     exps_tolag <- grep("^smok_pack|^smok_st|^ets",
@@ -46,19 +46,13 @@ copd_model <-
     }
     } else {
       # Calculate pack years
-      dt[, smok_packyrs_sc := smok_cig_sc * smok_dur_sc / 20]
+      dt[, smok_packyrs_sc := as.integer(floor(smok_cig_sc * smok_dur_sc / 20))]
 
       exps_tolag <-
-        c(paste0(
-          c(
-            "smok_packyrs_", "smok_status_"
-          ),
-          "sc"
-        ),
-          "ets_curr_xps")
+        paste0(c("smok_packyrs_", "smok_status_", "ets_"), "sc")
 
       exps_nam <-
-        gsub("_curr_xps$|_sc$", "_lagged", exps_tolag)
+        gsub("_sc$", "_lagged", exps_tolag)
       for (i in seq_along(exps_tolag)) {
         set(dt, NULL, exps_nam[i], dt[, shift_bypid(get(exps_tolag[i]), design_$lags_mc$copd_lag, pid)])
       }
@@ -102,7 +96,7 @@ copd_model <-
     #cat("Estimating COPD PAF...\n")
     if (!"p0_copd" %in% names(dt)) {
       copdparf <-
-        dt[between(age, design_$sim_prm$ageL, design_$sim_prm$ageH) &
+        dt[between(age, max(design_$sim_prm$ageL, 30L), design_$sim_prm$ageH) &
             copd_prvl == 0 & year == design_$sim_prm$init_year,
           .(parf = 1 - 1 / (sum(packyears_rr * ets_rr) / .N)),
           keyby = .(age, sex, qimd)]
@@ -128,8 +122,7 @@ copd_model <-
     # Estimate COPD incidence prbl -------------------------------
     #cat("Estimating COPD incidence...\n\n")
     set(dt, NULL, "prb_copd_incd", 0)
-    dt[, prb_copd_incd :=
-        p0_copd * packyears_rr * ets_rr]
+    dt[, prb_copd_incd := p0_copd * packyears_rr * ets_rr] #  
     dt[, (grep("_rr$", names(dt), value = TRUE)) := NULL]
 
     # Assume a probability of diagnosis ----
@@ -145,18 +138,16 @@ copd_model <-
     setnames(dt, "fatality", "prb_copd_mrtl")
 
     dt[, smok_packyrs_curr_xps := NULL]
+    
     } else {
-
       set(dt, NULL, "copd_prvl_sc", 0L)
       dt[year < design_$sim_prm$init_year_fromGUI, copd_prvl_sc := copd_prvl]
       dt[year == design_$sim_prm$init_year_fromGUI & copd_prvl > 1L, copd_prvl_sc := copd_prvl]
 
       # Estimate COPD incidence prbl
       #cat("Estimating COPD incidence...\n\n")
-      colnam <- "prb_copd_incd_sc"
-      set(dt, NULL, colnam, 0)
-      dt[, (colnam) :=
-          p0_copd * packyears_rr * ets_rr]
+      set(dt, NULL, "prb_copd_incd_sc", 0)
+      dt[, prb_copd_incd_sc := p0_copd * packyears_rr * ets_rr] 
       dt[, (grep("_rr$", names(dt), value = TRUE)) := NULL]
 
       # Assume a probability of diagnosis

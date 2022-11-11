@@ -8,8 +8,42 @@ scenario_nam <- ""
 mc_iter <- 1L
 
 design$get_lags(mc_iter)
-dt <- SynthPop$new(mc_iter, design) #run until ncc , with problems on 5(frt, veg, smok all, hdl, alcohol)
-dt0 <- SynthPop$new(0, design)
+# dt0 <- SynthPop$new(0, design)
+# for (i in 1:100) dt0$delete_synthpop(i)
+dt <- SynthPop$new(mc_iter, design) # run until ncc , with problems on 5(frt, veg, smok all, hdl, alcohol)
+# dt0 <- SynthPop$new(0, design)
+
+output_chunk  <- list() # quicker way to start from: here + dt <- SynthPop
+run_scenario2("sc2", mc_iter, dt, parameters_dt, design, output_chunk)
+dt$pop[, summary(prb_copd_incd_sc)]
+dt$pop[, summary(prb_copd_incd)]
+dt$pop[prb_copd_incd_sc > prb_copd_incd, .N, keyby = year]
+dt$pop[prb_copd_incd_sc < prb_copd_incd, .N, keyby = year]
+dt$pop[, all.equal(prb_copd_incd_sc, prb_copd_incd)]
+
+tt <- dt$pop[prb_copd_incd_sc > prb_copd_incd, pid]
+View(dt$pop[pid %in% tt,
+       .(pid, age, year,p0_copd, prb_copd_incd, prb_copd_incd_sc, smok_status_curr_xps, smok_status_sc, smok_cig_curr_xps, smok_cig_sc,
+         smok_dur_curr_xps, smok_dur_sc, ets_curr_xps, ets_sc),])
+
+
+dt$pop[, summary(ets_curr_xps)]
+dt$pop[, summary(ets_sc)]
+dt$pop[, all.equal(ets_curr_xps, ets_sc)]
+dt$pop[, summary(smok_status_curr_xps)]
+dt$pop[, summary(smok_status_sc)]
+dt$pop[, all.equal(smok_status_curr_xps, smok_status_sc)]
+dt$pop[, summary(smok_cig_curr_xps)]
+dt$pop[, summary(smok_cig_sc)]
+dt$pop[, all.equal(smok_cig_curr_xps, smok_cig_sc)]
+dt$pop[, summary(smok_dur_curr_xps)]
+dt$pop[, summary(smok_dur_sc)]
+dt$pop[, all.equal(smok_dur_curr_xps, smok_dur_sc)]
+dt$pop[, summary(smok_packyrs_curr_xps)]
+dt$pop[, summary(smok_packyrs_sc)]
+dt$pop[, all.equal(smok_packyrs_curr_xps, smok_packyrs_sc)]
+
+dt$pop[, (grep("_sc$", names(dt$pop), value = TRUE)) := NULL]
 
 output_chunk  <- list() # quicker way to start from: here + dt <- SynthPop
 output_chunk <- sapply(

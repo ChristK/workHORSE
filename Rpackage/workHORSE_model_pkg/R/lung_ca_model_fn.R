@@ -79,7 +79,7 @@ lung_ca_model <-
       exps_tolag <-
         c(
           grep("^smok_.*_sc$", names(dt), value = TRUE),
-          "ets_curr_xps",
+          "ets_sc",
           "fruit_curr_xps",
           "bmi_curr_xps"
         )
@@ -197,7 +197,7 @@ lung_ca_model <-
     #cat("Estimating lung cancer PAF...\n")
     if (!"p0_lung_ca" %in% names(dt)) {
       lung_caparf <-
-        dt[between(age, design_$sim_prm$ageL, design_$sim_prm$ageH) &
+        dt[between(age, max(design_$sim_prm$ageL, 30L), design_$sim_prm$ageH) &
             lung_ca_prvl == 0 & year == design_$sim_prm$init_year,
           .(parf = 1 - 1 / (sum(lung_ca_forparf_rr * ets_rr * fruit_rr) / .N)),
           keyby = .(age, sex, qimd)]
@@ -210,8 +210,7 @@ lung_ca_model <-
 
       absorb_dt(
         lung_caparf,
-        get_disease_epi_mc(mc, "lung_ca", "i", "v", design_$sim_prm$stochastic)
-      )
+        get_disease_epi_mc(mc, "lung_ca", "i", "v", design_$sim_prm$stochastic))
       lung_caparf[, p0_lung_ca := incidence * (1 - parf)]
       # lung_caparf[, summary(p0_lung_ca)]
       lung_caparf[is.na(p0_lung_ca), p0_lung_ca := incidence]

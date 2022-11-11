@@ -47,8 +47,8 @@ stroke_model <-
     } else {
       exps_tolag <-
         c(paste0(c("active_days_", "alcohol_", "bmi_",
-          "sbp_", "tchol_", "smok_status_", "t2dm_prvl_"), "sc"),
-          "ets_curr_xps", "fruit_curr_xps", "veg_curr_xps", "af_prvl_curr_xps", "af_dgn_curr_xps")
+          "sbp_", "tchol_", "smok_status_", "ets_","t2dm_prvl_"), "sc"),
+           "fruit_curr_xps", "veg_curr_xps", "af_prvl_curr_xps", "af_dgn_curr_xps")
       # TODO AF_prvl_sc & af_dgn_sc influence stroke
       # TODO expand C++ code to allow influence from multiple disease and diagnosis
 
@@ -205,7 +205,7 @@ stroke_model <-
     #cat("Estimating stroke PAF...\n")
     if (!"p0_stroke" %in% names(dt)) {
       strokeparf <-
-        dt[between(age, design_$sim_prm$ageL, design_$sim_prm$ageH) &
+        dt[between(age, max(design_$sim_prm$ageL, 30L), design_$sim_prm$ageH) &
             stroke_prvl == 0 & year == design_$sim_prm$init_year,
           .(parf = 1 - 1 / (
             sum(

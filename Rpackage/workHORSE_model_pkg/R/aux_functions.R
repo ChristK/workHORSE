@@ -1684,7 +1684,7 @@ set_social <- function(scenario_parms, dt, design) {
 
       dt[, c("prb_smok_incid_sc", "prb_smok_cess_sc") := NULL]
 
-      # smok intensity
+      # smok intensity TODO check if what I do for Vincy's policies is more appropriate
       lutbl <-
         read_fst("./lifecourse_models/smok_cig_curr_table.fst",
           as.data.table = TRUE)
@@ -1710,7 +1710,7 @@ set_social <- function(scenario_parms, dt, design) {
           tau,
           n_cpu = design$sim_prm$n_cpu)]
 
-      simsmok_cig_sc(dt, row_sel) # carry forward smok_cig if smok_status == 3
+      simsmok_cig_sc(dt) # carry forward smok_cig if smok_status == 3
       dt[smok_cig_sc == 0L & smok_status_sc != "1", smok_cig_sc := 1L]
       dt[, c("mrk", "pid_mrk_sc") := NULL]
       
@@ -2053,34 +2053,36 @@ set_tobacco_mala <- function(scenario_parms, dt, design) {
       dt[, c("prb_smok_incid_sc", "prb_smok_cess_sc") := NULL]
 
       # smok intensity
+      dt[smok_status_sc == 1, smok_cig_sc := 0]
       lutbl <-
         read_fst("./lifecourse_models/smok_cig_curr_table.fst",
                  as.data.table = TRUE)
       setnames(lutbl, "age", "age_sc")
-      lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
-
-      dt[row_sel, mrk := TRUE]
-
-      dt[(mrk) & smok_status_sc == "4",
+      lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau")) # Note tau not a column currently
+      
+      dt[smok_status_sc != smok_status_curr_xps, mrk := TRUE]
+      
+      dt[(mrk) & smok_status_sc == 4,
          smok_cig_sc := qZINBI(rankstat_smok_cig_curr, mu, sigma, nu)]
-
-      lutbl <-
-        read_fst("./lifecourse_models/smok_cig_ex_table.fst",
-                 as.data.table = TRUE)
-      setnames(lutbl, "age", "age_sc")
-      lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
-      dt[(pid_mrk_sc) & # no need for mrk as superseded by pid_mrk_sc
-           smok_status_sc == "3",
-         smok_cig_sc := my_qZABNB(rankstat_smok_cig_ex,
-                                  mu,
-                                  sigma,
-                                  nu,
-                                  tau,
-                                  n_cpu = design$sim_prm$n_cpu)]
-
-      simsmok_cig_sc(dt, row_sel) # carry forward smok_cig if smok_status == 3
+      
+      # No need to do for ex smokers, as they should have at least an entry of active smoking before
+      # lutbl <-
+      #   read_fst("./lifecourse_models/smok_cig_ex_table.fst",
+      #            as.data.table = TRUE)
+      # setnames(lutbl, "age", "age_sc")
+      # lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
+      # dt[(mrk) & smok_status_sc == "3",
+      #    smok_cig_sc := my_qZABNB(rankstat_smok_cig_ex,
+      #                             mu,
+      #                             sigma,
+      #                             nu,
+      #                             tau,
+      #                             n_cpu = design$sim_prm$n_cpu)]
+      
+      simsmok_cig_sc(dt) # carry forward smok_cig if smok_status == 3
       dt[smok_cig_sc == 0L & smok_status_sc != "1", smok_cig_sc := 1L]
       dt[, c("mrk", "pid_mrk_sc") := NULL]
+      
       
 
       dt[, smok_status_sc := factor(smok_status_sc)]
@@ -2162,34 +2164,36 @@ set_tobacco_ban <- function(scenario_parms, dt, design) {
       dt[, c("prb_smok_incid_sc", "prb_smok_cess_sc") := NULL]
       
       # smok intensity
+      dt[smok_status_sc == 1, smok_cig_sc := 0]
       lutbl <-
         read_fst("./lifecourse_models/smok_cig_curr_table.fst",
                  as.data.table = TRUE)
       setnames(lutbl, "age", "age_sc")
-      lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
+      lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau")) # Note tau not a column currently
       
-      dt[row_sel, mrk := TRUE]
+      dt[smok_status_sc != smok_status_curr_xps, mrk := TRUE]
       
-      dt[(mrk) & smok_status_sc == "4",
+      dt[(mrk) & smok_status_sc == 4,
          smok_cig_sc := qZINBI(rankstat_smok_cig_curr, mu, sigma, nu)]
       
-      lutbl <-
-        read_fst("./lifecourse_models/smok_cig_ex_table.fst",
-                 as.data.table = TRUE)
-      setnames(lutbl, "age", "age_sc")
-      lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
-      dt[(pid_mrk_sc) & # no need for mrk as superseded by pid_mrk_sc
-           smok_status_sc == "3",
-         smok_cig_sc := my_qZABNB(rankstat_smok_cig_ex,
-                                  mu,
-                                  sigma,
-                                  nu,
-                                  tau,
-                                  n_cpu = design$sim_prm$n_cpu)]
+      # No need to do for ex smokers, as they should have at least an entry of active smoking before
+      # lutbl <-
+      #   read_fst("./lifecourse_models/smok_cig_ex_table.fst",
+      #            as.data.table = TRUE)
+      # setnames(lutbl, "age", "age_sc")
+      # lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
+      # dt[(mrk) & smok_status_sc == "3",
+      #    smok_cig_sc := my_qZABNB(rankstat_smok_cig_ex,
+      #                             mu,
+      #                             sigma,
+      #                             nu,
+      #                             tau,
+      #                             n_cpu = design$sim_prm$n_cpu)]
       
-      simsmok_cig_sc(dt, row_sel) # carry forward smok_cig if smok_status == 3
+      simsmok_cig_sc(dt) # carry forward smok_cig if smok_status == 3
       dt[smok_cig_sc == 0L & smok_status_sc != "1", smok_cig_sc := 1L]
       dt[, c("mrk", "pid_mrk_sc") := NULL]
+      
       
       
       dt[, smok_status_sc := factor(smok_status_sc)]
@@ -2295,32 +2299,33 @@ set_tobacco_prevalence <- function(scenario_parms, dt, design) {
       dt[, c("prb_smok_incid_sc", "prb_smok_cess_sc") := NULL]
       
       # smok intensity
+      dt[smok_status_sc == 1, smok_cig_sc := 0]
       lutbl <-
         read_fst("./lifecourse_models/smok_cig_curr_table.fst",
                  as.data.table = TRUE)
       setnames(lutbl, "age", "age_sc")
-      lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
+      lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau")) # Note tau not a column currently
       
-      dt[row_sel, mrk := TRUE]
+      dt[smok_status_sc != smok_status_curr_xps, mrk := TRUE]
       
-      dt[(mrk) & smok_status_sc == "4",
+      dt[(mrk) & smok_status_sc == 4,
          smok_cig_sc := qZINBI(rankstat_smok_cig_curr, mu, sigma, nu)]
       
-      lutbl <-
-        read_fst("./lifecourse_models/smok_cig_ex_table.fst",
-                 as.data.table = TRUE)
-      setnames(lutbl, "age", "age_sc")
-      lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
-      dt[(pid_mrk_sc) & # no need for mrk as superseded by pid_mrk_sc
-           smok_status_sc == "3",
-         smok_cig_sc := my_qZABNB(rankstat_smok_cig_ex,
-                                  mu,
-                                  sigma,
-                                  nu,
-                                  tau,
-                                  n_cpu = design$sim_prm$n_cpu)]
+      # No need to do for ex smokers, as they should have at least an entry of active smoking before
+      # lutbl <-
+      #   read_fst("./lifecourse_models/smok_cig_ex_table.fst",
+      #            as.data.table = TRUE)
+      # setnames(lutbl, "age", "age_sc")
+      # lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau"))
+      # dt[(mrk) & smok_status_sc == "3",
+      #    smok_cig_sc := my_qZABNB(rankstat_smok_cig_ex,
+      #                             mu,
+      #                             sigma,
+      #                             nu,
+      #                             tau,
+      #                             n_cpu = design$sim_prm$n_cpu)]
       
-      simsmok_cig_sc(dt, row_sel) # carry forward smok_cig if smok_status == 3
+      simsmok_cig_sc(dt) # carry forward smok_cig if smok_status == 3
       dt[smok_cig_sc == 0L & smok_status_sc != "1", smok_cig_sc := 1L]
       dt[, c("mrk", "pid_mrk_sc") := NULL]
       
@@ -2334,6 +2339,32 @@ set_tobacco_prevalence <- function(scenario_parms, dt, design) {
     } # if
     return(invisible(dt))
   }
+
+set_ets <- function(scenario_parms, dt, design) {
+  # adjusts ets based on scenario smoking prevalence assuming a linear relation
+  # between smoking prvl and ets by year and imd
+  # NOTE currently works ONLY for smoking reductions. It assumes if smoking
+  # increase there will be no impact on ets
+    setkey(dt, pid, year)
+
+    if (!"ets_sc" %in% names(dt))
+      set(dt, NULL, "ets_sc", dt$ets_curr_xps)
+
+    if (!identical(dt$smok_status_curr_xps, dt$smok_status_sc)) {
+      tt <- dt[year > design$sim_prm$init_year,
+               .(smok_curr_xps = sum(smok_status_curr_xps == "4")/.N,
+                 smok_sc = sum(smok_status_sc == "4")/.N),
+               keyby = .(year, qimd)]
+      tt[, ets_change_rel := smok_sc / smok_curr_xps]
+
+      dt[tt, on = c("year", "qimd"), ets_change_rel := i.ets_change_rel]
+      dt[ets_change_rel < 1 & ets_sc == 1L,
+         ets_sc := as.integer(rbinom(.N, 1, ets_change_rel))]
+      dt[, ets_change_rel := NULL]
+    }
+
+  return(invisible(dt))
+}
 
 #' @export
 run_scenario <-
@@ -2408,6 +2439,7 @@ run_scenario <-
       set_tobacco_mala(scenario_parms[[sc]], dt$pop, design)
       set_tobacco_ban(scenario_parms[[sc]], dt$pop, design) 
       set_tobacco_prevalence(scenario_parms[[sc]], dt$pop, design)  
+      set_ets(scenario_parms[[sc]], dt$pop, design)
       # set_tobacco_prevalence_qimd(scenario_parms[[sc]], dt$pop, design)
       # set_tobacco_price(scenario_parms[[sc]], dt$pop, design)
       # set_tobacco_price_qimd(scenario_parms[[sc]], dt$pop, design)
