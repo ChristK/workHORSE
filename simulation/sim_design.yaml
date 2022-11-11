@@ -12,13 +12,13 @@ n_synthpop_aggregation: 2 # number of synthpops to aggregate together
 n_primers: 10 # better be some multiple of n_synthpop_aggregation
 init_year_long: 2013
 sim_horizon_max: 60 # population projections do not support longer horizon
-ageL: 15
+ageL: 30
 ageH: 89
 cvd_lag: 4
 copd_lag: 5
 cancer_lag: 9
 nonmodelled_lag: 5
-maxlag: 10
+maxlag: 15
 cancer_cure: 10 # need to be >2 & <= 10
 jumpiness: 1.0 # increase for more erratic jumps in trajectories
 smoking_relapse_limit: 3

@@ -14,7 +14,7 @@ dt <- SynthPop$new(mc_iter, design) # run until ncc , with problems on 5(frt, ve
 # dt0 <- SynthPop$new(0, design)
 
 output_chunk  <- list() # quicker way to start from: here + dt <- SynthPop
-run_scenario2("sc2", mc_iter, dt, parameters_dt, design, output_chunk)
+run_scenario("sc1", mc_iter, dt, parameters_dt, design, output_chunk)
 dt$pop[, summary(prb_copd_incd_sc)]
 dt$pop[, summary(prb_copd_incd)]
 dt$pop[prb_copd_incd_sc > prb_copd_incd, .N, keyby = year]
