@@ -1162,6 +1162,12 @@ SynthPop <-
             tbl <-
               read_fst("./lifecourse_models/active_days_table.fst",
                        as.data.table = TRUE)
+            t3 <- tbl[year == 3L]
+            while(t3[, min(year)] > dt[, min(year)]) {
+              t3[, year := year - 1L]
+              tbl <- rbind(t3, tbl)
+            }
+            
             nam <- intersect(names(dt), names(tbl))
             dt[tbl, active_days := (rank_pa > pa0) + (rank_pa > pa1) + (rank_pa > pa2) +
                  (rank_pa > pa3) + (rank_pa > pa4) + (rank_pa > pa5) + (rank_pa > pa6),
@@ -1174,6 +1180,11 @@ SynthPop <-
 
             tbl <-
               read_fst("./lifecourse_models/frtpor_table.fst", as.data.table = TRUE)
+            t3 <- tbl[year == 3L]
+            while(t3[, min(year)] > dt[, min(year)]) {
+              t3[, year := year - 1L]
+              tbl <- rbind(t3, tbl)
+            }
             col_nam <-
               setdiff(names(tbl), intersect(names(dt), names(tbl)))
             absorb_dt(dt, tbl)
@@ -1188,6 +1199,11 @@ SynthPop <-
 
             tbl <-
               read_fst("./lifecourse_models/vegpor_table.fst", as.data.table = TRUE)
+            t3 <- tbl[year == 3L]
+            while(t3[, min(year)] > dt[, min(year)]) {
+              t3[, year := year - 1L]
+              tbl <- rbind(t3, tbl)
+            }
             col_nam <-
               setdiff(names(tbl), intersect(names(dt), names(tbl)))
             absorb_dt(dt, tbl)
@@ -1203,6 +1219,11 @@ SynthPop <-
             tbl <-
               read_fst("./lifecourse_models/smok_status_table.fst",
                        as.data.table = TRUE)
+            t3 <- tbl[year == 3L]
+            while(t3[, min(year)] > dt[, min(year)]) {
+              t3[, year := year - 1L]
+              tbl <- rbind(t3, tbl)
+            }
             col_nam <-
               setdiff(names(tbl), intersect(names(dt), names(tbl)))
             absorb_dt(dt, tbl)
@@ -1217,6 +1238,11 @@ SynthPop <-
             tbl <-
               read_fst("./lifecourse_models/smok_quit_yrs_table.fst",
                        as.data.table = TRUE)
+            t3 <- tbl[year == 3L]
+            while(t3[, min(year)] > dt[, min(year)]) {
+              t3[, year := year - 1L]
+              tbl <- rbind(t3, tbl)
+            }
             col_nam <-
               setdiff(names(tbl), intersect(names(dt), names(tbl)))
             absorb_dt(dt, tbl)
@@ -1231,6 +1257,11 @@ SynthPop <-
             tbl <-
               read_fst("./lifecourse_models/smok_dur_ex_table.fst",
                        as.data.table = TRUE)
+            t3 <- tbl[year == 3L]
+            while(t3[, min(year)] > dt[, min(year)]) {
+              t3[, year := year - 1L]
+              tbl <- rbind(t3, tbl)
+            }
             col_nam <-
               setdiff(names(tbl), intersect(names(dt), names(tbl)))
             tbl$smok_status <- as.integer(tbl$smok_status)
@@ -1246,6 +1277,11 @@ SynthPop <-
             tbl <-
               read_fst("./lifecourse_models/smok_dur_curr_table.fst",
                        as.data.table = TRUE)
+            t3 <- tbl[year == 3L]
+            while(t3[, min(year)] > dt[, min(year)]) {
+              t3[, year := year - 1L]
+              tbl <- rbind(t3, tbl)
+            }
             col_nam <-
               setdiff(names(tbl), intersect(names(dt), names(tbl)))
             absorb_dt(dt, tbl)
@@ -1270,6 +1306,11 @@ SynthPop <-
             tbl <-
               read_fst("./lifecourse_models/smok_incid_table.fst",
                        as.data.table = TRUE)
+            t3 <- tbl[year == 3L]
+            while(t3[, min(year)] > dt[, min(year)]) {
+              t3[, year := year - 1L]
+              tbl <- rbind(t3, tbl)
+            }
             # TODO: tbl <- read_fst("./lifecourse_models/smoke_initiation_table.fst", as.data.table = TRUE)
             # TODO: add initiation calibrated value (intercept)
             col_nam <-
@@ -1282,6 +1323,11 @@ SynthPop <-
             tbl <-
               read_fst("./lifecourse_models/smok_cess_table.fst",
                        as.data.table = TRUE)
+            t3 <- tbl[year == 3L]
+            while(t3[, min(year)] > dt[, min(year)]) {
+              t3[, year := year - 1L]
+              tbl <- rbind(t3, tbl)
+            }
             # TODO: tbl <- read_fst("./lifecourse_models/smoke_cessation_table.fst", as.data.table = TRUE)
             # TODO: add cessation calibrated value (intercept)
             tbl[age < 16L, mu := 0]
@@ -1463,6 +1509,11 @@ SynthPop <-
             tbl <-
               read_fst("./lifecourse_models/smok_cig_curr_table.fst",
                        as.data.table = TRUE)
+            t3 <- tbl[year == 3L]
+            while(t3[, min(year)] > dt[, min(year)]) {
+              t3[, year := year - 1L]
+              tbl <- rbind(t3, tbl)
+            }
             col_nam <-
               setdiff(names(tbl), intersect(names(dt), names(tbl)))
             absorb_dt(dt, tbl)
@@ -1477,6 +1528,11 @@ SynthPop <-
             tbl <-
               read_fst("./lifecourse_models/smok_cig_ex_table.fst",
                        as.data.table = TRUE)
+            t3 <- tbl[year == 3L]
+            while(t3[, min(year)] > dt[, min(year)]) {
+              t3[, year := year - 1L]
+              tbl <- rbind(t3, tbl)
+            }
             col_nam <-
               setdiff(names(tbl), intersect(names(dt), names(tbl)))
             absorb_dt(dt, tbl)
@@ -1523,6 +1579,11 @@ SynthPop <-
             # be used in scenarios. Ideally correct for mortality
             tbl <-
               read_fst("./lifecourse_models/ets_table.fst", as.data.table = TRUE)
+            t3 <- tbl[year == 3L]
+            while(t3[, min(year)] > dt[, min(year)]) {
+              t3[, year := year - 1L]
+              tbl <- rbind(t3, tbl)
+            }
             col_nam <-
               setdiff(names(tbl), intersect(names(dt), names(tbl)))
             absorb_dt(dt, tbl)
@@ -1536,6 +1597,11 @@ SynthPop <-
 
             tbl <-
               read_fst("./lifecourse_models/alcohol_table.fst", as.data.table = TRUE)
+            t3 <- tbl[year == 3L]
+            while(t3[, min(year)] > dt[, min(year)]) {
+              t3[, year := year - 1L]
+              tbl <- rbind(t3, tbl)
+            }
             col_nam <-
               setdiff(names(tbl), intersect(names(dt), names(tbl)))
             absorb_dt(dt, tbl)
@@ -1548,6 +1614,11 @@ SynthPop <-
 
             tbl <-
               read_fst("./lifecourse_models/bmi_table.fst", as.data.table = TRUE)
+            t3 <- tbl[year == 3L]
+            while(t3[, min(year)] > dt[, min(year)]) {
+              t3[, year := year - 1L]
+              tbl <- rbind(t3, tbl)
+            }
             col_nam <-
               setdiff(names(tbl), intersect(names(dt), names(tbl)))
             absorb_dt(dt, tbl)
@@ -1560,6 +1631,11 @@ SynthPop <-
 
             tbl <-
               read_fst("./lifecourse_models/sbp_table.fst", as.data.table = TRUE)
+            t3 <- tbl[year == 3L]
+            while(t3[, min(year)] > dt[, min(year)]) {
+              t3[, year := year - 1L]
+              tbl <- rbind(t3, tbl)
+            }
             col_nam <-
               setdiff(names(tbl), intersect(names(dt), names(tbl)))
             absorb_dt(dt, tbl)
@@ -1574,6 +1650,11 @@ SynthPop <-
                        sbp = round(clamp(sbp, 110, 200), -1))]
             tbl <-
               read_fst("./lifecourse_models/bp_med_table.fst", as.data.table = TRUE)
+            t3 <- tbl[year == 3L]
+            while(t3[, min(year)] > dt[, min(year)]) {
+              t3[, year := year - 1L]
+              tbl <- rbind(t3, tbl)
+            }
             col_nam <-
               setdiff(names(tbl), intersect(names(dt), names(tbl)))
             absorb_dt(dt, tbl)
@@ -1590,6 +1671,11 @@ SynthPop <-
 
             tbl <-
               read_fst("./lifecourse_models/tchol_table.fst", as.data.table = TRUE)
+            t3 <- tbl[year == 3L]
+            while(t3[, min(year)] > dt[, min(year)]) {
+              t3[, year := year - 1L]
+              tbl <- rbind(t3, tbl)
+            }
             col_nam <-
               setdiff(names(tbl), intersect(names(dt), names(tbl)))
             absorb_dt(dt, tbl)
@@ -1605,6 +1691,11 @@ SynthPop <-
             tbl <-
               read_fst("./lifecourse_models/hdl_to_tchol_table.fst",
                        as.data.table = TRUE)
+            t3 <- tbl[year == 3L]
+            while(t3[, min(year)] > dt[, min(year)]) {
+              t3[, year := year - 1L]
+              tbl <- rbind(t3, tbl)
+            }
             col_nam <-
               setdiff(names(tbl), intersect(names(dt), names(tbl)))
             absorb_dt(dt, tbl)
@@ -1620,6 +1711,11 @@ SynthPop <-
             tbl <-
               read_fst("./lifecourse_models/statin_px_table.fst",
                        as.data.table = TRUE)
+            t3 <- tbl[year == 3L]
+            while(t3[, min(year)] > dt[, min(year)]) {
+              t3[, year := year - 1L]
+              tbl <- rbind(t3, tbl)
+            }
             col_nam <-
               setdiff(names(tbl), intersect(names(dt), names(tbl)))
             absorb_dt(dt, tbl)
@@ -1637,6 +1733,11 @@ SynthPop <-
             # although PHE includes all ages and my estimates only ~30-89
             tbl <-
               read_fst("./lifecourse_models/af_dgn_table.fst", as.data.table = TRUE)
+            t3 <- tbl[year == 3L]
+            while(t3[, min(year)] > dt[, min(year)]) {
+              t3[, year := year - 1L]
+              tbl <- rbind(t3, tbl)
+            }
             col_nam <-
               setdiff(names(tbl), intersect(names(dt), names(tbl)))
             absorb_dt(dt, tbl)
@@ -1692,6 +1793,11 @@ SynthPop <-
 
             tbl <-
               read_fst("./lifecourse_models/famcvd_table.fst", as.data.table = TRUE)
+            t3 <- tbl[year == 3L]
+            while(t3[, min(year)] > dt[, min(year)]) {
+              t3[, year := year - 1L]
+              tbl <- rbind(t3, tbl)
+            }
             col_nam <-
               setdiff(names(tbl), intersect(names(dt), names(tbl)))
             absorb_dt(dt, tbl)
@@ -1765,7 +1871,7 @@ SynthPop <-
                        bmi = round(clamp(bmi, 18, 50)))]
             tbl <-
               read_fst("./lifecourse_models/dm_table.fst", as.data.table = TRUE)
-            tbl[, year := design_$sim_prm$init_year] # only estimate prevalence for 2013
+            tbl[, year := design_$sim_prm$init_year] # only estimate prevalence for init year
             col_nam <-
               setdiff(names(tbl), intersect(names(dt), names(tbl)))
             absorb_dt(dt, tbl)

@@ -56,9 +56,9 @@ tabPanel(
       sliderInput(
         "simulation_period_slider",
         "Period to simulate",
-        2018, # modified from 2013
-        2078, # modified from 2071
-        c(2021, 2078), # modified to 2021
+        2017, # modified from 2013
+        2073, # modified from 2071
+        c(2022, 2073), # modified to 2021
         1,
         sep = "",
         ticks = FALSE

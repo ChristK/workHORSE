@@ -10,8 +10,8 @@ export_xps: no
 'n': 100000
 n_synthpop_aggregation: 2 # number of synthpops to aggregate together
 n_primers: 10 # better be some multiple of n_synthpop_aggregation
-init_year_long: 2018
-sim_horizon_max: 60 # population projections do not support longer horizon
+init_year_long: 2017
+sim_horizon_max: 56 # up t0 2073
 ageL: 30
 ageH: 89
 cvd_lag: 4
