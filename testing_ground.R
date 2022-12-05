@@ -5,7 +5,7 @@ parameters <- fromGUI_prune(parameters) # TODO delete for production
 design$update_fromGUI(parameters)
 parameters_dt <- fromGUI_to_dt(parameters)
 scenario_nam <- ""
-mc_iter <- 1L
+mc_iter <- 2L
 
 design$get_lags(mc_iter)
 # dt0 <- SynthPop$new(0, design)
