@@ -12,6 +12,8 @@ design$get_lags(mc_iter)
 # for (i in 1:100) dt0$delete_synthpop(i)
 dt <- SynthPop$new(mc_iter, design) # run until ncc , with problems on 5(frt, veg, smok all, hdl, alcohol)
 # dt0 <- SynthPop$new(0, design)
+# lapply(dt$pop, anyNA) # chekcing NA
+# anyNA(dt$pop)
 
 output_chunk  <- list() # quicker way to start from: here + dt <- SynthPop
 run_scenario("sc1", mc_iter, dt, parameters_dt, design, output_chunk)

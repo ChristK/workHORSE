@@ -1953,6 +1953,7 @@ set_tobacco_mala <- function(scenario_parms, dt, design) {
                 dead == FALSE &
                 between(age, 18, scenario_parms$sc_tobacco_mala_change - 1L),
           age_sc := 17L] # set all illegal smoking age to 17 yo
+      # TODO: question: if age_sc is used?
       #}
       # # if scenario_parms$sc_tobacco_mala_change_max < 18 {
       # row_sel_id <- # Indices of eligible rows
@@ -1993,6 +1994,8 @@ set_tobacco_mala <- function(scenario_parms, dt, design) {
         set(dt, NULL, "smok_cig_sc", dt$smok_cig_curr_xps)
 
       dt[row_sel, pid_mrk_sc := mk_new_simulant_markers(pid)]
+      # 
+      # break()
 
       # Assign smok_incid probabilities
       lutbl <-
@@ -2000,6 +2003,7 @@ set_tobacco_mala <- function(scenario_parms, dt, design) {
                  as.data.table = TRUE)
       # TODO: update to new initiation table
       setnames(lutbl, c("age", "mu"), c("age_sc", "prb_smok_incid_sc"))
+      #setnames(lutbl, c( "mu"), c("prb_smok_incid_sc"))
       lookup_dt(dt, lutbl)
 
 
@@ -2013,7 +2017,7 @@ set_tobacco_mala <- function(scenario_parms, dt, design) {
         read_fst("./lifecourse_models/smok_cess_table.fst",
                  as.data.table = TRUE)
       lutbl[between(age, 18, scenario_parms$sc_tobacco_mala_change - 1),
-        mu := 0.87 * mu]
+        mu := 0.87] #TODO: what is this? - check reference
       setnames(lutbl, c("age", "mu"), c("age_sc", "prb_smok_cess_sc"))
       lookup_dt(dt, lutbl)
 

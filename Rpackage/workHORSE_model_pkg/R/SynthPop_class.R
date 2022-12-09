@@ -2206,20 +2206,54 @@ SynthPop <-
           mm_synthpop <- setdiff(mm_synthpop$columnNames, exclude_cols)
 
           # Read synthpop and merge with the primer
-
+          
           dt <-
-            read_fst(filename_$synthpop,
-                     columns = mm_synthpop,
-                     as.data.table = TRUE)
-          absorb_dt(
-            dt,
             read_fst(
               filename_$primer,
               columns = mm_primer,
               as.data.table = TRUE
-            ),
-            on = c("pid", "year")
+            )
+          
+          absorb_dt(
+            dt,
+            read_fst(filename_$synthpop,
+                     columns = mm_synthpop,
+                     as.data.table = TRUE)
+          ,
+          on = c("pid", "year")
           )
+          
+         # browser()
+
+          # history_of_ca, ,  _mrtl, _dgn, _prvl -> 0L
+          # wt, prb_, p0_, rn_  - 0
+          # _mltp, : 1
+          # check ncc after fixing everything, if not fill ncc with 0
+          
+          setnafill(dt, 'const', 0L,
+                    cols = "ncc") # all the reset set as 0
+          setnafill(dt, 'const', 0,
+                    cols = "wt") # all the reset set as 0
+          setnafill(dt, 'const', 0L,
+                    cols = "history_of_ca") # all the reset set as 0
+          setnafill(dt, 'const', 1,
+                    cols = grep("_mltp$", names(dt), value = TRUE))
+          setnafill(dt, 'const', 0,
+                    cols = names(dt[, grep("^rn_", colnames(dt)), with = FALSE])) # all the reset set as 0
+          setnafill(dt, 'const', 0,
+                    cols = names(dt[, grep("^rn_", colnames(dt)), with = FALSE])) # all the reset set as 0
+          setnafill(dt, 'const', 0,
+                    cols = names(dt[, grep("^p0_", colnames(dt)), with = FALSE])) # all the reset set as 0
+          setnafill(dt, 'const', 0,
+                    cols = names(dt[, grep("^prb_", colnames(dt)), with = FALSE])) # all the reset set as 0
+          setnafill(dt, 'const', 0L,
+                    cols = names(dt[, grep("_dgn$", colnames(dt)), with = FALSE])) # all the reset set as 0
+          setnafill(dt, 'const', 0L,
+                    cols = names(dt[, grep("_mrtl$", colnames(dt)), with = FALSE])) # all the reset set as 0
+          setnafill(dt, 'c', 0L,
+                    cols = names(dt[, grep("_prvl$", colnames(dt)), with = FALSE])) # all the reset set as 0
+
+
           # regenerate RN (need to be before any deletion of rows)
           # TODO Kismet = F
           generate_rns(
@@ -2287,6 +2321,7 @@ SynthPop <-
           absorb_dt(dt, output, on = c("year", "pid"))
           rm(output)
           dt[, dead := identify_longdead(all_cause_mrtl, pid_mrk)]
+          
 
           dt[, ncc := clamp(
             ncc - (chd_prvl > 0) - (stroke_prvl > 0) -
@@ -2298,6 +2333,9 @@ SynthPop <-
             0L,
             10L
           )]
+          
+         
+          
           # to be added back in the qaly fn. Otherwise when I prevent disease
           # the ncc does not decrease.
 
@@ -2329,9 +2367,6 @@ SynthPop <-
 
         invisible(dt)
       }
-
-
-
 
     )
   )

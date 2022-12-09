@@ -1394,11 +1394,11 @@ wellPanel(
   column(10,
                 sliderInput(
                   "mala_slider_sc2",
-                  "Minimum age of legal access to tobacco products",
-                  10, 30, 18, 1,
-                  sep = "",
-                  ticks = FALSE,
-                  post  = ""
+                  "Minimum age of legal access to tobacco products", 
+                  10, 30, 18, 1,  
+                  sep = "", 
+                  ticks = FALSE, 
+                  post  = "" 
                 )
                 %>%
                   shinyInput_label_embed(
