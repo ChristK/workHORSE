@@ -1656,29 +1656,40 @@ set_social <- function(scenario_parms, dt, design) {
 
       # Assign smok_incid probabilities
       lutbl <-
-        read_fst("./lifecourse_models/smok_incid_table.fst",
+        read_fst("./lifecourse_models/smoke_initiation_table_calibrated.fst",
           as.data.table = TRUE)
       setnames(lutbl, c("qimd", "mu"), c("qimd_sc", "prb_smok_incid_sc"))
       absorb_dt(dt, lutbl)
+      setnafill(dt, type = "const", fill = 0, cols = "prb_smok_incid_sc")
 
 
       # Assign smok_cessation probabilities
       lutbl <-
-        read_fst("./lifecourse_models/smok_cess_table.fst",
+        read_fst("./lifecourse_models/smoke_cessation_table_calibrated.fst",
           as.data.table = TRUE)
       setnames(lutbl, c("qimd", "mu"), c("qimd_sc", "prb_smok_cess_sc"))
       absorb_dt(dt, lutbl)
 
       # Handle smok_relapse probabilities
       # No need to use qimd_sc here. It happens at the simsmok_sc side
-      tbl <-
-        read_fst("./lifecourse_models/smok_relapse_table.fst",
+      tbl_b65 <-
+        read_fst("./lifecourse_models/smoke_relapse_b65_table_calibrated.fst",
           as.data.table = TRUE)
-      tbl <-
-        dcast(tbl, sex + qimd ~ smok_quit_yrs, value.var = "pr")
-      nam <- tbl[, paste0(sex, " ", qimd)]
-      tbl <-
-        as.matrix(tbl[, mget(paste0(1:15))], rownames = nam)
+      tbl_b65 <-
+        dcast(tbl_b65, sex + qimd ~ smok_quit_yrs, value.var = "pr")
+      nam <- tbl_b65[, paste0(sex, " ", qimd)]
+      tbl_b65 <-
+        as.matrix(tbl_b65[, mget(paste0(1:15))], rownames = nam)
+      
+      tbl_a65 <-
+        read_fst("./lifecourse_models/smoke_relapse_a65_table_calibrated.fst",
+                 as.data.table = TRUE)
+      tbl_a65 <-
+        dcast(tbl_a65, sex + qimd ~ smok_quit_yrs, value.var = "pr")
+      nam <- tbl_a65[, paste0(sex, " ", qimd)]
+      tbl_a65 <-
+        as.matrix(tbl_a65[, mget(paste0(1:15))], rownames = nam)
+
 
       simsmok_sc(dt, tbl, design$sim_prm$smoking_relapse_limit, row_sel)
 
@@ -1999,12 +2010,13 @@ set_tobacco_mala <- function(scenario_parms, dt, design) {
 
       # Assign smok_incid probabilities
       lutbl <-
-        read_fst("./lifecourse_models/smok_incid_table.fst",
+        read_fst("./lifecourse_models/smoke_initiation_table_calibrated.fst",
                  as.data.table = TRUE)
       # TODO: update to new initiation table
       setnames(lutbl, c("age", "mu"), c("age_sc", "prb_smok_incid_sc"))
       #setnames(lutbl, c( "mu"), c("prb_smok_incid_sc"))
       lookup_dt(dt, lutbl)
+      setnafill(dt, type = "const", fill = 0, cols = "prb_smok_incid_sc")
 
 
       # Assign smok_cessation probabilities
@@ -2014,7 +2026,7 @@ set_tobacco_mala <- function(scenario_parms, dt, design) {
       # apply this OR to the cessation probabilities (for now, I will improve later)
 
       lutbl <-
-        read_fst("./lifecourse_models/smok_cess_table.fst",
+        read_fst("./lifecourse_models/smoke_cessation_table_calibrated.fst",
                  as.data.table = TRUE)
       lutbl[between(age, 18, scenario_parms$sc_tobacco_mala_change - 1),
         mu := 0.87] #TODO: what is this? - check reference
@@ -2043,14 +2055,23 @@ set_tobacco_mala <- function(scenario_parms, dt, design) {
       #
       # Handle smok_relapse probabilities
       # No need to use qimd_sc here. It happens at the simsmok_sc side
-      tbl <-
-        read_fst("./lifecourse_models/smok_relapse_table.fst",
+      tbl_b65 <-
+        read_fst("./lifecourse_models/smoke_relapse_b65_table_calibrated.fst",
                  as.data.table = TRUE)
-      tbl <-
-        dcast(tbl, sex + qimd ~ smok_quit_yrs, value.var = "pr")
-      nam <- tbl[, paste0(sex, " ", qimd)]
-      tbl <-
-        as.matrix(tbl[, mget(paste0(1:15))], rownames = nam)
+      tbl_b65 <-
+        dcast(tbl_b65, sex + qimd ~ smok_quit_yrs, value.var = "pr")
+      nam <- tbl_b65[, paste0(sex, " ", qimd)]
+      tbl_b65 <-
+        as.matrix(tbl_b65[, mget(paste0(1:15))], rownames = nam)
+      
+      tbl_a65 <-
+        read_fst("./lifecourse_models/smoke_relapse_a65_table_calibrated.fst",
+                 as.data.table = TRUE)
+      tbl_a65 <-
+        dcast(tbl_a65, sex + qimd ~ smok_quit_yrs, value.var = "pr")
+      nam <- tbl_a65[, paste0(sex, " ", qimd)]
+      tbl_a65 <-
+        as.matrix(tbl_a65[, mget(paste0(1:15))], rownames = nam)
 
       simsmok_sc(dt, tbl, design$sim_prm$smoking_relapse_limit, row_sel)
 
@@ -2136,26 +2157,36 @@ set_tobacco_ban <- function(scenario_parms, dt, design) {
       
       # Assign smok_incid probabilities
       lutbl <-
-        read_fst("./lifecourse_models/smok_incid_table.fst",
+        read_fst("./lifecourse_models/smoke_initiation_table_calibrated.fst",
                  as.data.table = TRUE)
       # TODO: update to new initiation table
       setnames(lutbl, c("age", "mu"), c("age_sc", "prb_smok_incid_sc"))
       lookup_dt(dt, lutbl)
+      setnafill(dt, type = "const", fill = 0, cols = "prb_smok_incid_sc")
 
       lutbl <-
-        read_fst("./lifecourse_models/smok_cess_table.fst",
+        read_fst("./lifecourse_models/smoke_cessation_table_calibrated.fst",
                  as.data.table = TRUE)
       setnames(lutbl, c("age", "mu"), c("age_sc", "prb_smok_cess_sc"))
       lookup_dt(dt, lutbl)
       
-      tbl <-
-        read_fst("./lifecourse_models/smok_relapse_table.fst",
+      tbl_b65 <-
+        read_fst("./lifecourse_models/smoke_relapse_b65_table_calibrated.fst",
                  as.data.table = TRUE)
-      tbl <-
-        dcast(tbl, sex + qimd ~ smok_quit_yrs, value.var = "pr")
-      nam <- tbl[, paste0(sex, " ", qimd)]
-      tbl <-
-        as.matrix(tbl[, mget(paste0(1:15))], rownames = nam) 
+      tbl_b65 <-
+        dcast(tbl_b65, sex + qimd ~ smok_quit_yrs, value.var = "pr")
+      nam <- tbl_b65[, paste0(sex, " ", qimd)]
+      tbl_b65 <-
+        as.matrix(tbl_b65[, mget(paste0(1:15))], rownames = nam) 
+      
+      tbl_a65 <-
+        read_fst("./lifecourse_models/smoke_relapse_a65_table_calibrated.fst",
+                 as.data.table = TRUE)
+      tbl_a65 <-
+        dcast(tbl_a65, sex + qimd ~ smok_quit_yrs, value.var = "pr")
+      nam <- tbl_a65[, paste0(sex, " ", qimd)]
+      tbl_a65 <-
+        as.matrix(tbl_a65[, mget(paste0(1:15))], rownames = nam) 
       
       # TODO: population start from the scenario year or not?
       dt[between(age, 16, 90) & between(year + 2000L, scenario_parms$sc_init_year, scenario_parms$sc_last_year) , # TODO: revise to year > starting year
@@ -2256,7 +2287,7 @@ set_tobacco_prevalence <- function(scenario_parms, dt, design) {
      
       # Assign smok_incid probabilities
       lutbl <-
-        read_fst("./lifecourse_models/smok_incid_table.fst",
+        read_fst("./lifecourse_models/smoke_initiation_table_calibrated.fst",
                  as.data.table = TRUE)
       
       lutbl[qimd == '1 most deprived', mu := mu*scenario_parms$sc_smok_initiation_qimd1]
@@ -2268,9 +2299,10 @@ set_tobacco_prevalence <- function(scenario_parms, dt, design) {
       # TODO: update to new initiation table
       setnames(lutbl, c("age", "mu"), c("age_sc", "prb_smok_incid_sc"))
       lookup_dt(dt, lutbl)
+      setnafill(dt, type = "const", fill = 0, cols = "prb_smok_incid_sc")
       
       lutbl <-
-        read_fst("./lifecourse_models/smok_cess_table.fst",
+        read_fst("./lifecourse_models/smoke_cessation_table_calibrated.fst",
                  as.data.table = TRUE)
       
       lutbl[qimd == '1 most deprived', mu := mu*scenario_parms$sc_smok_cessation_qimd1]
@@ -2282,21 +2314,31 @@ set_tobacco_prevalence <- function(scenario_parms, dt, design) {
       setnames(lutbl, c("age", "mu"), c("age_sc", "prb_smok_cess_sc"))
       lookup_dt(dt, lutbl)
       
-      tbl <-
-        read_fst("./lifecourse_models/smok_relapse_table.fst",
+      tbl_b65 <-
+        read_fst("./lifecourse_models/smoke_relapse_b65_table_calibrated.fst",
                  as.data.table = TRUE)
       
-      tbl[qimd == '1 most deprived', pr := pr*scenario_parms$sc_smok_relapse_qimd1]
-      tbl[qimd == '2', pr := pr*scenario_parms$sc_smok_relapse_qimd2]
-      tbl[qimd == '3', pr := pr*scenario_parms$sc_smok_relapse_qimd3]
-      tbl[qimd == '4', pr := pr*scenario_parms$sc_smok_relapse_qimd4]
-      tbl[qimd == '5 least deprived', pr := pr*scenario_parms$sc_smok_relapse_qimd5]
+      tbl_b65[qimd == '1 most deprived', pr := pr*scenario_parms$sc_smok_relapse_qimd1]
+      tbl_b65[qimd == '2', pr := pr*scenario_parms$sc_smok_relapse_qimd2]
+      tbl_b65[qimd == '3', pr := pr*scenario_parms$sc_smok_relapse_qimd3]
+      tbl_b65[qimd == '4', pr := pr*scenario_parms$sc_smok_relapse_qimd4]
+      tbl_b65[qimd == '5 least deprived', pr := pr*scenario_parms$sc_smok_relapse_qimd5]
       
-      tbl <-
-        dcast(tbl, sex + qimd ~ smok_quit_yrs, value.var = "pr")
-      nam <- tbl[, paste0(sex, " ", qimd)]
-      tbl <-
-        as.matrix(tbl[, mget(paste0(1:15))], rownames = nam) 
+      tbl_b65 <-
+        dcast(tbl_b65, sex + qimd ~ smok_quit_yrs, value.var = "pr")
+      nam <- tbl_b65[, paste0(sex, " ", qimd)]
+      tbl_b65 <-
+        as.matrix(tbl_b65[, mget(paste0(1:15))], rownames = nam) 
+      
+      tbl_a65 <-
+        read_fst("./lifecourse_models/smoke_relapse_a65_table_calibrated.fst",
+                 as.data.table = TRUE)
+      
+      tbl_a65[qimd == '1 most deprived', pr := pr*scenario_parms$sc_smok_relapse_qimd1]
+      tbl_a65[qimd == '2', pr := pr*scenario_parms$sc_smok_relapse_qimd2]
+      tbl_a65[qimd == '3', pr := pr*scenario_parms$sc_smok_relapse_qimd3]
+      tbl_a65[qimd == '4', pr := pr*scenario_parms$sc_smok_relapse_qimd4]
+      tbl_a65[qimd == '5 least deprived', pr := pr*scenario_parms$sc_smok_relapse_qimd5]
       
       simsmok_sc(dt, tbl, design$sim_prm$smoking_relapse_limit, row_sel)
       

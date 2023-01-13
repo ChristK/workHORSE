@@ -22,15 +22,18 @@
 #include <Rcpp.h>
 using namespace Rcpp;
 
+
 //' @export
 // [[Rcpp::export]]
 void simsmok(
     DataFrame& df,
-  const NumericMatrix& pr_relapse,
-  const int& relapse_cutoff) {
-
-  if (pr_relapse.ncol() < relapse_cutoff) stop("relapse_cutoff should be smaller than the number of columns of pr_relapse matrix.");
-
+    const NumericMatrix& pr_relapse_below_65,
+    const NumericMatrix& pr_relapse_above_65,
+    const int& relapse_cutoff) {
+  
+  if (pr_relapse_below_65.ncol() < relapse_cutoff) stop("relapse_cutoff should be smaller than the number of columns of pr_relapse_below_65 matrix.");
+  if (pr_relapse_above_65.ncol() < relapse_cutoff) stop("relapse_cutoff should be smaller than the number of columns of pr_relapse_above_65 matrix.");
+  
   //access the df columns
   IntegerVector smok_status     = df["smok_status"];
   NumericVector prb_smok_incid  = df["prb_smok_incid"];
@@ -41,11 +44,14 @@ void simsmok(
   IntegerVector qimd            = df["qimd"];
   IntegerVector smok_quit_yrs   = df["smok_quit_yrs"];
   IntegerVector smok_dur        = df["smok_dur"];
-
+  IntegerVector age             = df["age"];
+  
+  
   // id should be sorted by year
   const int n = df.nrows();
+  bool relapse_marker = false;
   int nrow = 0;
-
+  
   for (int i = 0; i < n; i++)
   {
     if (!new_pid[i]) // if not a new simulant
@@ -62,7 +68,7 @@ void simsmok(
           smok_status[i] = 1;
         }
       }
-
+      
       if (smok_status[i-1] == 4)
       { //current smoker the previous year
         if (rn_smok[i] < prb_smok_cess[i])
@@ -77,14 +83,23 @@ void simsmok(
           smok_dur[i] = smok_dur[i-1] + 1;
         }
       }
-
+      
       if ((smok_status[i-1] == 2 || smok_status[i-1] == 3) && (smok_quit_yrs[i-1] <= relapse_cutoff))
-        {
+      {
         switch (sex[i]) {
         case 1: nrow = qimd[i] - 1; break;
         case 2: nrow = qimd[i] + 4; break;
         }
-        if (rn_smok[i] < (pr_relapse(nrow, smok_quit_yrs[i-1] - 1)))
+        
+        if (age[i] < 65) {
+          relapse_marker = rn_smok[i] < (pr_relapse_below_65(nrow, smok_quit_yrs[i-1] - 1));
+        }
+        else 
+        {
+          relapse_marker = rn_smok[i] < (pr_relapse_above_65(nrow, smok_quit_yrs[i-1] - 1));
+        }
+        
+        if (relapse_marker)
         {
           smok_status[i] = 4;
           smok_quit_yrs[i] = 0;
@@ -112,12 +127,15 @@ void simsmok(
 // [[Rcpp::export]]
 void simsmok_sc(
     DataFrame& df,
-    const NumericMatrix& pr_relapse,
+    const NumericMatrix& pr_relapse_below_65,
+    const NumericMatrix& pr_relapse_above_65,
     const int& relapse_cutoff,
     const IntegerVector& row_sel) {
-
-  if (pr_relapse.ncol() < relapse_cutoff) stop("relapse_cutoff should be smaller than the number of columns of pr_relapse matrix.");
-
+  
+  if (pr_relapse_below_65.ncol() < relapse_cutoff) stop("relapse_cutoff should be smaller than the number of columns of pr_relapse_below_65 matrix.");
+  if (pr_relapse_above_65.ncol() < relapse_cutoff) stop("relapse_cutoff should be smaller than the number of columns of pr_relapse_above_65 matrix.");
+  
+  
   //access the df columns
   IntegerVector smok_status     = df["smok_status_sc"];
   NumericVector prb_smok_incid  = df["prb_smok_incid_sc"];
@@ -128,9 +146,11 @@ void simsmok_sc(
   IntegerVector qimd            = df["qimd"];
   IntegerVector smok_quit_yrs   = df["smok_quit_yrs_sc"];
   IntegerVector smok_dur        = df["smok_dur_sc"];
-
+  IntegerVector age             = df["age"];
+  
   // id should be sorted by year
   const int n = row_sel.size();
+  bool relapse_marker = false;
   int nrow = 0;
   int i = 0;
   for (int j = 0; j < n; j++)
@@ -154,7 +174,7 @@ void simsmok_sc(
           
         }
       }
-
+      
       if (smok_status[i-1] == 4)
       { //current smoker the previous year
         if (rn_smok[i] < prb_smok_cess[i])
@@ -169,14 +189,23 @@ void simsmok_sc(
           smok_dur[i] = smok_dur[i-1] + 1;
         }
       }
-
+      
       if ((smok_status[i-1] == 2 || smok_status[i-1] == 3) && (smok_quit_yrs[i-1] <= relapse_cutoff))
       {
         switch (sex[i]) {
         case 1: nrow = qimd[i] - 1; break;
         case 2: nrow = qimd[i] + 4; break;
         }
-        if (rn_smok[i] < (pr_relapse(nrow, smok_quit_yrs[i-1] - 1)))
+        
+        if (age[i] < 65) {
+          relapse_marker = rn_smok[i] < (pr_relapse_below_65(nrow, smok_quit_yrs[i-1] - 1));
+        }
+        else 
+        {
+          relapse_marker = rn_smok[i] < (pr_relapse_above_65(nrow, smok_quit_yrs[i-1] - 1));
+        }
+        
+        if (relapse_marker)       
         {
           smok_status[i] = 4;
           smok_quit_yrs[i] = 0;
@@ -198,7 +227,6 @@ void simsmok_sc(
     }
   }
 }
-
 
 //' @export
 // [[Rcpp::export]]

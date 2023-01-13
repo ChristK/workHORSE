@@ -21,7 +21,7 @@ nonmodelled_lag: 5
 maxlag: 15
 cancer_cure: 10 # need to be >2 & <= 10
 jumpiness: 1.0 # increase for more erratic jumps in trajectories
-smoking_relapse_limit: 3
+smoking_relapse_limit: 15
 statin_adherence: 0.9
 bpmed_adherence: 0.9
 decision_aid: 0.8

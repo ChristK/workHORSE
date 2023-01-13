@@ -1304,7 +1304,7 @@ SynthPop <-
 
             # Assign smok_incid probabilities
             tbl <-
-              read_fst("./lifecourse_models/smok_incid_table.fst",
+              read_fst("./lifecourse_models/smoke_initiation_table_calibrated.fst",
                        as.data.table = TRUE)
             t3 <- tbl[year == 3L]
             while(t3[, min(year)] > dt[, min(year)]) {
@@ -1317,11 +1317,12 @@ SynthPop <-
               setdiff(names(tbl), intersect(names(dt), names(tbl)))
             tbl[age < 16L, mu := 0]
             absorb_dt(dt, tbl)
+            setnafill(dt, type = "const", fill = 0, cols = "mu") # to fill in the missing value from calibrated file
             setnames(dt, "mu", "prb_smok_incid")
 
             # Assign smok_cessation probabilities
             tbl <-
-              read_fst("./lifecourse_models/smok_cess_table.fst",
+              read_fst("./lifecourse_models/smoke_cessation_table_calibrated.fst",
                        as.data.table = TRUE)
             t3 <- tbl[year == 3L]
             while(t3[, min(year)] > dt[, min(year)]) {
@@ -1337,16 +1338,27 @@ SynthPop <-
             setnames(dt, "mu", "prb_smok_cess")
 
             # Handle smok_relapse probabilities
-            tbl <-
-              read_fst("./lifecourse_models/smok_relapse_table.fst",
-                       as.data.table = TRUE)
-            tbl <-
-              dcast(tbl, sex + qimd ~ smok_quit_yrs, value.var = "pr")
+            tbl_b65 <-
+              read_fst("./lifecourse_models/smoke_relapse_b65_table_calibrated.fst",
+                       as.data.table = TRUE) # before 65 calibrated 
+            tbl_b65 <-
+              dcast(tbl_b65, sex + qimd ~ smok_quit_yrs, value.var = "pr")
             # TODO: add final relapse calibrated value (multiply)
             # TODO: change to script in hint-smoke
-            nam <- tbl[, paste0(sex, " ", qimd)]
-            tbl <-
-              as.matrix(tbl[, mget(paste0(1:15))], rownames = nam)
+            nam <- tbl_b65[, paste0(sex, " ", qimd)]
+            tbl_b65 <-
+              as.matrix(tbl_b65[, mget(paste0(1:15))], rownames = nam)
+            
+            tbl_a65 <-
+              read_fst("./lifecourse_models/smoke_relapse_a65_table_calibrated.fst",
+                       as.data.table = TRUE) # after 65 calibrated 
+            tbl_a65 <-
+              dcast(tbl_a65, sex + qimd ~ smok_quit_yrs, value.var = "pr")
+            # TODO: add final relapse calibrated value (multiply)
+            # TODO: change to script in hint-smoke
+            nam <- tbl_a65[, paste0(sex, " ", qimd)]
+            tbl_a65 <-
+              as.matrix(tbl_a65[, mget(paste0(1:15))], rownames = nam)
 
             simsmok(dt, tbl, design_$sim_prm$smoking_relapse_limit)
             # TODO: simsmok() to simsmok_relapse_calibrate()

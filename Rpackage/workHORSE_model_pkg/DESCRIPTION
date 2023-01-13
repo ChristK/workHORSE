@@ -28,4 +28,4 @@ LinkingTo: Rcpp,
            dqrng,
            sitmo,
            data.table
-RoxygenNote: 7.2.2
+RoxygenNote: 7.2.3
