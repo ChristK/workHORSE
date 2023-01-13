@@ -231,8 +231,8 @@ simsmok_cig_sc <- function(df) {
 }
 
 #' @export
-simsmok_cessation <- function(smok_status, smok_quit_yrs, smok_dur, sex, qimd, new_pid, hc_eff, relapse_rn, pr_relapse, relapse_cutoff) {
-    .Call('_workHORSEmisc_simsmok_cessation', PACKAGE = 'workHORSEmisc', smok_status, smok_quit_yrs, smok_dur, sex, qimd, new_pid, hc_eff, relapse_rn, pr_relapse, relapse_cutoff)
+simsmok_cessation <- function(smok_status, smok_quit_yrs, smok_dur, sex, qimd, age, new_pid, hc_eff, relapse_rn, pr_relapse_below_65, pr_relapse_above_65, relapse_cutoff) {
+    .Call('_workHORSEmisc_simsmok_cessation', PACKAGE = 'workHORSEmisc', smok_status, smok_quit_yrs, smok_dur, sex, qimd, age, new_pid, hc_eff, relapse_rn, pr_relapse_below_65, pr_relapse_above_65, relapse_cutoff)
 }
 
 #' @export

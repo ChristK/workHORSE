@@ -1404,12 +1404,19 @@ set_lifestyle <-
     # Cost only the year of referral
 
     # Handle smok_relapse probabilities
-    tbl <-
-      read_fst("./lifecourse_models/smok_relapse_table.fst",
+    tbl_b65 <-
+      read_fst("./lifecourse_models/smoke_relapse_b65_table_calibrated.fst",
                as.data.table = TRUE)
-    tbl <- dcast(tbl, sex + qimd ~ smok_quit_yrs, value.var = "pr")
-    nam <- tbl[, paste0(sex, " ", qimd)]
-    tbl <- as.matrix(tbl[, mget(paste0(1:15))], rownames = nam)
+    tbl_b65 <- dcast(tbl_b65, sex + qimd ~ smok_quit_yrs, value.var = "pr")
+    nam <- tbl_b65[, paste0(sex, " ", qimd)]
+    tbl_b65 <- as.matrix(tbl_b65[, mget(paste0(1:15))], rownames = nam)
+    
+    tbl_a65 <-
+      read_fst("./lifecourse_models/smoke_relapse_a65_table_calibrated.fst",
+               as.data.table = TRUE)
+    tbl_a65 <- dcast(tbl_a65, sex + qimd ~ smok_quit_yrs, value.var = "pr")
+    nam <- tbl_a65[, paste0(sex, " ", qimd)]
+    tbl_a65 <- as.matrix(tbl_a65[, mget(paste0(1:15))], rownames = nam)
 
     dt[,
        (c(colnam_status, colnam_quit_yrs, colnam_dur)) :=
@@ -1419,10 +1426,12 @@ set_lifestyle <-
            smok_dur_sc,
            sex,
            qimd,
+           age,
            pid_mrk,
            hc_eff_sm,
            dqrunif(.N),
-           tbl,
+           tbl_b65,
+           tbl_a65,
            design$sim_prm$smoking_relapse_limit
          )]
 
@@ -1691,7 +1700,7 @@ set_social <- function(scenario_parms, dt, design) {
         as.matrix(tbl_a65[, mget(paste0(1:15))], rownames = nam)
 
 
-      simsmok_sc(dt, tbl, design$sim_prm$smoking_relapse_limit, row_sel)
+      simsmok_sc(dt, tbl_b65, tbl_a65, design$sim_prm$smoking_relapse_limit, row_sel)
 
       dt[, c("prb_smok_incid_sc", "prb_smok_cess_sc") := NULL]
 
@@ -2073,7 +2082,7 @@ set_tobacco_mala <- function(scenario_parms, dt, design) {
       tbl_a65 <-
         as.matrix(tbl_a65[, mget(paste0(1:15))], rownames = nam)
 
-      simsmok_sc(dt, tbl, design$sim_prm$smoking_relapse_limit, row_sel)
+      simsmok_sc(dt, tbl_b65, tbl_a65, design$sim_prm$smoking_relapse_limit, row_sel)
 
       dt[, c("prb_smok_incid_sc", "prb_smok_cess_sc") := NULL]
 
@@ -2178,6 +2187,7 @@ set_tobacco_ban <- function(scenario_parms, dt, design) {
       nam <- tbl_b65[, paste0(sex, " ", qimd)]
       tbl_b65 <-
         as.matrix(tbl_b65[, mget(paste0(1:15))], rownames = nam) 
+      tbl_b65 <- tbl_b65 * 0.05
       
       tbl_a65 <-
         read_fst("./lifecourse_models/smoke_relapse_a65_table_calibrated.fst",
@@ -2193,8 +2203,8 @@ set_tobacco_ban <- function(scenario_parms, dt, design) {
           ':='(prb_smok_incid_sc = prb_smok_incid_sc * 0.05, 
                prb_smok_cess_sc = 0.95)] # for eligible individual, reset smoking parameters
 
-      tbl <- tbl * 0.05
-      simsmok_sc(dt, tbl, design$sim_prm$smoking_relapse_limit, row_sel)
+      tbl_a65 <- tbl_a65 * 0.05
+      simsmok_sc(dt, tbl_b65, tbl_a65, design$sim_prm$smoking_relapse_limit, row_sel)
       
       dt[, c("prb_smok_incid_sc", "prb_smok_cess_sc") := NULL]
       
@@ -2340,7 +2350,7 @@ set_tobacco_prevalence <- function(scenario_parms, dt, design) {
       tbl_a65[qimd == '4', pr := pr*scenario_parms$sc_smok_relapse_qimd4]
       tbl_a65[qimd == '5 least deprived', pr := pr*scenario_parms$sc_smok_relapse_qimd5]
       
-      simsmok_sc(dt, tbl, design$sim_prm$smoking_relapse_limit, row_sel)
+      simsmok_sc(dt, tbl_b65, tbl_a65, design$sim_prm$smoking_relapse_limit, row_sel)
       
       dt[, c("prb_smok_incid_sc", "prb_smok_cess_sc") := NULL]
       

@@ -318,22 +318,28 @@ List simsmok_cessation(const IntegerVector& smok_status,
                        const IntegerVector& smok_dur,
                        const IntegerVector& sex,
                        const IntegerVector& qimd,
+                       const IntegerVector& age,
                        const LogicalVector& new_pid,
                        const IntegerVector& hc_eff,
                        const NumericVector& relapse_rn,
-                       const NumericMatrix& pr_relapse,
+                       const NumericMatrix& pr_relapse_below_65,
+                       const NumericMatrix& pr_relapse_above_65,
                        const int&           relapse_cutoff)
-  {
-  if (pr_relapse.ncol() < relapse_cutoff) stop("relapse_cutoff should be smaller than the number of columns of pr_relapse matrix.");
-
+{
+  if (pr_relapse_below_65.ncol() < relapse_cutoff) stop("relapse_cutoff should be smaller than the number of columns of pr_relapse_below_65 matrix.");
+  if (pr_relapse_above_65.ncol() < relapse_cutoff) stop("relapse_cutoff should be smaller than the number of columns of pr_relapse_above_65 matrix.");
+  
   // id should be sorted by year
   const int n = smok_status.size();
   IntegerVector out_status = clone(smok_status);
   IntegerVector out_quit_yrs = clone(smok_quit_yrs);
   IntegerVector out_dur = clone(smok_dur);
+  
   bool marker = false;
+  bool relapse_marker = false;
+  
   int nrow = 0;
-
+  
   for (int i = 0; i < n; i++)
   {
     if (!new_pid[i]) // if not a new simulant
@@ -352,7 +358,16 @@ List simsmok_cessation(const IntegerVector& smok_status,
         case 1: nrow = qimd[i] - 1; break;
         case 2: nrow = qimd[i] + 4; break;
         }
-        if (relapse_rn[i] < (pr_relapse(nrow, smok_quit_yrs[i-1] - 1)))
+        
+        if (age[i] < 65) {
+          relapse_marker = relapse_rn[i] < (pr_relapse_below_65(nrow, smok_quit_yrs[i-1] - 1));
+        }
+        else
+        {
+          relapse_marker = relapse_rn[i] < (pr_relapse_above_65(nrow, smok_quit_yrs[i-1] - 1));
+        }
+        
+        if (relapse_marker)
         {
           out_status[i] = 4;
           out_quit_yrs[i] = 0;
@@ -365,11 +380,11 @@ List simsmok_cessation(const IntegerVector& smok_status,
           out_dur[i] = out_dur[i-1];
         }
         if (out_status[i-1] == 3 && marker && smok_quit_yrs[i-1] > relapse_cutoff)
-          {
+        {
           out_status[i] = 3;
           out_quit_yrs[i] = out_quit_yrs[i-1] + 1;
           out_dur[i] = out_dur[i-1];
-          }
+        }
       }
     }
     else // if new pid
@@ -388,7 +403,6 @@ List simsmok_cessation(const IntegerVector& smok_status,
                       _["smok_quit_yrs"]= out_quit_yrs,
                       _["smok_dur"]= out_dur);
 }
-
 
 // ex smokers are turning into smokers. Used in structural smoking when smoking
 // is increasing.

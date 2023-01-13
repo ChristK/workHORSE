@@ -1360,7 +1360,7 @@ SynthPop <-
             tbl_a65 <-
               as.matrix(tbl_a65[, mget(paste0(1:15))], rownames = nam)
 
-            simsmok(dt, tbl, design_$sim_prm$smoking_relapse_limit)
+            simsmok(dt, tbl_b65, tbl_a65, design_$sim_prm$smoking_relapse_limit)
             # TODO: simsmok() to simsmok_relapse_calibrate()
             
             # dt[!(pid_mrk), table(smok_status)]
