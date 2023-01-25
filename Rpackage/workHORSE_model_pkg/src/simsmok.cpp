@@ -148,6 +148,7 @@ void simsmok_sc(
   IntegerVector smok_dur        = df["smok_dur_sc"];
   IntegerVector age             = df["age"];
   
+  
   // id should be sorted by year
   const int n = row_sel.size();
   bool relapse_marker = false;
