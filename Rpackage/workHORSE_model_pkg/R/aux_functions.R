@@ -2020,10 +2020,21 @@ set_tobacco_mala <- function(scenario_parms, dt, design) {
         read_fst("./lifecourse_models/smoke_initiation_table_calibrated.fst",
                  as.data.table = TRUE)
       setnames(lutbl, c("age", "mu"), c("age_sc", "prb_smok_incid_sc"))
-      #setnames(lutbl, c( "mu"), c("prb_smok_incid_sc"))
+      # setnames(lutbl, c( "mu"), c("prb_smok_incid_sc"))
       lookup_dt(dt, lutbl)
+      # dt[between(age, 18, scenario_parms$sc_tobacco_mala_change - 1),
+      #       prb_smok_incid_sc := 1] #TODO: only for troubeshoot
       setnafill(dt, type = "const", fill = 0, cols = "prb_smok_incid_sc")
 
+      # checking smoking initiation probability in 17 yo is less than 18-19 yo
+      # lutbl <-
+      #   read_fst("./lifecourse_models/smoke_initiation_table_calibrated.fst",
+      #            as.data.table = TRUE)
+      # tt <- lutbl[age == 17, ]
+      # tt[, age := NULL]
+      # setnames(tt, "mu", "mu17")
+      # absorb_dt(lutbl, tt)
+      # lutbl[between(age, 18, 20), table(mu17 > mu)]
 
       # Assign smok_cessation probabilities
       # Smoking cessation pr decreasing with age for young ages. That makes the
@@ -2035,7 +2046,9 @@ set_tobacco_mala <- function(scenario_parms, dt, design) {
         read_fst("./lifecourse_models/smoke_cessation_table_calibrated.fst",
                  as.data.table = TRUE)
       lutbl[between(age, 18, scenario_parms$sc_tobacco_mala_change - 1),
-        mu := clamp(mu/0.87)] #TODO: what is this? - check reference
+        mu := clamp(mu/0.5)] #TODO: what is this? - check reference
+      # lutbl[between(age, 18, scenario_parms$sc_tobacco_mala_change - 1),
+      #       mu := 0] #TODO: trounleshoot
       setnames(lutbl, c("mu"), c("prb_smok_cess_sc"))
       lookup_dt(dt, lutbl)
 

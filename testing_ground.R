@@ -11,6 +11,8 @@ design$get_lags(mc_iter)
 # dt0 <- SynthPop$new(0, design)
 # for (i in 1:100) dt0$delete_synthpop(i)
 dt <- SynthPop$new(mc_iter, design) # run until ncc , with problems on 5(frt, veg, smok all, hdl, alcohol)
+# select all_cause_mrtl = 0, calculate prevalence of smokers & never smokers by (year, sex, qimd, age_group)
+# year 13 - 18 plot Vs HSE 13-18 (03-13 not the complete picture of the population)
 # dt0 <- SynthPop$new(0, design)
 # lapply(dt$pop, anyNA) # chekcing NA
 # anyNA(dt$pop)
