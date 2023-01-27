@@ -560,6 +560,13 @@ out_summary <- reactive({
     `10% UI` = round(`10% UI`),
     `90% UI` = round(`90% UI`)
   )]
+  dt[Output %in% c("smoke_prevalence", "never_smoke_prevalence"), `:=` (
+    Median = round(Median, 3),
+    `2.5% UI` = round(`2.5% UI`, 3),
+    `97.5% UI` = round(`97.5% UI`, 3),
+    `10% UI` = round(`10% UI`, 3),
+    `90% UI` = round(`90% UI`, 3)
+  )]
   }
   dt
 })
