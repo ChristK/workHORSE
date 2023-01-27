@@ -298,6 +298,17 @@ tabPanel(
             ),
             fluidRow(
               box(
+                title = "Never smoking prevalence",
+                solidHeader = TRUE,
+                collapsible = FALSE,
+                width = 12,
+                uiOutput("never_smoking_prevalence_plot"),
+                column(10, offset = 1,
+                       plotlyOutput("neversmokeprevalence")),
+              )
+            ),
+            fluidRow(
+              box(
                 title = "Explications",
                 solidHeader = TRUE,
                 collapsible = FALSE,

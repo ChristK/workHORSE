@@ -153,6 +153,7 @@ out_proc_raw <- reactive(
     ][,
       `:=` (
         smoke_prevalence = smoker_prvl/pops,
+        never_smoke_prevalence = nsmoker_prvl/pops,
         invitation_cost_cml = round(cumsum(invitation_cost)),
         attendees_cost_cml = round(cumsum(attendees_cost)),
         # active_days_cost_cml = round(cumsum(active_days_cost)),
@@ -302,6 +303,7 @@ out_proc <- reactive(
     dt[,
        `:=` (
          smoke_prevalence = smoker_prvl/pops,
+         never_smoke_prevalence = nsmoker_prvl/pops,
          invitation_cost_cml = round(cumsum(invitation_cost)),
          attendees_cost_cml = round(cumsum(attendees_cost)),
          # active_days_cost_cml = round(cumsum(active_days_cost)),
@@ -453,6 +455,7 @@ out_proc_qimd <- reactive(
     dt[,
        `:=` (
          smoke_prevalence = smoker_prvl/pops,
+         never_smoke_prevalence = nsmoker_prvl/pops,
          invitation_cost_cml = round(cumsum(invitation_cost)),
          attendees_cost_cml = round(cumsum(attendees_cost)),
          # active_days_cost_cml = round(cumsum(active_days_cost)),
@@ -545,11 +548,18 @@ out_summary <- reactive({
   setkey(dt, variable)
   probabilities <- c(0.5, 0.025, 0.975, 0.1, 0.9)
   if (nrow(dt) > 0) { # for nrow == 0 fquantile crashes
-  dt <- dt[, fquantile_byid(value, probabilities, variable, TRUE),
+  dt <- dt[, fquantile_byid(value, probabilities, variable, FALSE), # Don't round because it affects smoking prvl
            by = c("year", "friendly_name")]
   setnames(dt, c("year", "friendly_name", paste0("V", 1:6)),
            c("Year", "Scenario", "Output", "Median", "2.5% UI", "97.5% UI",
              "10% UI", "90% UI"))
+  dt[!Output %in% c("smoke_prevalence", "never_smoke_prevalence"), `:=` (
+    Median = round(Median),
+    `2.5% UI` = round(`2.5% UI`),
+    `97.5% UI` = round(`97.5% UI`),
+    `10% UI` = round(`10% UI`),
+    `90% UI` = round(`90% UI`)
+  )]
   }
   dt
 })
@@ -1999,7 +2009,7 @@ output$download_summary <- downloadHandler(
 # })
  
 output$smokeprevalence <- renderPlotly({
-  tt <- out_proc()[, .(year,smoke_prevalence,
+  tt <- out_proc()[, .(year, smoke_prevalence,
                        mc,
                        friendly_name = factor(friendly_name))
   ][, median_dt(.SD, c("friendly_name", "year"), "mc", digits = 3)]
@@ -2012,10 +2022,25 @@ output$smokeprevalence <- renderPlotly({
     mode = 'lines',
     color = ~ friendly_name,
     colors = "Set2" # https://stackoverflow.com/questions/70739633/plotly-warning-rcolorbrewerbrewer-paln-set2
-    ) 
-
+    )
 })
 
+output$neversmokeprevalence <- renderPlotly({
+  tt <- out_proc()[, .(year, never_smoke_prevalence,
+                       mc,
+                       friendly_name = factor(friendly_name))
+  ][, median_dt(.SD, c("friendly_name", "year"), "mc", digits = 3)]
+  
+  plot_ly(
+    tt,
+    x = ~ year,
+    y = ~ never_smoke_prevalence,
+    type = 'scatter', 
+    mode = 'lines',
+    color = ~ friendly_name,
+    colors = "Set2" # https://stackoverflow.com/questions/70739633/plotly-warning-rcolorbrewerbrewer-paln-set2
+  )
+})
 
 outputOptions(output, "out_scenario_select", suspendWhenHidden = FALSE)
 outputOptions(output, "out_year_slider", suspendWhenHidden = FALSE)

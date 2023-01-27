@@ -3010,8 +3010,11 @@ run_simulation <- function(parameters, design, final = FALSE) {
     export_smok(mc_ = mc_aggr, dt = output_chunk) # export smoking prevalence
     generate_health_econ(output_chunk, mc_aggr)
     
-    output_chunk[, smoker_prvl := 0L]
+    output_chunk[, smoker_prvl := 0L] # active smoker
+    output_chunk[, nsmoker_prvl := 0L] # never smoker
     output_chunk[smok_status == 4L, smoker_prvl := 1L]
+    output_chunk[smok_status == 1L, nsmoker_prvl := 1L]
+    
     # TODO ex and never smoker
     
     output_chunk[, c("ncc", "pid", "income", "education", 
