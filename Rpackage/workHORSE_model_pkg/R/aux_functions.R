@@ -1972,7 +1972,7 @@ set_tobacco_mala <- function(scenario_parms, dt, design) {
                scenario_parms$sc_last_year) &
                 dead == FALSE &
                 between(age, 18, scenario_parms$sc_tobacco_mala_change - 1L),
-          age_sc := 17L] # set all illegal smoking age to 17 yo
+          age_sc := 30L] # set all illegal smoking age to 17 yo
       # TODO: question: if age_sc is used?
       #}
       # # if scenario_parms$sc_tobacco_mala_change_max < 18 {
@@ -2014,14 +2014,11 @@ set_tobacco_mala <- function(scenario_parms, dt, design) {
         set(dt, NULL, "smok_cig_sc", dt$smok_cig_curr_xps)
 
       dt[row_sel, pid_mrk_sc := mk_new_simulant_markers(pid)]
-      # 
-      # break()
 
       # Assign smok_incid probabilities
       lutbl <-
         read_fst("./lifecourse_models/smoke_initiation_table_calibrated.fst",
                  as.data.table = TRUE)
-      # TODO: update to new initiation table
       setnames(lutbl, c("age", "mu"), c("age_sc", "prb_smok_incid_sc"))
       #setnames(lutbl, c( "mu"), c("prb_smok_incid_sc"))
       lookup_dt(dt, lutbl)
@@ -2163,13 +2160,10 @@ set_tobacco_ban <- function(scenario_parms, dt, design) {
       
       dt[row_sel, pid_mrk_sc := mk_new_simulant_markers(pid)]
       
-      # browser()
-      
       # Assign smok_incid probabilities
       lutbl <-
         read_fst("./lifecourse_models/smoke_initiation_table_calibrated.fst",
                  as.data.table = TRUE)
-      # TODO: update to new initiation table
       setnames(lutbl, c("age", "mu"), c("age_sc", "prb_smok_incid_sc"))
       lookup_dt(dt, lutbl)
       setnafill(dt, type = "const", fill = 0, cols = "prb_smok_incid_sc")
@@ -2309,11 +2303,7 @@ set_tobacco_prevalence <- function(scenario_parms, dt, design) {
       lutbl[qimd == '4', mu := mu*scenario_parms$sc_smok_initiation_qimd4]
       lutbl[qimd == '5 least deprived', mu := mu*scenario_parms$sc_smok_initiation_qimd5]
      
-
-      
-      # TODO: update to new initiation table
       setnames(lutbl, c("age", "mu"), c("age_sc", "prb_smok_incid_sc"))
-      #lookup_dt(dt, lutbl, check_lookup_tbl_validity = TRUE) 
       absorb_dt(dt, lutbl)
       setnafill(dt, type = "const", fill = 0, cols = "prb_smok_incid_sc")
    
@@ -2329,7 +2319,6 @@ set_tobacco_prevalence <- function(scenario_parms, dt, design) {
       lutbl[qimd == '5 least deprived', mu := mu*scenario_parms$sc_smok_cessation_qimd5]
       
       setnames(lutbl, c("age", "mu"), c("age_sc", "prb_smok_cess_sc"))
-      # lookup_dt(dt, lutbl, check_lookup_tbl_validity = TRUE)
       absorb_dt(dt, lutbl)
       tbl_b65 <-
         read_fst("./lifecourse_models/smoke_relapse_b65_table_calibrated.fst",
