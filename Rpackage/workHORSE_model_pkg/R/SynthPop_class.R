@@ -1219,6 +1219,7 @@ SynthPop <-
             tbl <-
               read_fst("./lifecourse_models/smok_status_table.fst",
                        as.data.table = TRUE)
+            
             t3 <- tbl[year == 3L]
             while(t3[, min(year)] > dt[, min(year)]) {
               t3[, year := year - 1L]
@@ -1229,7 +1230,7 @@ SynthPop <-
             absorb_dt(dt, tbl)
             dt[, smok_status_ref := my_qMN4(rankstat_smok, mu, sigma, nu)] # for calibration
             dt[age < 16, smok_status_ref := 1L] # lookum table is messed up for <16
-            dt[(pid_mrk), smok_status := smok_status_ref]
+            dt[(pid_mrk) | age == 16L, smok_status := smok_status_ref]
             dt[, (col_nam) := NULL]
             dt[, rankstat_smok := dqrunif(.N)] # this is now used for simsmoke. There shouldn't be correlated any more (colname hardcoded in C++ code).
 
@@ -1247,7 +1248,7 @@ SynthPop <-
               setdiff(names(tbl), intersect(names(dt), names(tbl)))
             absorb_dt(dt, tbl)
             set(dt, NULL, "smok_quit_yrs", 0L)
-            dt[(pid_mrk) &
+            dt[((pid_mrk) | age == 16L) &
                  smok_status %in% 2:3 & age > 15L,
                smok_quit_yrs := my_qDPO(rankstat_smok_quit_yrs, mu, sigma)]
             dt[, rankstat_smok_quit_yrs := NULL]
@@ -1267,7 +1268,7 @@ SynthPop <-
             tbl$smok_status <- as.integer(tbl$smok_status)
             absorb_dt(dt, tbl)
             set(dt, NULL, "smok_dur", 0L)
-            dt[(pid_mrk) &
+            dt[((pid_mrk) | age == 16L) &
                  smok_status %in% 2:3 & age > 15L,
               smok_dur := my_qDPO(rankstat_smok_dur_ex, mu, sigma)]
             dt[, rankstat_smok_dur_ex := NULL]
@@ -1285,7 +1286,7 @@ SynthPop <-
             col_nam <-
               setdiff(names(tbl), intersect(names(dt), names(tbl)))
             absorb_dt(dt, tbl)
-            dt[(pid_mrk) &
+            dt[((pid_mrk) | age == 16L) &
                  smok_status == 4 & age > 15L,
               smok_dur := as.integer(round(qNBI(rankstat_smok_dur_curr, mu, sigma)))]
             dt[, rankstat_smok_dur_curr := NULL]
@@ -1560,7 +1561,7 @@ SynthPop <-
             col_nam <-
               setdiff(names(tbl), intersect(names(dt), names(tbl)))
             absorb_dt(dt, tbl)
-            dt[(pid_mrk) &
+            dt[((pid_mrk) | age == 16L) &
                  smok_status == 3L,
                smok_cig := my_qZABNB(rankstat_smok_cig_ex,
                                      mu,
