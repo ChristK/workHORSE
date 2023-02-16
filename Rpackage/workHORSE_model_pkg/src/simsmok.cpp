@@ -54,7 +54,7 @@ void simsmok(
   
   for (int i = 0; i < n; i++)
   {
-    if (!new_pid[i]) // if not a new simulant
+    if (!new_pid[i] && age[i] > 16) // if not a new simulant
     {
       if (smok_status[i-1] == 1)
       { // never smoker the previous year
@@ -157,7 +157,7 @@ void simsmok_sc(
   for (int j = 0; j < n; j++)
   {
     i = row_sel[j] - 1;
-    if (!new_pid[i]) // if not a new simulant
+    if (!new_pid[i] && age[i] > 16) // if not a new simulant
     {
       if (smok_status[i-1] == 1)
       { // never smoker the previous year
@@ -240,6 +240,7 @@ void simsmok_postcalibration(
   IntegerVector smok_quit_yrs   = df["smok_quit_yrs"];
   IntegerVector smok_dur        = df["smok_dur"];
   IntegerVector smok_cig        = df["smok_cig"];
+  IntegerVector age             = df["age"];
 
 
   // id should be sorted by year
@@ -248,7 +249,7 @@ void simsmok_postcalibration(
 
   for (int i = 0; i < n; i++)
   {
-    if (!new_pid[i]) // if not a new simulant
+    if (!new_pid[i] && age[i] > 16) // if not a new simulant
     {
       if (smok_status[i-1] == smok_status[i] && (smok_status[i] == 2 || smok_status[i] == 3))
       {
@@ -278,13 +279,14 @@ void simsmok_cig(DataFrame& df) {
   IntegerVector smok_status     = df["smok_status"];
   IntegerVector smok_cig        = df["smok_cig"];
   LogicalVector new_pid         = df["pid_mrk"];
+  IntegerVector age             = df["age"];
 
   // id should be sorted by year
   const int n = df.nrows();
 
   for (int i = 0; i < n; i++)
   {
-    if (!new_pid[i]) // if not a new simulant
+    if (!new_pid[i] && age[i] > 16) // if not a new simulant
     { // if smok_status[i] == 3 then previous year was either 3 or 4. In both cases smog_cig should carry forward
       if (smok_status[i] == 3) smok_cig[i] = smok_cig[i-1];
     }
@@ -299,13 +301,14 @@ void simsmok_cig_sc(DataFrame& df) {
   IntegerVector smok_status     = df["smok_status_sc"];
   IntegerVector smok_cig        = df["smok_cig_sc"];
   LogicalVector new_pid         = df["pid_mrk"]; // not _sc
+  IntegerVector age             = df["age"];
 
   // id should be sorted by year
   const int n = df.nrows();
   int i = 0;
   for (int i = 0; i < n; i++)
   {
-    if (!new_pid[i]) // if not a new simulant
+    if (!new_pid[i] && age[i] > 16) // if not a new simulant
     { // if smok_status[i] == 3 then previous year was either 3 or 4. In both cases smog_cig should carry forward
       if (smok_status[i] == 3) smok_cig[i] = smok_cig[i-1];
     }
@@ -343,7 +346,7 @@ List simsmok_cessation(const IntegerVector& smok_status,
   
   for (int i = 0; i < n; i++)
   {
-    if (!new_pid[i]) // if not a new simulant
+    if (!new_pid[i] && age[i] > 16) // if not a new simulant
     {
       if (out_status[i] == 4 && hc_eff[i] == 1) // out_status[i] == 4 not ensured in R side because hc_eff carried forward
       {
