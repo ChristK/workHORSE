@@ -1304,12 +1304,12 @@ SynthPop <-
                ) / (age - 12L))))]
 
             # Assign smok_incid probabilities
-            # tbl <-
-            #   read_fst("./lifecourse_models/smoke_initiation_table_calibrated.fst",
-            #            as.data.table = TRUE)
             tbl <-
-              read_fst("./lifecourse_models/smoke_initiation_table.fst",
+              read_fst("./lifecourse_models/smoke_initiation_table_calibrated.fst",
                        as.data.table = TRUE)
+            # tbl <-
+            #   read_fst("./lifecourse_models/smoke_initiation_table.fst",
+            #            as.data.table = TRUE)
             t3 <- tbl[year == 3L]
             while(t3[, min(year)] > dt[, min(year)]) {
               t3[, year := year - 1L]
@@ -1325,12 +1325,12 @@ SynthPop <-
             setnames(dt, "mu", "prb_smok_incid")
 
             # Assign smok_cessation probabilities
-            # tbl <-
-            #   read_fst("./lifecourse_models/smoke_cessation_table_calibrated.fst",
-            #            as.data.table = TRUE)
             tbl <-
-              read_fst("./lifecourse_models/smoke_cessation_table.fst",
+              read_fst("./lifecourse_models/smoke_cessation_table_calibrated.fst",
                        as.data.table = TRUE)
+            # tbl <-
+            #   read_fst("./lifecourse_models/smoke_cessation_table.fst",
+            #            as.data.table = TRUE)
             t3 <- tbl[year == 3L]
             while(t3[, min(year)] > dt[, min(year)]) {
               t3[, year := year - 1L]
