@@ -91,7 +91,7 @@ void simsmok(
         case 2: nrow = qimd[i] + 4; break;
         }
         
-        if (age[i] < 65) {
+        if (age[i] < 50) {
           relapse_marker = rn_smok[i] < (pr_relapse_below_65(nrow, smok_quit_yrs[i-1] - 1));
         }
         else 
@@ -198,7 +198,7 @@ void simsmok_sc(
         case 2: nrow = qimd[i] + 4; break;
         }
         
-        if (age[i] < 65) {
+        if (age[i] < 50) {
           relapse_marker = rn_smok[i] < (pr_relapse_below_65(nrow, smok_quit_yrs[i-1] - 1));
         }
         else 
@@ -363,7 +363,7 @@ List simsmok_cessation(const IntegerVector& smok_status,
         case 2: nrow = qimd[i] + 4; break;
         }
         
-        if (age[i] < 65) {
+        if (age[i] < 50) {
           relapse_marker = relapse_rn[i] < (pr_relapse_below_65(nrow, smok_quit_yrs[i-1] - 1));
         }
         else

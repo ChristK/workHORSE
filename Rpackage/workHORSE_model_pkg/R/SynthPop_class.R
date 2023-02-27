@@ -1345,12 +1345,12 @@ SynthPop <-
             setnames(dt, "mu", "prb_smok_cess")
 
             # Handle smok_relapse probabilities
-            # tbl_b65 <-
-            #   read_fst("./lifecourse_models/smoke_relapse_b65_table_calibrated.fst",
-            #            as.data.table = TRUE) # before 65 calibrated
             tbl_b65 <-
-              read_fst("./lifecourse_models/smok_relapse_table.fst",
-                       as.data.table = TRUE) # before 65 calibrated 
+              read_fst("./lifecourse_models/smoke_relapse_b50_table_calibrated.fst",
+                       as.data.table = TRUE) # before 65 calibrated
+            # tbl_b65 <-
+            #   read_fst("./lifecourse_models/smok_relapse_table.fst",
+            #            as.data.table = TRUE) # before 65 calibrated 
             tbl_b65 <-
               dcast(tbl_b65, sex + qimd ~ smok_quit_yrs, value.var = "pr")
             # TODO: add final relapse calibrated value (multiply)
@@ -1359,12 +1359,12 @@ SynthPop <-
             tbl_b65 <-
               as.matrix(tbl_b65[, mget(paste0(1:15))], rownames = nam)
             
-            # tbl_a65 <-
-            #   read_fst("./lifecourse_models/smoke_relapse_a65_table_calibrated.fst",
-            #            as.data.table = TRUE) # after 65 calibrated 
             tbl_a65 <-
-              read_fst("./lifecourse_models/smok_relapse_table.fst",
-                       as.data.table = TRUE) # after 65 calibrated 
+              read_fst("./lifecourse_models/smoke_relapse_a50_table_calibrated.fst",
+                       as.data.table = TRUE) # after 65 calibrated
+            # tbl_a65 <-
+            #   read_fst("./lifecourse_models/smok_relapse_table.fst",
+            #            as.data.table = TRUE) # after 65 calibrated 
             tbl_a65 <-
               dcast(tbl_a65, sex + qimd ~ smok_quit_yrs, value.var = "pr")
             # TODO: add final relapse calibrated value (multiply)
