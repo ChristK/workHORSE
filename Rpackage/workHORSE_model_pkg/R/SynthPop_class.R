@@ -1310,7 +1310,7 @@ SynthPop <-
             # tbl <-
             #   read_fst("./lifecourse_models/smoke_initiation_table.fst",
             #            as.data.table = TRUE)
-            tbl[age < 16L & age > 25L, mu := 0]
+            tbl[age < 16L | age > 25L, mu := 0]
             t3 <- tbl[year == 3L]
             while(t3[, min(year)] > dt[, min(year)]) {
               t3[, year := year - 1L]
