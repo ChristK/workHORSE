@@ -693,7 +693,7 @@ bsCollapsePanel(
                 4,
                 sliderInput(
                   "smkcess_slider_sc8",
-                  "Percentage of smoker participants successfully quit smoking for at least a year",
+                  "QIMD 1 -Percentage of smoker participants successfully quit smoking for at least a year",
                   0,
                   100,
                   0,
@@ -741,8 +741,93 @@ bsCollapsePanel(
                     icon("info") %>%
                       bs_embed_popover(title = "Please enter the annual fixed cost of the smoking cessation program")
                   )
-              )
-            ))
+              )),
+            fluidRow(
+              ## col 1 ----
+              column(
+                4,
+                sliderInput(
+                  "smkcess_qimd2_slider_sc8",
+                  "QIMD 2 - Percentage of smoker participants successfully quit smoking for at least a year",
+                  0,
+                  100,
+                  0,
+                  0.5,
+                  sep = "",
+                  ticks = FALSE,
+                  post  = " %"
+                )
+                %>%
+                  shinyInput_label_embed(
+                    icon("info") %>%
+                      bs_embed_popover(title = "Please enter the percentage of people quitting smoking in the last year")
+                  )
+              )),
+            fluidRow(
+              ## col 1 ----
+              column(
+                4,
+                sliderInput(
+                  "smkcess_qimd3_slider_sc8",
+                  "QIMD 3 -Percentage of smoker participants successfully quit smoking for at least a year",
+                  0,
+                  100,
+                  0,
+                  0.5,
+                  sep = "",
+                  ticks = FALSE,
+                  post  = " %"
+                )
+                %>%
+                  shinyInput_label_embed(
+                    icon("info") %>%
+                      bs_embed_popover(title = "Please enter the percentage of people quitting smoking in the last year")
+                  )
+              )),
+            fluidRow(
+              ## col 1 ----
+              column(
+                4,
+                sliderInput(
+                  "smkcess_qimd4_slider_sc8",
+                  "QIMD 4 -Percentage of smoker participants successfully quit smoking for at least a year",
+                  0,
+                  100,
+                  0,
+                  0.5,
+                  sep = "",
+                  ticks = FALSE,
+                  post  = " %"
+                )
+                %>%
+                  shinyInput_label_embed(
+                    icon("info") %>%
+                      bs_embed_popover(title = "Please enter the percentage of people quitting smoking in the last year")
+                  )
+              )),
+            fluidRow(
+              ## col 1 ----
+              column(
+                4,
+                sliderInput(
+                  "smkcess_qimd5_slider_sc8",
+                  "QIMD 5 -Percentage of smoker participants successfully quit smoking for at least a year",
+                  0,
+                  100,
+                  0,
+                  0.5,
+                  sep = "",
+                  ticks = FALSE,
+                  post  = " %"
+                )
+                %>%
+                  shinyInput_label_embed(
+                    icon("info") %>%
+                      bs_embed_popover(title = "Please enter the percentage of people quitting smoking in the last year")
+                  )
+              ))
+            
+            )
   # ,
   # wellPanel(
   # helpText(h5('Weight management')),

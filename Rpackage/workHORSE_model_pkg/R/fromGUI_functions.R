@@ -346,6 +346,25 @@ fromGUI_scenario_parms <- function(scenario_nam, parameters_dt) {
       parameters_dt[scenario == scenario_nam &
                       input_names %flike% "smkcess_slider",
                     as.numeric(value1)/100]
+    
+    l$sc_ls_smkcess_qimd2 <-
+      parameters_dt[scenario == scenario_nam &
+                      input_names %flike% "smkcess_qimd2_slider",
+                    as.numeric(value1)/100]
+    l$sc_ls_smkcess_qimd3 <-
+      parameters_dt[scenario == scenario_nam &
+                      input_names %flike% "smkcess_qimd3_slider",
+                    as.numeric(value1)/100]
+    l$sc_ls_smkcess_qimd4 <-
+      parameters_dt[scenario == scenario_nam &
+                      input_names %flike% "smkcess_qimd4_slider",
+                    as.numeric(value1)/100]
+    l$sc_ls_smkcess_qimd5 <-
+      parameters_dt[scenario == scenario_nam &
+                      input_names %flike% "smkcess_qimd5_slider",
+                    as.numeric(value1)/100]
+    
+    
     l$sc_ls_smkcess_cost_ind <-
       parameters_dt[scenario == scenario_nam &
                       input_names %like% "smkcess_cost$",

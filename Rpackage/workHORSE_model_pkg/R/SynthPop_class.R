@@ -1345,19 +1345,30 @@ SynthPop <-
             setnames(dt, "mu", "prb_smok_cess")
 
             # Handle smok_relapse probabilities
-            tbl_b50 <-
-              read_fst("./lifecourse_models/smoke_relapse_b50_table_calibrated.fst",
+            tbl_b30 <-
+              read_fst("./lifecourse_models/smoke_relapse_b30_table_calibrated.fst",
                        as.data.table = TRUE) # before 65 calibrated
             # tbl_b65 <-
             #   read_fst("./lifecourse_models/smok_relapse_table.fst",
             #            as.data.table = TRUE) # before 65 calibrated 
-            tbl_b50 <-
-              dcast(tbl_b50, sex + qimd ~ smok_quit_yrs, value.var = "pr")
+            tbl_b30 <-
+              dcast(tbl_b30, sex + qimd ~ smok_quit_yrs, value.var = "pr")
             # TODO: add final relapse calibrated value (multiply)
             # TODO: change to script in hint-smoke
-            nam <- tbl_b50[, paste0(sex, " ", qimd)]
-            tbl_b50 <-
-              as.matrix(tbl_b50[, mget(paste0(1:15))], rownames = nam)
+            nam <- tbl_b30[, paste0(sex, " ", qimd)]
+            tbl_b30 <-
+              as.matrix(tbl_b30[, mget(paste0(1:15))], rownames = nam)
+            
+            tbl_30_50 <-
+              read_fst("./lifecourse_models/smoke_relapse_30_50_table_calibrated.fst",
+                       as.data.table = TRUE) # before 65 calibrated
+            tbl_30_50 <-
+              dcast(tbl_30_50, sex + qimd ~ smok_quit_yrs, value.var = "pr")
+            # TODO: add final relapse calibrated value (multiply)
+            # TODO: change to script in hint-smoke
+            nam <- tbl_30_50[, paste0(sex, " ", qimd)]
+            tbl_30_50 <-
+              as.matrix(tbl_30_50[, mget(paste0(1:15))], rownames = nam)
             
             tbl_a50 <-
               read_fst("./lifecourse_models/smoke_relapse_a50_table_calibrated.fst",
@@ -1373,7 +1384,7 @@ SynthPop <-
             tbl_a50 <-
               as.matrix(tbl_a50[, mget(paste0(1:15))], rownames = nam)
 
-            simsmok(dt, tbl_b50, tbl_a50, design_$sim_prm$smoking_relapse_limit)
+            simsmok(dt, tbl_b30, tbl_30_50, tbl_a50, design_$sim_prm$smoking_relapse_limit)
             # TODO: simsmok() to simsmok_relapse_calibrate()
             
             # dt[!(pid_mrk), table(smok_status)]

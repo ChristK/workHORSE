@@ -27,12 +27,14 @@ using namespace Rcpp;
 // [[Rcpp::export]]
 void simsmok(
     DataFrame& df,
-    const NumericMatrix& pr_relapse_below_65,
-    const NumericMatrix& pr_relapse_above_65,
+    const NumericMatrix &pr_relapse_below_30,
+    const NumericMatrix &pr_relapse_30_50,
+    const NumericMatrix &pr_relapse_above_50,
     const int& relapse_cutoff) {
   
-  if (pr_relapse_below_65.ncol() < relapse_cutoff) stop("relapse_cutoff should be smaller than the number of columns of pr_relapse_below_65 matrix.");
-  if (pr_relapse_above_65.ncol() < relapse_cutoff) stop("relapse_cutoff should be smaller than the number of columns of pr_relapse_above_65 matrix.");
+  if (pr_relapse_below_30.ncol() < relapse_cutoff) stop("relapse_cutoff should be smaller than the number of columns of pr_relapse_below_65 matrix.");
+  if (pr_relapse_30_50.ncol() < relapse_cutoff) stop("relapse_cutoff should be smaller than the number of columns of pr_relapse_above_65 matrix.");
+  if (pr_relapse_above_50.ncol() < relapse_cutoff) stop("relapse_cutoff should be smaller than the number of columns of pr_relapse_above_65 matrix.");
   
   //access the df columns
   IntegerVector smok_status     = df["smok_status"];
@@ -91,12 +93,15 @@ void simsmok(
         case 2: nrow = qimd[i] + 4; break;
         }
         
-        if (age[i] < 50) {
-          relapse_marker = rn_smok[i] < (pr_relapse_below_65(nrow, smok_quit_yrs[i-1] - 1));
+        if (age[i] < 30) {
+          relapse_marker = rn_smok[i] < (pr_relapse_below_30(nrow, smok_quit_yrs[i - 1] - 1));
+        }
+        else if (age[i] < 50) {
+          relapse_marker = rn_smok[i] < (pr_relapse_30_50(nrow, smok_quit_yrs[i - 1] - 1));
         }
         else 
         {
-          relapse_marker = rn_smok[i] < (pr_relapse_above_65(nrow, smok_quit_yrs[i-1] - 1));
+          relapse_marker = rn_smok[i] < (pr_relapse_above_50(nrow, smok_quit_yrs[i - 1] - 1));
         }
         
         if (relapse_marker)
@@ -127,13 +132,15 @@ void simsmok(
 // [[Rcpp::export]]
 void simsmok_sc(
     DataFrame& df,
-    const NumericMatrix& pr_relapse_below_65,
-    const NumericMatrix& pr_relapse_above_65,
+    const NumericMatrix &pr_relapse_below_30,
+    const NumericMatrix &pr_relapse_30_50,
+    const NumericMatrix &pr_relapse_above_50,
     const int& relapse_cutoff,
     const IntegerVector& row_sel) {
   
-  if (pr_relapse_below_65.ncol() < relapse_cutoff) stop("relapse_cutoff should be smaller than the number of columns of pr_relapse_below_65 matrix.");
-  if (pr_relapse_above_65.ncol() < relapse_cutoff) stop("relapse_cutoff should be smaller than the number of columns of pr_relapse_above_65 matrix.");
+  if (pr_relapse_below_30.ncol() < relapse_cutoff) stop("relapse_cutoff should be smaller than the number of columns of pr_relapse_below_65 matrix.");
+  if (pr_relapse_30_50.ncol() < relapse_cutoff) stop("relapse_cutoff should be smaller than the number of columns of pr_relapse_above_65 matrix.");
+  if (pr_relapse_above_50.ncol() < relapse_cutoff) stop("relapse_cutoff should be smaller than the number of columns of pr_relapse_above_65 matrix.");
   
   
   //access the df columns
@@ -198,12 +205,15 @@ void simsmok_sc(
         case 2: nrow = qimd[i] + 4; break;
         }
         
-        if (age[i] < 50) {
-          relapse_marker = rn_smok[i] < (pr_relapse_below_65(nrow, smok_quit_yrs[i-1] - 1));
+        if (age[i] < 30) {
+          relapse_marker = rn_smok[i] < (pr_relapse_below_30(nrow, smok_quit_yrs[i - 1] - 1));
+        }
+        else if (age[i] < 50) {
+          relapse_marker = rn_smok[i] < (pr_relapse_30_50(nrow, smok_quit_yrs[i - 1] - 1));
         }
         else 
         {
-          relapse_marker = rn_smok[i] < (pr_relapse_above_65(nrow, smok_quit_yrs[i-1] - 1));
+          relapse_marker = rn_smok[i] < (pr_relapse_above_50(nrow, smok_quit_yrs[i - 1] - 1));
         }
         
         if (relapse_marker)       
@@ -326,12 +336,14 @@ List simsmok_cessation(const IntegerVector& smok_status,
                        const LogicalVector& new_pid,
                        const IntegerVector& hc_eff,
                        const NumericVector& relapse_rn,
-                       const NumericMatrix& pr_relapse_below_65,
-                       const NumericMatrix& pr_relapse_above_65,
-                       const int&           relapse_cutoff)
-{
-  if (pr_relapse_below_65.ncol() < relapse_cutoff) stop("relapse_cutoff should be smaller than the number of columns of pr_relapse_below_65 matrix.");
-  if (pr_relapse_above_65.ncol() < relapse_cutoff) stop("relapse_cutoff should be smaller than the number of columns of pr_relapse_above_65 matrix.");
+                       const NumericMatrix &pr_relapse_below_30,
+                       const NumericMatrix &pr_relapse_30_50,
+                       const NumericMatrix &pr_relapse_above_50,
+                       const int&           relapse_cutoff) {
+  
+  if (pr_relapse_below_30.ncol() < relapse_cutoff) stop("relapse_cutoff should be smaller than the number of columns of pr_relapse_below_65 matrix.");
+  if (pr_relapse_30_50.ncol() < relapse_cutoff) stop("relapse_cutoff should be smaller than the number of columns of pr_relapse_above_65 matrix.");
+  if (pr_relapse_above_50.ncol() < relapse_cutoff) stop("relapse_cutoff should be smaller than the number of columns of pr_relapse_above_65 matrix.");
   
   // id should be sorted by year
   const int n = smok_status.size();
@@ -363,12 +375,16 @@ List simsmok_cessation(const IntegerVector& smok_status,
         case 2: nrow = qimd[i] + 4; break;
         }
         
-        if (age[i] < 50) {
-          relapse_marker = relapse_rn[i] < (pr_relapse_below_65(nrow, smok_quit_yrs[i-1] - 1));
+        if (age[i] < 30) {
+          relapse_marker = relapse_rn[i] < (pr_relapse_below_30(nrow, smok_quit_yrs[i - 1] - 1));
+        
         }
-        else
+        else if (age[i] < 50) {
+          relapse_marker = relapse_rn[i] < (pr_relapse_30_50(nrow, smok_quit_yrs[i - 1] - 1));
+        }
+        else 
         {
-          relapse_marker = relapse_rn[i] < (pr_relapse_above_65(nrow, smok_quit_yrs[i-1] - 1));
+          relapse_marker = relapse_rn[i] < (pr_relapse_above_50(nrow, smok_quit_yrs[i - 1] - 1));
         }
         
         if (relapse_marker)
