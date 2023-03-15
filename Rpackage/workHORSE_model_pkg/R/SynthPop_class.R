@@ -944,11 +944,11 @@ SynthPop <-
             tt <- dt[age == design_$sim_prm$ageL, .N]
             design2_ <- design_$clone()
             design2_$sim_prm$n <-
-              tt * design_$sim_prm$sim_horizon_max
+              tt * (design_$sim_prm$sim_horizon_max + design_$sim_prm$maxlag)
             design2_$sim_prm$ageH <- design_$sim_prm$ageL
             dt2 <- private$gen_synthpop_demog(design2_)
-            dt2[, age := age - rep(1:design_$sim_prm$sim_horizon_max, tt)]
-
+            dt2[, age := age - rep(1:(design_$sim_prm$sim_horizon_max + design_$sim_prm$maxlag), tt)]
+            
             # as sim progress these will become 30 yo
             # no population growth here as I will calibrate to dt projections
             if ("England" %in% design_$sim_prm$locality) {
@@ -1338,10 +1338,11 @@ SynthPop <-
             }
             # TODO: tbl <- read_fst("./lifecourse_models/smoke_cessation_table.fst", as.data.table = TRUE)
             # TODO: add cessation calibrated value (intercept)
-            tbl[age < 16L, mu := 0]
+            tbl[age < 15L, mu := 0]
             col_nam <-
               setdiff(names(tbl), intersect(names(dt), names(tbl)))
             absorb_dt(dt, tbl)
+            setnafill(dt, type = "const", fill = 0, cols = "mu") # to fill in the missing value from calibrated file
             setnames(dt, "mu", "prb_smok_cess")
 
             # Handle smok_relapse probabilities
@@ -2390,6 +2391,9 @@ SynthPop <-
       calc_pop_weights = function(dt, design) {
         tt <-
           read_fst("./ONS_data/pop_size/pop_proj.fst", as.data.table = TRUE)
+        ttt = tt[year == 2003L]
+        ttt[, year := 2002L]
+        tt = rbind(ttt, tt)
         lads <- get_unique_LADs(design$sim_prm$locality)
         tt <- tt[LAD17CD %in% lads &
                    between(age, min(dt$age), max(dt$age)) &
@@ -2400,7 +2404,7 @@ SynthPop <-
         absorb_dt(dt, tt)
         dt[, wt := pops / (wt * design$sim_prm$n_synthpop_aggregation)]
         dt[, pops := NULL]
-
+        remove(ttt)
         invisible(dt)
       }
 

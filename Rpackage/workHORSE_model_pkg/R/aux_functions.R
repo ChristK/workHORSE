@@ -1695,8 +1695,11 @@ set_social <- function(scenario_parms, dt, design) {
       lutbl <-
         read_fst("./lifecourse_models/smoke_cessation_table_calibrated.fst",
           as.data.table = TRUE)
+      lutbl[age < 15L, mu := 0]
       setnames(lutbl, c("qimd", "mu"), c("qimd_sc", "prb_smok_cess_sc"))
       absorb_dt(dt, lutbl)
+      setnafill(dt, type = "const", fill = 0, cols = "prb_smok_cess_sc") # to fill in the missing value from calibrated file
+      
 
       # Handle smok_relapse probabilities
       # No need to use qimd_sc here. It happens at the simsmok_sc side
@@ -2074,12 +2077,15 @@ set_tobacco_mala <- function(scenario_parms, dt, design) {
       lutbl <-
         read_fst("./lifecourse_models/smoke_cessation_table_calibrated.fst",
                  as.data.table = TRUE)
+      lutbl[age < 15L, mu := 0]
       lutbl[between(age, 18, scenario_parms$sc_tobacco_mala_change - 1),
         mu := clamp(mu/0.5)] #TODO: what is this? - check reference
       # lutbl[between(age, 18, scenario_parms$sc_tobacco_mala_change - 1),
       #       mu := 0] #TODO: trounleshoot
       setnames(lutbl, c("mu"), c("prb_smok_cess_sc"))
       lookup_dt(dt, lutbl)
+      setnafill(dt, type = "const", fill = 0, cols = "prb_smok_cess_sc") # to fill in the missing value from calibrated file
+      
 
       # use when the slider is used
       # if(scenario_parms$sc_tobacco_mala_change_max >= 18) {
@@ -2223,8 +2229,11 @@ set_tobacco_ban <- function(scenario_parms, dt, design) {
       lutbl <-
         read_fst("./lifecourse_models/smoke_cessation_table_calibrated.fst",
                  as.data.table = TRUE)
+      lutbl[age < 15L, mu := 0]
       setnames(lutbl, c("age", "mu"), c("age_sc", "prb_smok_cess_sc"))
       lookup_dt(dt, lutbl)
+      setnafill(dt, type = "const", fill = 0, cols = "prb_smok_cess_sc") # to fill in the missing value from calibrated file
+      
       
       tbl_b30 <-
         read_fst("./lifecourse_models/smoke_relapse_b30_table_calibrated.fst",
@@ -2374,6 +2383,7 @@ set_tobacco_prevalence <- function(scenario_parms, dt, design) {
       lutbl <-
         read_fst("./lifecourse_models/smoke_cessation_table_calibrated.fst",
                  as.data.table = TRUE)
+      tbl[age < 15L, mu := 0]
       
       lutbl[qimd == '1 most deprived', mu := mu*scenario_parms$sc_smok_cessation_qimd1]
       lutbl[qimd == '2', mu := mu*scenario_parms$sc_smok_cessation_qimd2]
@@ -2383,6 +2393,9 @@ set_tobacco_prevalence <- function(scenario_parms, dt, design) {
       
       setnames(lutbl, c("age", "mu"), c("age_sc", "prb_smok_cess_sc"))
       absorb_dt(dt, lutbl)
+      setnafill(dt, type = "const", fill = 0, cols = "prb_smok_cess_sc") # to fill in the missing value from calibrated file
+      
+      
       tbl_b30 <-
         read_fst("./lifecourse_models/smoke_relapse_b30_table_calibrated.fst",
                  as.data.table = TRUE)
