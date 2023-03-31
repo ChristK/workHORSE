@@ -498,16 +498,26 @@ fromGUI_scenario_parms <- function(scenario_nam, parameters_dt) {
           input_names %flike% "qimd_risk_factors_checkbox",
         as.character(value1)]
     
-    # for smoking ban policy  
+    # for smoking ban policy
     l$sc_smoke_ban <-
       parameters_dt[scenario == scenario_nam &
                       input_names %flike% "ban_smoke_checkbox", as.logical(value1)]
-
-    # for MALA policy
+# 
+#     # for MALA policy
+#     l$sc_tobacco_mala_change <-
+#       parameters_dt[scenario == scenario_nam &
+#                       input_names %flike% "mala_slider",
+#                     as.integer(value1)] 
+    
+    # for MALA policy - take age range
     l$sc_tobacco_mala_change <-
       parameters_dt[scenario == scenario_nam &
                       input_names %flike% "mala_slider",
-                    as.integer(value1)]
+                    as.integer(value1)] # TODO : revise to age function
+    
+    l$sc_smoke_age <-
+      parameters_dt[scenario == scenario_nam &
+                      input_names %flike% "age_range_smoking_slider", unlist(value)]
 
     # for smoking prevalence 
     l$sc_smok_initiation_qimd1 <-

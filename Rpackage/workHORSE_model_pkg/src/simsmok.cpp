@@ -30,11 +30,17 @@ void simsmok(
     const NumericMatrix &pr_relapse_below_30,
     const NumericMatrix &pr_relapse_30_50,
     const NumericMatrix &pr_relapse_above_50,
-    const int& relapse_cutoff) {
+    const int& relapse_cutoff,
+    const NumericVector& relapse_effect,
+    const int& age_min = 0,
+    const int& age_max = 100
+) {
   
   if (pr_relapse_below_30.ncol() < relapse_cutoff) stop("relapse_cutoff should be smaller than the number of columns of pr_relapse_below_65 matrix.");
   if (pr_relapse_30_50.ncol() < relapse_cutoff) stop("relapse_cutoff should be smaller than the number of columns of pr_relapse_above_65 matrix.");
   if (pr_relapse_above_50.ncol() < relapse_cutoff) stop("relapse_cutoff should be smaller than the number of columns of pr_relapse_above_65 matrix.");
+  if (relapse_effect.size() != 5)
+    stop("relapse_effect need to have a length of 5!");
   
   //access the df columns
   IntegerVector smok_status     = df["smok_status"];
@@ -53,6 +59,7 @@ void simsmok(
   const int n = df.nrows();
   bool relapse_marker = false;
   int nrow = 0;
+  double relapse_prb = 0.0;
   
   for (int i = 0; i < n; i++)
   {
@@ -94,15 +101,21 @@ void simsmok(
         }
         
         if (age[i] < 30) {
-          relapse_marker = rn_smok[i] < (pr_relapse_below_30(nrow, smok_quit_yrs[i - 1] - 1));
+          relapse_prb = pr_relapse_below_30(nrow, smok_quit_yrs[i - 1] - 1);
         }
         else if (age[i] < 50) {
-          relapse_marker = rn_smok[i] < (pr_relapse_30_50(nrow, smok_quit_yrs[i - 1] - 1));
+          relapse_prb = pr_relapse_30_50(nrow, smok_quit_yrs[i - 1] - 1);
         }
-        else 
+        else
         {
-          relapse_marker = rn_smok[i] < (pr_relapse_above_50(nrow, smok_quit_yrs[i - 1] - 1));
+          relapse_prb = pr_relapse_above_50(nrow, smok_quit_yrs[i - 1] - 1);
         }
+        
+        if (relapse_effect[qimd[i] - 1] != 1.0 && age[i] >= age_min && age[i] <= age_max) {
+          relapse_prb *= relapse_effect[qimd[i] -1];
+        }
+        relapse_marker = rn_smok[i] < relapse_prb;
+        
         
         if (relapse_marker)
         {
@@ -136,7 +149,11 @@ void simsmok_sc(
     const NumericMatrix &pr_relapse_30_50,
     const NumericMatrix &pr_relapse_above_50,
     const int& relapse_cutoff,
-    const IntegerVector& row_sel) {
+    const IntegerVector& row_sel,
+    const NumericVector& relapse_effect,
+    const int& age_min = 0,
+    const int& age_max = 100
+) {
   
   if (pr_relapse_below_30.ncol() < relapse_cutoff) stop("relapse_cutoff should be smaller than the number of columns of pr_relapse_below_65 matrix.");
   if (pr_relapse_30_50.ncol() < relapse_cutoff) stop("relapse_cutoff should be smaller than the number of columns of pr_relapse_above_65 matrix.");
@@ -161,6 +178,8 @@ void simsmok_sc(
   bool relapse_marker = false;
   int nrow = 0;
   int i = 0;
+  double relapse_prb = 0.0;
+  
   for (int j = 0; j < n; j++)
   {
     i = row_sel[j] - 1;
@@ -206,15 +225,20 @@ void simsmok_sc(
         }
         
         if (age[i] < 30) {
-          relapse_marker = rn_smok[i] < (pr_relapse_below_30(nrow, smok_quit_yrs[i - 1] - 1));
+          relapse_prb = pr_relapse_below_30(nrow, smok_quit_yrs[i - 1] - 1);
         }
         else if (age[i] < 50) {
-          relapse_marker = rn_smok[i] < (pr_relapse_30_50(nrow, smok_quit_yrs[i - 1] - 1));
+          relapse_prb = pr_relapse_30_50(nrow, smok_quit_yrs[i - 1] - 1);
         }
-        else 
+        else
         {
-          relapse_marker = rn_smok[i] < (pr_relapse_above_50(nrow, smok_quit_yrs[i - 1] - 1));
+          relapse_prb = pr_relapse_above_50(nrow, smok_quit_yrs[i - 1] - 1);
         }
+        
+        if (relapse_effect[qimd[i] - 1] != 1.0 && age[i] >= age_min && age[i] <= age_max) {
+          relapse_prb *= relapse_effect[qimd[i] -1];
+        }
+        relapse_marker = rn_smok[i] < relapse_prb;
         
         if (relapse_marker)       
         {
@@ -339,7 +363,11 @@ List simsmok_cessation(const IntegerVector& smok_status,
                        const NumericMatrix &pr_relapse_below_30,
                        const NumericMatrix &pr_relapse_30_50,
                        const NumericMatrix &pr_relapse_above_50,
-                       const int&           relapse_cutoff) {
+                       const int&           relapse_cutoff,
+                       const NumericVector& relapse_effect,
+                       const int& age_min = 0,
+                       const int& age_max = 100
+                         ) {
   
   if (pr_relapse_below_30.ncol() < relapse_cutoff) stop("relapse_cutoff should be smaller than the number of columns of pr_relapse_below_65 matrix.");
   if (pr_relapse_30_50.ncol() < relapse_cutoff) stop("relapse_cutoff should be smaller than the number of columns of pr_relapse_above_65 matrix.");
@@ -355,6 +383,7 @@ List simsmok_cessation(const IntegerVector& smok_status,
   bool relapse_marker = false;
   
   int nrow = 0;
+  double relapse_prb = 0.0;
   
   for (int i = 0; i < n; i++)
   {
@@ -376,16 +405,20 @@ List simsmok_cessation(const IntegerVector& smok_status,
         }
         
         if (age[i] < 30) {
-          relapse_marker = relapse_rn[i] < (pr_relapse_below_30(nrow, smok_quit_yrs[i - 1] - 1));
-        
+          relapse_prb = pr_relapse_below_30(nrow, smok_quit_yrs[i - 1] - 1);
         }
         else if (age[i] < 50) {
-          relapse_marker = relapse_rn[i] < (pr_relapse_30_50(nrow, smok_quit_yrs[i - 1] - 1));
+          relapse_prb = pr_relapse_30_50(nrow, smok_quit_yrs[i - 1] - 1);
         }
-        else 
+        else
         {
-          relapse_marker = relapse_rn[i] < (pr_relapse_above_50(nrow, smok_quit_yrs[i - 1] - 1));
+          relapse_prb = pr_relapse_above_50(nrow, smok_quit_yrs[i - 1] - 1);
         }
+        
+        if (relapse_effect[qimd[i] - 1] != 1.0 && age[i] >= age_min && age[i] <= age_max) {
+          relapse_prb *= relapse_effect[qimd[i] -1];
+        }
+        relapse_marker = relapse_rn[i] < relapse_prb;
         
         if (relapse_marker)
         {

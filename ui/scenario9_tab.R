@@ -1474,16 +1474,16 @@ wellPanel(
     h6("Note: these policies may override some of the changes set above"),
     HTML("<br>")
     ),
-  
+
   fluidRow(
   column(10,
                 sliderInput(
                   "mala_slider_sc9",
-                  "Minimum age of legal access to tobacco products", 
-                  10, 30, 18, 1,  
-                  sep = "", 
-                  ticks = FALSE, 
-                  post  = "" 
+                  "Minimum age of legal access to tobacco products",
+                  10, 30, 18, 1,
+                  sep = "",
+                  ticks = FALSE,
+                  post  = ""
                 )
                 %>%
                   shinyInput_label_embed(
@@ -1513,6 +1513,19 @@ wellPanel(
   )
   ), # TODO: add option for users to set the range of prevalence change due to smugling 
   
+  br(),
+  
+  fluidRow( 
+    column(12, 
+           sliderInput(
+             "age_range_smoking_slider_sc9",
+             "Applicable Age Range",
+             16,
+             100,
+             c(16, 90),
+             1)
+    )),
+    
   br(),
   
   fluidRow( 

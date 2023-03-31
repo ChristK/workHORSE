@@ -1253,6 +1253,7 @@ SynthPop <-
                smok_quit_yrs := my_qDPO(rankstat_smok_quit_yrs, mu, sigma)]
             dt[, rankstat_smok_quit_yrs := NULL]
             dt[, (col_nam) := NULL]
+            dt[smok_status %in% 2:3 & smok_quit_yrs == 0L, smok_quit_yrs := 1L]
 
             # Assign smok_dur_ex when pid_mrk == true (the first year an individual enters the simulation)
             tbl <-
@@ -1384,9 +1385,16 @@ SynthPop <-
             nam <- tbl_a50[, paste0(sex, " ", qimd)]
             tbl_a50 <-
               as.matrix(tbl_a50[, mget(paste0(1:15))], rownames = nam)
+            
+            multiply_relapse_qimd = c(1.0, 
+                                      1.0, 
+                                      1.0, 
+                                      1.0, 
+                                      1.0)
 
-            simsmok(dt, tbl_b30, tbl_30_50, tbl_a50, design_$sim_prm$smoking_relapse_limit)
-            # TODO: simsmok() to simsmok_relapse_calibrate()
+            #simsmok(dt, tbl_b30, tbl_30_50, tbl_a50, design_$sim_prm$smoking_relapse_limit)
+            simsmok(dt$pop, tbl_b30, tbl_30_50, tbl_a50, design$sim_prm$smoking_relapse_limit,
+                    multiply_relapse_qimd, 0, 100) # TODO - sort out multiply_relapse_qimd
             
             # dt[!(pid_mrk), table(smok_status)]
             # dt[pid == 1, plot(year, smok_status, ylim = c(0, 4))]

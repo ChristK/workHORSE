@@ -647,8 +647,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // simsmok
-void simsmok(DataFrame& df, const NumericMatrix& pr_relapse_below_30, const NumericMatrix& pr_relapse_30_50, const NumericMatrix& pr_relapse_above_50, const int& relapse_cutoff);
-RcppExport SEXP _workHORSEmisc_simsmok(SEXP dfSEXP, SEXP pr_relapse_below_30SEXP, SEXP pr_relapse_30_50SEXP, SEXP pr_relapse_above_50SEXP, SEXP relapse_cutoffSEXP) {
+void simsmok(DataFrame& df, const NumericMatrix& pr_relapse_below_30, const NumericMatrix& pr_relapse_30_50, const NumericMatrix& pr_relapse_above_50, const int& relapse_cutoff, const NumericVector& relapse_effect, const int& age_min, const int& age_max);
+RcppExport SEXP _workHORSEmisc_simsmok(SEXP dfSEXP, SEXP pr_relapse_below_30SEXP, SEXP pr_relapse_30_50SEXP, SEXP pr_relapse_above_50SEXP, SEXP relapse_cutoffSEXP, SEXP relapse_effectSEXP, SEXP age_minSEXP, SEXP age_maxSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< DataFrame& >::type df(dfSEXP);
@@ -656,13 +656,16 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const NumericMatrix& >::type pr_relapse_30_50(pr_relapse_30_50SEXP);
     Rcpp::traits::input_parameter< const NumericMatrix& >::type pr_relapse_above_50(pr_relapse_above_50SEXP);
     Rcpp::traits::input_parameter< const int& >::type relapse_cutoff(relapse_cutoffSEXP);
-    simsmok(df, pr_relapse_below_30, pr_relapse_30_50, pr_relapse_above_50, relapse_cutoff);
+    Rcpp::traits::input_parameter< const NumericVector& >::type relapse_effect(relapse_effectSEXP);
+    Rcpp::traits::input_parameter< const int& >::type age_min(age_minSEXP);
+    Rcpp::traits::input_parameter< const int& >::type age_max(age_maxSEXP);
+    simsmok(df, pr_relapse_below_30, pr_relapse_30_50, pr_relapse_above_50, relapse_cutoff, relapse_effect, age_min, age_max);
     return R_NilValue;
 END_RCPP
 }
 // simsmok_sc
-void simsmok_sc(DataFrame& df, const NumericMatrix& pr_relapse_below_30, const NumericMatrix& pr_relapse_30_50, const NumericMatrix& pr_relapse_above_50, const int& relapse_cutoff, const IntegerVector& row_sel);
-RcppExport SEXP _workHORSEmisc_simsmok_sc(SEXP dfSEXP, SEXP pr_relapse_below_30SEXP, SEXP pr_relapse_30_50SEXP, SEXP pr_relapse_above_50SEXP, SEXP relapse_cutoffSEXP, SEXP row_selSEXP) {
+void simsmok_sc(DataFrame& df, const NumericMatrix& pr_relapse_below_30, const NumericMatrix& pr_relapse_30_50, const NumericMatrix& pr_relapse_above_50, const int& relapse_cutoff, const IntegerVector& row_sel, const NumericVector& relapse_effect, const int& age_min, const int& age_max);
+RcppExport SEXP _workHORSEmisc_simsmok_sc(SEXP dfSEXP, SEXP pr_relapse_below_30SEXP, SEXP pr_relapse_30_50SEXP, SEXP pr_relapse_above_50SEXP, SEXP relapse_cutoffSEXP, SEXP row_selSEXP, SEXP relapse_effectSEXP, SEXP age_minSEXP, SEXP age_maxSEXP) {
 BEGIN_RCPP
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< DataFrame& >::type df(dfSEXP);
@@ -671,7 +674,10 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const NumericMatrix& >::type pr_relapse_above_50(pr_relapse_above_50SEXP);
     Rcpp::traits::input_parameter< const int& >::type relapse_cutoff(relapse_cutoffSEXP);
     Rcpp::traits::input_parameter< const IntegerVector& >::type row_sel(row_selSEXP);
-    simsmok_sc(df, pr_relapse_below_30, pr_relapse_30_50, pr_relapse_above_50, relapse_cutoff, row_sel);
+    Rcpp::traits::input_parameter< const NumericVector& >::type relapse_effect(relapse_effectSEXP);
+    Rcpp::traits::input_parameter< const int& >::type age_min(age_minSEXP);
+    Rcpp::traits::input_parameter< const int& >::type age_max(age_maxSEXP);
+    simsmok_sc(df, pr_relapse_below_30, pr_relapse_30_50, pr_relapse_above_50, relapse_cutoff, row_sel, relapse_effect, age_min, age_max);
     return R_NilValue;
 END_RCPP
 }
@@ -706,8 +712,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // simsmok_cessation
-List simsmok_cessation(const IntegerVector& smok_status, const IntegerVector& smok_quit_yrs, const IntegerVector& smok_dur, const IntegerVector& sex, const IntegerVector& qimd, const IntegerVector& age, const LogicalVector& new_pid, const IntegerVector& hc_eff, const NumericVector& relapse_rn, const NumericMatrix& pr_relapse_below_30, const NumericMatrix& pr_relapse_30_50, const NumericMatrix& pr_relapse_above_50, const int& relapse_cutoff);
-RcppExport SEXP _workHORSEmisc_simsmok_cessation(SEXP smok_statusSEXP, SEXP smok_quit_yrsSEXP, SEXP smok_durSEXP, SEXP sexSEXP, SEXP qimdSEXP, SEXP ageSEXP, SEXP new_pidSEXP, SEXP hc_effSEXP, SEXP relapse_rnSEXP, SEXP pr_relapse_below_30SEXP, SEXP pr_relapse_30_50SEXP, SEXP pr_relapse_above_50SEXP, SEXP relapse_cutoffSEXP) {
+List simsmok_cessation(const IntegerVector& smok_status, const IntegerVector& smok_quit_yrs, const IntegerVector& smok_dur, const IntegerVector& sex, const IntegerVector& qimd, const IntegerVector& age, const LogicalVector& new_pid, const IntegerVector& hc_eff, const NumericVector& relapse_rn, const NumericMatrix& pr_relapse_below_30, const NumericMatrix& pr_relapse_30_50, const NumericMatrix& pr_relapse_above_50, const int& relapse_cutoff, const NumericVector& relapse_effect, const int& age_min, const int& age_max);
+RcppExport SEXP _workHORSEmisc_simsmok_cessation(SEXP smok_statusSEXP, SEXP smok_quit_yrsSEXP, SEXP smok_durSEXP, SEXP sexSEXP, SEXP qimdSEXP, SEXP ageSEXP, SEXP new_pidSEXP, SEXP hc_effSEXP, SEXP relapse_rnSEXP, SEXP pr_relapse_below_30SEXP, SEXP pr_relapse_30_50SEXP, SEXP pr_relapse_above_50SEXP, SEXP relapse_cutoffSEXP, SEXP relapse_effectSEXP, SEXP age_minSEXP, SEXP age_maxSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -724,7 +730,10 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const NumericMatrix& >::type pr_relapse_30_50(pr_relapse_30_50SEXP);
     Rcpp::traits::input_parameter< const NumericMatrix& >::type pr_relapse_above_50(pr_relapse_above_50SEXP);
     Rcpp::traits::input_parameter< const int& >::type relapse_cutoff(relapse_cutoffSEXP);
-    rcpp_result_gen = Rcpp::wrap(simsmok_cessation(smok_status, smok_quit_yrs, smok_dur, sex, qimd, age, new_pid, hc_eff, relapse_rn, pr_relapse_below_30, pr_relapse_30_50, pr_relapse_above_50, relapse_cutoff));
+    Rcpp::traits::input_parameter< const NumericVector& >::type relapse_effect(relapse_effectSEXP);
+    Rcpp::traits::input_parameter< const int& >::type age_min(age_minSEXP);
+    Rcpp::traits::input_parameter< const int& >::type age_max(age_maxSEXP);
+    rcpp_result_gen = Rcpp::wrap(simsmok_cessation(smok_status, smok_quit_yrs, smok_dur, sex, qimd, age, new_pid, hc_eff, relapse_rn, pr_relapse_below_30, pr_relapse_30_50, pr_relapse_above_50, relapse_cutoff, relapse_effect, age_min, age_max));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -830,12 +839,12 @@ static const R_CallMethodDef CallEntries[] = {
     {"_workHORSEmisc_shift_bypidInt", (DL_FUNC) &_workHORSEmisc_shift_bypidInt, 4},
     {"_workHORSEmisc_shift_bypidBool", (DL_FUNC) &_workHORSEmisc_shift_bypidBool, 4},
     {"_workHORSEmisc_shift_bypidStr", (DL_FUNC) &_workHORSEmisc_shift_bypidStr, 4},
-    {"_workHORSEmisc_simsmok", (DL_FUNC) &_workHORSEmisc_simsmok, 5},
-    {"_workHORSEmisc_simsmok_sc", (DL_FUNC) &_workHORSEmisc_simsmok_sc, 6},
+    {"_workHORSEmisc_simsmok", (DL_FUNC) &_workHORSEmisc_simsmok, 8},
+    {"_workHORSEmisc_simsmok_sc", (DL_FUNC) &_workHORSEmisc_simsmok_sc, 9},
     {"_workHORSEmisc_simsmok_postcalibration", (DL_FUNC) &_workHORSEmisc_simsmok_postcalibration, 1},
     {"_workHORSEmisc_simsmok_cig", (DL_FUNC) &_workHORSEmisc_simsmok_cig, 1},
     {"_workHORSEmisc_simsmok_cig_sc", (DL_FUNC) &_workHORSEmisc_simsmok_cig_sc, 1},
-    {"_workHORSEmisc_simsmok_cessation", (DL_FUNC) &_workHORSEmisc_simsmok_cessation, 13},
+    {"_workHORSEmisc_simsmok_cessation", (DL_FUNC) &_workHORSEmisc_simsmok_cessation, 16},
     {"_workHORSEmisc_simsmok_policy_impact_incr", (DL_FUNC) &_workHORSEmisc_simsmok_policy_impact_incr, 5},
     {"_workHORSEmisc_simsmok_policy_impact_decr", (DL_FUNC) &_workHORSEmisc_simsmok_policy_impact_decr, 6},
     {"_workHORSEmisc_wtd_ADstat", (DL_FUNC) &_workHORSEmisc_wtd_ADstat, 4},

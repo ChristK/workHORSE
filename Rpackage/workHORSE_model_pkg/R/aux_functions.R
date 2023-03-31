@@ -1435,6 +1435,11 @@ set_lifestyle <-
     nam <- tbl_a50[, paste0(sex, " ", qimd)]
     tbl_a50 <- as.matrix(tbl_a50[, mget(paste0(1:15))], rownames = nam)
 
+    multiply_relapse_qimd = c(1.0, 
+                              1.0, 
+                              1.0, 
+                              1.0, 
+                              1.0)
     dt[,
        (c(colnam_status, colnam_quit_yrs, colnam_dur)) :=
          simsmok_cessation(
@@ -1450,7 +1455,10 @@ set_lifestyle <-
            tbl_b30,
            tbl_30_50,
            tbl_a50,
-           design$sim_prm$smoking_relapse_limit
+           design$sim_prm$smoking_relapse_limit,
+           multiply_relapse_qimd,
+            0,
+           100
          )]
 
     dt[, smok_status_sc := factor(smok_status_sc)]
@@ -1655,8 +1663,7 @@ set_social <- function(scenario_parms, dt, design) {
       dt[qimd == l[4], qimd_sc := l[scenario_parms$sc_soc_qimd4_change]]
     if (scenario_parms$sc_soc_qimd5_change != 5L)
       dt[qimd == l[5], qimd_sc := l[scenario_parms$sc_soc_qimd5_change]]
-
-
+    
 
     row_sel <- # Indices of eligible rows
       dt[between(year + 2000L,
@@ -1730,8 +1737,15 @@ set_social <- function(scenario_parms, dt, design) {
       tbl_a50 <-
         as.matrix(tbl_a50[, mget(paste0(1:15))], rownames = nam)
 
-
-      simsmok_sc(dt, tbl_b30, tbl_30_50, tbl_a50, design$sim_prm$smoking_relapse_limit, row_sel)
+      multiply_relapse_qimd = c(1.0, 
+                                1.0, 
+                                1.0, 
+                                1.0, 
+                                1.0)
+      
+      #simsmok_sc(dt, tbl_b30, tbl_30_50, tbl_a50, design$sim_prm$smoking_relapse_limit, row_sel)
+      simsmok_sc(dt$pop, tbl_b30, tbl_30_50, tbl_a50, design$sim_prm$smoking_relapse_limit, row_sel,
+                 multiply_relapse_qimd, 0, 100) # TODO: sort out multiply_relapse_qimd
 
       dt[, c("prb_smok_incid_sc", "prb_smok_cess_sc") := NULL]
 
@@ -1979,7 +1993,7 @@ set_social <- function(scenario_parms, dt, design) {
 
 set_tobacco_mala <- function(scenario_parms, dt, design) {
   set(dt, NULL, "age_sc", dt$age) # so to be available to all other tobacco functions for combined policies
-  
+
   # bypass if irrelevant
   if (scenario_parms$sc_tobacco_mala_change == 18L) {
     return(invisible(dt))
@@ -1990,7 +2004,7 @@ set_tobacco_mala <- function(scenario_parms, dt, design) {
     # TODO: age slider smaller than current age
     # if scenario_parms$sc_tobacco_mala_change_max >= 18 { # below for smoking ban >= 18 yo
     setkey(dt, pid, year)
-    
+
     row_sel <-
       dt[between(year + 2000L,
                  scenario_parms$sc_init_year,
@@ -2085,7 +2099,7 @@ set_tobacco_mala <- function(scenario_parms, dt, design) {
       setnames(lutbl, c("mu"), c("prb_smok_cess_sc"))
       lookup_dt(dt, lutbl)
       setnafill(dt, type = "const", fill = 0, cols = "prb_smok_cess_sc") # to fill in the missing value from calibrated file
-      
+
 
       # use when the slider is used
       # if(scenario_parms$sc_tobacco_mala_change_max >= 18) {
@@ -2117,7 +2131,7 @@ set_tobacco_mala <- function(scenario_parms, dt, design) {
       nam <- tbl_b30[, paste0(sex, " ", qimd)]
       tbl_b30 <-
         as.matrix(tbl_b30[, mget(paste0(1:15))], rownames = nam)
-      
+
       tbl_30_50 <-
         read_fst("./lifecourse_models/smoke_relapse_30_50_table_calibrated.fst",
                  as.data.table = TRUE)
@@ -2126,7 +2140,7 @@ set_tobacco_mala <- function(scenario_parms, dt, design) {
       nam <- tbl_30_50[, paste0(sex, " ", qimd)]
       tbl_30_50 <-
         as.matrix(tbl_30_50[, mget(paste0(1:15))], rownames = nam)
-      
+
       tbl_a50 <-
         read_fst("./lifecourse_models/smoke_relapse_a50_table_calibrated.fst",
                  as.data.table = TRUE)
@@ -2136,7 +2150,10 @@ set_tobacco_mala <- function(scenario_parms, dt, design) {
       tbl_a50 <-
         as.matrix(tbl_a50[, mget(paste0(1:15))], rownames = nam)
 
-      simsmok_sc(dt, tbl_b30, tbl_30_50, tbl_a50, design$sim_prm$smoking_relapse_limit, row_sel)
+      # simsmok_sc(dt, tbl_b30, tbl_30_50, tbl_a50, design$sim_prm$smoking_relapse_limit, row_sel)
+      simsmok_sc(dt$pop, tbl_b30, tbl_30_50, tbl_a50, design$sim_prm$smoking_relapse_limit, row_sel,
+                 c(1.0, 1.0, 1.0, 1.0, 1.0), 0, 100) # TODO: sort out multiply_relapse_qimd
+
 
       dt[, c("prb_smok_incid_sc", "prb_smok_cess_sc") := NULL]
 
@@ -2147,12 +2164,12 @@ set_tobacco_mala <- function(scenario_parms, dt, design) {
                  as.data.table = TRUE)
       setnames(lutbl, "age", "age_sc")
       lookup_dt(dt, lutbl, exclude_col = c("mu", "sigma", "nu", "tau")) # Note tau not a column currently
-      
+
       dt[smok_status_sc != smok_status_curr_xps, mrk := TRUE]
-      
+
       dt[(mrk) & smok_status_sc == 4,
          smok_cig_sc := qZINBI(rankstat_smok_cig_curr, mu, sigma, nu)]
-      
+
       # No need to do for ex smokers, as they should have at least an entry of active smoking before
       # lutbl <-
       #   read_fst("./lifecourse_models/smok_cig_ex_table.fst",
@@ -2166,12 +2183,12 @@ set_tobacco_mala <- function(scenario_parms, dt, design) {
       #                             nu,
       #                             tau,
       #                             n_cpu = design$sim_prm$n_cpu)]
-      
+
       simsmok_cig_sc(dt) # carry forward smok_cig if smok_status == 3
       dt[smok_cig_sc == 0L & smok_status_sc != "1", smok_cig_sc := 1L]
       dt[, c("mrk", "pid_mrk_sc") := NULL]
-      
-      
+
+
 
       dt[, smok_status_sc := factor(smok_status_sc)]
       dt[, smoke_cat_sc := 0L]
@@ -2266,12 +2283,21 @@ set_tobacco_ban <- function(scenario_parms, dt, design) {
         as.matrix(tbl_a50[, mget(paste0(1:15))], rownames = nam) 
       tbl_a50 <- tbl_a50 * 0.05
       
+      multiply_relapse_qimd = c(1.0, 
+                                1.0, 
+                                1.0, 
+                                1.0, 
+                                1.0)
+      
       # TODO: population start from the scenario year or not?
       dt[between(age, 16, 90) & between(year + 2000L, scenario_parms$sc_init_year, scenario_parms$sc_last_year) , # TODO: revise to year > starting year
           ':='(prb_smok_incid_sc = prb_smok_incid_sc * 0.05, 
                prb_smok_cess_sc = 0.95)] # for eligible individual, reset smoking parameters
       
-      simsmok_sc(dt, tbl_b30, tbl_30_50, tbl_a50, design$sim_prm$smoking_relapse_limit, row_sel)
+      # simsmok_sc(dt, tbl_b30, tbl_30_50, tbl_a50, design$sim_prm$smoking_relapse_limit, row_sel)
+      simsmok_sc(dt$pop, tbl_b30, tbl_30_50, tbl_a50, design$sim_prm$smoking_relapse_limit, row_sel,
+                 multiply_relapse_qimd, 0,100) # TODO: sort out multiply_relapse_qimd
+      
       
       dt[, c("prb_smok_incid_sc", "prb_smok_cess_sc") := NULL]
       
@@ -2341,7 +2367,6 @@ set_tobacco_prevalence <- function(scenario_parms, dt, design) {
     return(invisible(dt))
   } else {
     
-
     
     setkey(dt, pid, year)
     row_sel <-
@@ -2369,13 +2394,14 @@ set_tobacco_prevalence <- function(scenario_parms, dt, design) {
         read_fst("./lifecourse_models/smoke_initiation_table_calibrated.fst",
                  as.data.table = TRUE)
       lutbl[age < 16L | age > 25L, mu := 0]
-      lutbl[qimd == '1 most deprived', mu := mu*scenario_parms$sc_smok_initiation_qimd1]
-      lutbl[qimd == '2', mu := mu*scenario_parms$sc_smok_initiation_qimd2]
-      lutbl[qimd == '3', mu := mu*scenario_parms$sc_smok_initiation_qimd3]
-      lutbl[qimd == '4', mu := mu*scenario_parms$sc_smok_initiation_qimd4]
-      lutbl[qimd == '5 least deprived', mu := mu*scenario_parms$sc_smok_initiation_qimd5]
+      # TODO: add ager filter; what abbout the unchanged rows?
+      lutbl[qimd == '1 most deprived' & between(age, scenario_parms$sc_smoke_age[[1]], scenario_parms$sc_smoke_age[[2]]), mu := mu*scenario_parms$sc_smok_initiation_qimd1]
+      lutbl[qimd == '2' & between(age, scenario_parms$sc_smoke_age[[1]], scenario_parms$sc_smoke_age[[2]]), mu := mu*scenario_parms$sc_smok_initiation_qimd2]
+      lutbl[qimd == '3' & between(age, scenario_parms$sc_smoke_age[[1]], scenario_parms$sc_smoke_age[[2]]), mu := mu*scenario_parms$sc_smok_initiation_qimd3]
+      lutbl[qimd == '4' & between(age, scenario_parms$sc_smoke_age[[1]], scenario_parms$sc_smoke_age[[2]]), mu := mu*scenario_parms$sc_smok_initiation_qimd4]
+      lutbl[qimd == '5 least deprived' & between(age, scenario_parms$sc_smoke_age[[1]], scenario_parms$sc_smoke_age[[2]]), mu := mu*scenario_parms$sc_smok_initiation_qimd5]
      
-      setnames(lutbl, c("age", "mu"), c("age_sc", "prb_smok_incid_sc"))
+      setnames(lutbl, c("mu"), c("prb_smok_incid_sc")) # not change age to age_sc
       absorb_dt(dt, lutbl)
       setnafill(dt, type = "const", fill = 0, cols = "prb_smok_incid_sc")
    
@@ -2384,27 +2410,27 @@ set_tobacco_prevalence <- function(scenario_parms, dt, design) {
         read_fst("./lifecourse_models/smoke_cessation_table_calibrated.fst",
                  as.data.table = TRUE)
       tbl[age < 15L, mu := 0]
+      # TODO: add ager filter; what abbout the unchanged rows?
+      lutbl[qimd == '1 most deprived' & between(age, scenario_parms$sc_smoke_age[[1]], scenario_parms$sc_smoke_age[[2]]), mu := mu*scenario_parms$sc_smok_cessation_qimd1]
+      lutbl[qimd == '2' & between(age, scenario_parms$sc_smoke_age[[1]], scenario_parms$sc_smoke_age[[2]]), mu := mu*scenario_parms$sc_smok_cessation_qimd2]
+      lutbl[qimd == '3' & between(age, scenario_parms$sc_smoke_age[[1]], scenario_parms$sc_smoke_age[[2]]), mu := mu*scenario_parms$sc_smok_cessation_qimd3]
+      lutbl[qimd == '4' & between(age, scenario_parms$sc_smoke_age[[1]], scenario_parms$sc_smoke_age[[2]]), mu := mu*scenario_parms$sc_smok_cessation_qimd4]
+      lutbl[qimd == '5 least deprived' & between(age, scenario_parms$sc_smoke_age[[1]], scenario_parms$sc_smoke_age[[2]]), mu := mu*scenario_parms$sc_smok_cessation_qimd5]
       
-      lutbl[qimd == '1 most deprived', mu := mu*scenario_parms$sc_smok_cessation_qimd1]
-      lutbl[qimd == '2', mu := mu*scenario_parms$sc_smok_cessation_qimd2]
-      lutbl[qimd == '3', mu := mu*scenario_parms$sc_smok_cessation_qimd3]
-      lutbl[qimd == '4', mu := mu*scenario_parms$sc_smok_cessation_qimd4]
-      lutbl[qimd == '5 least deprived', mu := mu*scenario_parms$sc_smok_cessation_qimd5]
-      
-      setnames(lutbl, c("age", "mu"), c("age_sc", "prb_smok_cess_sc"))
+      setnames(lutbl, c("mu"), c("prb_smok_cess_sc")) # remove age_sc
       absorb_dt(dt, lutbl)
       setnafill(dt, type = "const", fill = 0, cols = "prb_smok_cess_sc") # to fill in the missing value from calibrated file
       
-      
+      # TODO: the new simsmok() takes in the modified numbers; so no need to modify these models seperately?
       tbl_b30 <-
         read_fst("./lifecourse_models/smoke_relapse_b30_table_calibrated.fst",
                  as.data.table = TRUE)
       
-      tbl_b30[qimd == '1 most deprived', pr := pr*scenario_parms$sc_smok_relapse_qimd1]
-      tbl_b30[qimd == '2', pr := pr*scenario_parms$sc_smok_relapse_qimd2]
-      tbl_b30[qimd == '3', pr := pr*scenario_parms$sc_smok_relapse_qimd3]
-      tbl_b30[qimd == '4', pr := pr*scenario_parms$sc_smok_relapse_qimd4]
-      tbl_b30[qimd == '5 least deprived', pr := pr*scenario_parms$sc_smok_relapse_qimd5]
+      # tbl_b30[qimd == '1 most deprived', pr := pr*scenario_parms$sc_smok_relapse_qimd1]
+      # tbl_b30[qimd == '2', pr := pr*scenario_parms$sc_smok_relapse_qimd2]
+      # tbl_b30[qimd == '3', pr := pr*scenario_parms$sc_smok_relapse_qimd3]
+      # tbl_b30[qimd == '4', pr := pr*scenario_parms$sc_smok_relapse_qimd4]
+      # tbl_b30[qimd == '5 least deprived', pr := pr*scenario_parms$sc_smok_relapse_qimd5]
       
       tbl_b30 <-
         dcast(tbl_b30, sex + qimd ~ smok_quit_yrs, value.var = "pr")
@@ -2416,11 +2442,11 @@ set_tobacco_prevalence <- function(scenario_parms, dt, design) {
         read_fst("./lifecourse_models/smoke_relapse_30_50_table_calibrated.fst",
                  as.data.table = TRUE)
       
-      tbl_30_50[qimd == '1 most deprived', pr := pr*scenario_parms$sc_smok_relapse_qimd1]
-      tbl_30_50[qimd == '2', pr := pr*scenario_parms$sc_smok_relapse_qimd2]
-      tbl_30_50[qimd == '3', pr := pr*scenario_parms$sc_smok_relapse_qimd3]
-      tbl_30_50[qimd == '4', pr := pr*scenario_parms$sc_smok_relapse_qimd4]
-      tbl_30_50[qimd == '5 least deprived', pr := pr*scenario_parms$sc_smok_relapse_qimd5]
+      # tbl_30_50[qimd == '1 most deprived', pr := pr*scenario_parms$sc_smok_relapse_qimd1]
+      # tbl_30_50[qimd == '2', pr := pr*scenario_parms$sc_smok_relapse_qimd2]
+      # tbl_30_50[qimd == '3', pr := pr*scenario_parms$sc_smok_relapse_qimd3]
+      # tbl_30_50[qimd == '4', pr := pr*scenario_parms$sc_smok_relapse_qimd4]
+      # tbl_30_50[qimd == '5 least deprived', pr := pr*scenario_parms$sc_smok_relapse_qimd5]
       
       tbl_30_50 <-
         dcast(tbl_30_50, sex + qimd ~ smok_quit_yrs, value.var = "pr")
@@ -2432,11 +2458,11 @@ set_tobacco_prevalence <- function(scenario_parms, dt, design) {
         read_fst("./lifecourse_models/smoke_relapse_a50_table_calibrated.fst",
                  as.data.table = TRUE)
       
-      tbl_a50[qimd == '1 most deprived', pr := pr*scenario_parms$sc_smok_relapse_qimd1]
-      tbl_a50[qimd == '2', pr := pr*scenario_parms$sc_smok_relapse_qimd2]
-      tbl_a50[qimd == '3', pr := pr*scenario_parms$sc_smok_relapse_qimd3]
-      tbl_a50[qimd == '4', pr := pr*scenario_parms$sc_smok_relapse_qimd4]
-      tbl_a50[qimd == '5 least deprived', pr := pr*scenario_parms$sc_smok_relapse_qimd5]
+      # tbl_a50[qimd == '1 most deprived', pr := pr*scenario_parms$sc_smok_relapse_qimd1]
+      # tbl_a50[qimd == '2', pr := pr*scenario_parms$sc_smok_relapse_qimd2]
+      # tbl_a50[qimd == '3', pr := pr*scenario_parms$sc_smok_relapse_qimd3]
+      # tbl_a50[qimd == '4', pr := pr*scenario_parms$sc_smok_relapse_qimd4]
+      # tbl_a50[qimd == '5 least deprived', pr := pr*scenario_parms$sc_smok_relapse_qimd5]
       
       tbl_a50 <-
         dcast(tbl_a50, sex + qimd ~ smok_quit_yrs, value.var = "pr")
@@ -2448,7 +2474,18 @@ set_tobacco_prevalence <- function(scenario_parms, dt, design) {
       stopifnot(is.matrix(tbl_30_50))
       stopifnot(is.matrix(tbl_b30))
       
-      simsmok_sc(dt, tbl_b30, tbl_30_50, tbl_a50, design$sim_prm$smoking_relapse_limit, row_sel)
+      
+      multiply_relapse_qimd = c(scenario_parms$sc_smok_relapse_qimd1, 
+                                scenario_parms$sc_smok_relapse_qimd2,
+                                scenario_parms$sc_smok_relapse_qimd3, 
+                                scenario_parms$sc_smok_relapse_qimd4, 
+                                scenario_parms$sc_smok_relapse_qimd5)
+      
+      # TODO: change to new simsmok_sc function
+      # simsmok_sc(dt, tbl_b30, tbl_30_50, tbl_a50, design$sim_prm$smoking_relapse_limit, row_sel)
+      simsmok_sc(dt$pop, tbl_b30, tbl_30_50, tbl_a50, design$sim_prm$smoking_relapse_limit, row_sel,
+                 multiply_relapse_qimd, scenario_parms$sc_smoke_age[[1]], scenario_parms$sc_smoke_age[[2]]) # TODO: sort out multiply_relapse_qimd
+      
       
       dt[, c("prb_smok_incid_sc", "prb_smok_cess_sc") := NULL]
       
