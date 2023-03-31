@@ -31,12 +31,12 @@ if (!require(CKutils)) {
 
 # TODO add better logic to install package when needed (copy from calibration?)
 # if (!require(workHORSEmisc)) {
-  if (!require(remotes))
-    install.packages("remotes")
-  roxygen2::roxygenise("./Rpackage/workHORSE_model_pkg/", clean = TRUE)
-  # TODO remove before deployment
-  remotes::install_local("./Rpackage/workHORSE_model_pkg/", force = TRUE,
-                         upgrade = "never")
+  # if (!require(remotes))
+  #   install.packages("remotes")
+  # roxygen2::roxygenise("./Rpackage/workHORSE_model_pkg/", clean = TRUE)
+  # # TODO remove before deployment
+  # remotes::install_local("./Rpackage/workHORSE_model_pkg/", force = TRUE,
+  #                        upgrade = "never") # TODO: uncomment from 34 - 38 if change the package 
   library(workHORSEmisc)
 # }
 
