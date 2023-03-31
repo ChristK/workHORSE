@@ -1393,7 +1393,7 @@ SynthPop <-
                                       1.0)
 
             #simsmok(dt, tbl_b30, tbl_30_50, tbl_a50, design_$sim_prm$smoking_relapse_limit)
-            simsmok(dt$pop, tbl_b30, tbl_30_50, tbl_a50, design$sim_prm$smoking_relapse_limit,
+            simsmok(dt, tbl_b30, tbl_30_50, tbl_a50, design$sim_prm$smoking_relapse_limit,
                     multiply_relapse_qimd, 0, 100) # TODO - sort out multiply_relapse_qimd
             
             # dt[!(pid_mrk), table(smok_status)]
