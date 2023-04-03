@@ -697,7 +697,7 @@ bsCollapsePanel(
                   0,
                   100,
                   0,
-                  0.5,
+                  0.1,
                   sep = "",
                   ticks = FALSE,
                   post  = " %"
@@ -752,7 +752,7 @@ bsCollapsePanel(
                   0,
                   100,
                   0,
-                  0.5,
+                  0.1,
                   sep = "",
                   ticks = FALSE,
                   post  = " %"
@@ -773,7 +773,7 @@ bsCollapsePanel(
                   0,
                   100,
                   0,
-                  0.5,
+                  0.1,
                   sep = "",
                   ticks = FALSE,
                   post  = " %"
@@ -794,7 +794,7 @@ bsCollapsePanel(
                   0,
                   100,
                   0,
-                  0.5,
+                  0.1,
                   sep = "",
                   ticks = FALSE,
                   post  = " %"
@@ -815,7 +815,7 @@ bsCollapsePanel(
                   0,
                   100,
                   0,
-                  0.5,
+                  0.1,
                   sep = "",
                   ticks = FALSE,
                   post  = " %"

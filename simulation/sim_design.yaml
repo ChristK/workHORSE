@@ -1,5 +1,5 @@
 # iteration_n: 10
-iteration_n: 15
+iteration_n: 30
 iteration_n_final: 100
 clusternumber: 10 # explicit parallelisation
 # clusternumber: 5 # explicit parallelisation
@@ -30,7 +30,7 @@ simsmok_calibration: no # yes
 validation: no # or yes. Note, no true/false
 max_prvl_for_outputs: 2 # duration 1 is incidence and 2 is prevalence
 iteration_n_max: 1000
-output_dir: ./output/
+output_dir: /mnt/storage_fast/output/hint
 synthpop_dir: /mnt/storage_fast/synthpop/hint
 scenarios: ''
 cols_for_output:

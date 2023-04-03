@@ -77,7 +77,7 @@ tabPanel(
         "Number of scenarios to be simulated",
         1,
         9,
-        value = 2,
+        value = 4,
         1,
         sep = "",
         ticks = FALSE
