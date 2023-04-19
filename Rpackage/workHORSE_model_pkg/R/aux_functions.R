@@ -2381,13 +2381,13 @@ set_tobacco_prevalence <- function(scenario_parms, dt, design) {
            # dead == FALSE,
          which = TRUE]
     
-      # if (!"smok_status_sc" %in% names(dt))
+      if (!"smok_status_sc" %in% names(dt))
         set(dt, NULL, "smok_status_sc", dt$smok_status_curr_xps)
-      # if (!"smok_quit_yrs_sc" %in% names(dt))
+      if (!"smok_quit_yrs_sc" %in% names(dt))
         set(dt, NULL, "smok_quit_yrs_sc", dt$smok_quit_yrs_curr_xps)
-      # if (!"smok_dur_sc" %in% names(dt))
+      if (!"smok_dur_sc" %in% names(dt))
         set(dt, NULL, "smok_dur_sc", dt$smok_dur_curr_xps)
-      # if (!"smok_cig_sc" %in% names(dt))
+      if (!"smok_cig_sc" %in% names(dt))
         set(dt, NULL, "smok_cig_sc", dt$smok_cig_curr_xps)
       
       # TODO : check below
@@ -2630,8 +2630,8 @@ run_scenario <-
       set_lifestyle(scenario_parms[[sc]], dt$pop, design)
       # set_structural(scenario_parms[[sc]], dt$pop, design) # TODO: troubleshoot
       set_social(scenario_parms[[sc]], dt$pop, design)
-      set_tobacco_mala(scenario_parms[[sc]], dt$pop, design)
-      set_tobacco_ban(scenario_parms[[sc]], dt$pop, design) 
+      # set_tobacco_mala(scenario_parms[[sc]], dt$pop, design)
+      # set_tobacco_ban(scenario_parms[[sc]], dt$pop, design) 
       set_tobacco_prevalence(scenario_parms[[sc]], dt$pop, design)  
       set_ets(scenario_parms[[sc]], dt$pop, design)
       # set_tobacco_prevalence_qimd(scenario_parms[[sc]], dt$pop, design)
