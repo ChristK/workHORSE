@@ -161,7 +161,7 @@ server = function(input, output, session) {
             
             if (file.exists(file.path(design$sim_prm$output_dir, "results.fst"))) {
               # out <- read_fst(file.path(design$sim_prm$output_dir, "results.fst"), as.data.table = TRUE)
-              # out # uncomment 163 & 164 to display results
+              # out # Display results: uncomment two lines of 'out' and comment out [if("smk_output.csv) file.remove]; [file.remove, run_simulation]
               file.remove(file.path(design$sim_prm$output_dir, "results.fst"))
 
               run_simulation(parameters, design, FALSE)
