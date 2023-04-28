@@ -1392,15 +1392,15 @@ set_lifestyle <-
     colnam_cig      <- "smok_cig_sc"
     colnam_cost     <- "smoking_cost_sc"
     if (!"hc_eff_sm" %in% names(dt))     set(dt, NULL, "hc_eff_sm", 0L)
-    # if (!colnam_status %in% names(dt))   
+    if (!colnam_status %in% names(dt))
     dt[, (colnam_status) := smok_status_curr_xps]
-    # if (!colnam_quit_yrs %in% names(dt)) 
+    if (!colnam_quit_yrs %in% names(dt))
     dt[, (colnam_quit_yrs) := smok_quit_yrs_curr_xps]
-    # if (!colnam_dur %in% names(dt))     
+    if (!colnam_dur %in% names(dt))
     dt[, (colnam_dur) := smok_dur_curr_xps]
-    # if (!colnam_cig %in% names(dt))      
+    if (!colnam_cig %in% names(dt))
     dt[, (colnam_cig) := smok_cig_curr_xps]
-    # if (!colnam_cost %in% names(dt)) 
+    if (!colnam_cost %in% names(dt))
     set(dt, NULL, colnam_cost, 0)
     # dt[attendees_sc == 1L & smok_status_curr_xps == "4",
     #    hc_eff_sm := rbinom(.N, 1, scenario_parms$sc_ls_smkcess)]
@@ -1440,11 +1440,11 @@ set_lifestyle <-
     nam <- tbl_a50[, paste0(sex, " ", qimd)]
     tbl_a50 <- as.matrix(tbl_a50[, mget(paste0(1:15))], rownames = nam)
 
-    multiply_relapse_qimd = c(1.0, 
-                              1.0, 
-                              1.0, 
-                              1.0, 
-                              1.0)
+    multiply_relapse_qimd = c(scenario_parms$sc_smok_relapse_qimd1, 
+                              scenario_parms$sc_smok_relapse_qimd2,
+                              scenario_parms$sc_smok_relapse_qimd3, 
+                              scenario_parms$sc_smok_relapse_qimd4, 
+                              scenario_parms$sc_smok_relapse_qimd5)
     dt[,
        (c(colnam_status, colnam_quit_yrs, colnam_dur)) :=
          simsmok_cessation(
@@ -2627,12 +2627,13 @@ run_scenario <-
       dt$pop[, af_prvl_sc := af_prvl_curr_xps]
       dt$pop[, ckd_prvl_sc := ckd_prvl_curr_xps]
       dt$pop[, t2dm_prvl_sc := t2dm_prvl_curr_xps]
+      set_tobacco_prevalence(scenario_parms[[sc]], dt$pop, design)  
       set_lifestyle(scenario_parms[[sc]], dt$pop, design)
       # set_structural(scenario_parms[[sc]], dt$pop, design) # TODO: troubleshoot
       set_social(scenario_parms[[sc]], dt$pop, design)
       # set_tobacco_mala(scenario_parms[[sc]], dt$pop, design)
       # set_tobacco_ban(scenario_parms[[sc]], dt$pop, design) 
-      set_tobacco_prevalence(scenario_parms[[sc]], dt$pop, design)  
+  
       set_ets(scenario_parms[[sc]], dt$pop, design)
       # set_tobacco_prevalence_qimd(scenario_parms[[sc]], dt$pop, design)
       # set_tobacco_price(scenario_parms[[sc]], dt$pop, design)

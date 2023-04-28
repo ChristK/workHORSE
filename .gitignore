@@ -52,3 +52,7 @@ simulation/health_econ/productivity_costs_l.fst
 simulation/health_econ/informal_care_costs_l.fst
 HSE_ts.fst
 temp
+cumsum_dt.fst
+summary.csv
+smk_output.csv
+results.fst

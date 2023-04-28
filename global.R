@@ -36,7 +36,7 @@ if (!require(CKutils)) {
   # roxygen2::roxygenise("./Rpackage/workHORSE_model_pkg/", clean = TRUE)
   # # TODO remove before deployment
   # remotes::install_local("./Rpackage/workHORSE_model_pkg/", force = TRUE,
-  #                        upgrade = "never") # TODO: uncomment from 34 - 38 if change the package 
+  #                        upgrade = "never") # TODO: runremotes::install_local( update = ""never) if change the package
   library(workHORSEmisc)
 # }
 
