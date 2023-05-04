@@ -16,10 +16,25 @@ dt <- SynthPop$new(mc_iter, design) # run until ncc , with problems on 5(frt, ve
 # lapply(dt$pop, anyNA) # chekcing NA
 # anyNA(dt$pop)
 
+pop_orig <- copy(dt$pop)
+
 output_chunk  <- list() # quicker way to start from: here + dt <- SynthPop
 run_scenario("sc1", mc_iter, dt, parameters_dt, design, output_chunk) #sc-the name of the scenario that needs to be checked 
+pop_sc1 <- copy(dt$pop)
+
 run_scenario("sc2", mc_iter, dt, parameters_dt, design, output_chunk) #sc-the name of the scenario that needs to be checked 
+pop_sc2 <- copy(dt$pop)
+
+
 run_scenario("sc3", mc_iter, dt, parameters_dt, design, output_chunk) #sc-the name of the scenario that needs to be checked 
+pop_sc3 <- copy(dt$pop)
+
+all.equal(pop_orig, pop_sc1)
+
+setdiff(names(pop_sc1), names(pop_orig))
+setdiff(names(pop_sc2), names(pop_sc1))
+setdiff(names(pop_sc3), names(pop_sc2))
+
 run_scenario("sc4", mc_iter, dt, parameters_dt, design, output_chunk) #sc-the name of the scenario that needs to be checked 
 
 

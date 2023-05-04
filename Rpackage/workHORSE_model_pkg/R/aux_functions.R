@@ -1383,6 +1383,29 @@ set_attendees <- function(scenario_parms, dt, scenario_nam, parameters_dt,
 #' @export
 set_lifestyle <-
   function(scenario_parms, dt, design) {
+    if (!"smoke_cat_sc" %in% names(dt)) 
+      set(dt, NULL, "smoke_cat_sc", dt$smoke_cat) 
+    if (!"smok_status_sc" %in% names(dt))
+      dt[, smok_status_sc := smok_status_curr_xps]
+    if (!"smok_quit_yrs_sc" %in% names(dt))
+      dt[, smok_quit_yrs_sc := smok_quit_yrs_curr_xps]
+    if (!"smok_dur_sc" %in% names(dt))
+      dt[, smok_dur_sc := smok_dur_curr_xps]
+    if (!"smok_cig_sc" %in% names(dt))
+      dt[, smok_cig_sc := smok_cig_curr_xps]
+    if (!"smoking_cost_sc" %in% names(dt))
+      set(dt, NULL, "smoking_cost_sc", 0)
+    
+    if (all(
+      scenario_parms$sc_ls_smkcess == 0,
+      scenario_parms$sc_ls_smkcess_qimd2 == 0,
+      scenario_parms$sc_ls_smkcess_qimd3 == 0,
+      scenario_parms$sc_ls_smkcess_qimd4 == 0,
+      scenario_parms$sc_ls_smkcess_qimd5 == 0
+    )) {
+      return(invisible(dt))
+    } else {
+      
     atte_colnam <- "attendees_sc"
 
     # Smoking cessation ----
@@ -1392,16 +1415,7 @@ set_lifestyle <-
     colnam_cig      <- "smok_cig_sc"
     colnam_cost     <- "smoking_cost_sc"
     if (!"hc_eff_sm" %in% names(dt))     set(dt, NULL, "hc_eff_sm", 0L)
-    if (!colnam_status %in% names(dt))
-    dt[, (colnam_status) := smok_status_curr_xps]
-    if (!colnam_quit_yrs %in% names(dt))
-    dt[, (colnam_quit_yrs) := smok_quit_yrs_curr_xps]
-    if (!colnam_dur %in% names(dt))
-    dt[, (colnam_dur) := smok_dur_curr_xps]
-    if (!colnam_cig %in% names(dt))
-    dt[, (colnam_cig) := smok_cig_curr_xps]
-    if (!colnam_cost %in% names(dt))
-    set(dt, NULL, colnam_cost, 0)
+   
     # dt[attendees_sc == 1L & smok_status_curr_xps == "4",
     #    hc_eff_sm := rbinom(.N, 1, scenario_parms$sc_ls_smkcess)]
     dt[attendees_sc == 1L & smok_status_curr_xps == "4" & qimd == "1 most deprived",
@@ -1475,6 +1489,7 @@ set_lifestyle <-
     dt[smok_status_sc == "4" & smok_cig_sc > 19L, smoke_cat_sc := 4L]
 
     invisible(dt)
+    }
   }
 
 #' @export
@@ -2543,7 +2558,9 @@ set_ets <- function(scenario_parms, dt, design) {
 
     if (!"ets_sc" %in% names(dt))
       set(dt, NULL, "ets_sc", dt$ets_curr_xps)
-
+    if (!"smok_status_sc" %in% names(dt))
+      set(dt, NULL, "smok_status_sc", dt$smok_status_curr_xps)
+    
     if (!identical(dt$smok_status_curr_xps, dt$smok_status_sc)) {
       tt <- dt[year > design$sim_prm$init_year,
                .(smok_curr_xps = sum(smok_status_curr_xps == "4")/.N,
@@ -2627,14 +2644,23 @@ run_scenario <-
       dt$pop[, af_prvl_sc := af_prvl_curr_xps]
       dt$pop[, ckd_prvl_sc := ckd_prvl_curr_xps]
       dt$pop[, t2dm_prvl_sc := t2dm_prvl_curr_xps]
-      set_tobacco_prevalence(scenario_parms[[sc]], dt$pop, design)  
+      set_tobacco_prevalence(scenario_parms[[sc]], dt$pop, design) 
+      if ("mu" %in% names(dt$pop)) dt$pop[, "mu" := NULL]
+      if ("sigma" %in% names(dt$pop)) dt$pop[, "sigma" := NULL]
+      if ("nu" %in% names(dt$pop)) dt$pop[, "nu" := NULL]
       set_lifestyle(scenario_parms[[sc]], dt$pop, design)
+      if ("mu" %in% names(dt$pop)) dt$pop[, "mu" := NULL]
+      if ("sigma" %in% names(dt$pop)) dt$pop[, "sigma" := NULL]
+      if ("nu" %in% names(dt$pop)) dt$pop[, "nu" := NULL]
       # set_structural(scenario_parms[[sc]], dt$pop, design) # TODO: troubleshoot
-      set_social(scenario_parms[[sc]], dt$pop, design)
+      # set_social(scenario_parms[[sc]], dt$pop, design)
       # set_tobacco_mala(scenario_parms[[sc]], dt$pop, design)
       # set_tobacco_ban(scenario_parms[[sc]], dt$pop, design) 
   
       set_ets(scenario_parms[[sc]], dt$pop, design)
+      if ("mu" %in% names(dt$pop)) dt$pop[, "mu" := NULL]
+      if ("sigma" %in% names(dt$pop)) dt$pop[, "sigma" := NULL]
+      if ("nu" %in% names(dt$pop)) dt$pop[, "nu" := NULL]
       # set_tobacco_prevalence_qimd(scenario_parms[[sc]], dt$pop, design)
       # set_tobacco_price(scenario_parms[[sc]], dt$pop, design)
       # set_tobacco_price_qimd(scenario_parms[[sc]], dt$pop, design)
@@ -2643,7 +2669,7 @@ run_scenario <-
     dt$pop[, eligible_sc  := clamp(eligible_sc + hlp$previous_elig)]
     dt$pop[, invitees_sc  := clamp(invitees_sc + hlp$previous_invitees)]
     dt$pop[, attendees_sc := clamp(attendees_sc + hlp$previous_attendees)]
-    dt$pop[, c("hc_eff_sm") := NULL]
+    if ("hc_eff_sm" %in% names(dt$pop)) {dt$pop[, c("hc_eff_sm") := NULL]}
     # TODO I can calculate the effect of xps change to disease prb for
     # efficiency No need to recalculate disease probability for everyone only
     # apply disease impact on attendees (works only with kismet == TRUE)

@@ -63,8 +63,9 @@ t2dm_model <-
                                 bpmed_curr_xps,
                                 ethnicity, fam_t2dm, smoke_cat_sc, tds)]
 
-      dt[age < max(design_$sim_prm$ageL, 30L),
-         `:=` (colnam_prb_incd_nocvd = 0, colnam_incd_cvd_mltp = 1)]
+      dt[age < max(design_$sim_prm$ageL, 30L), (colnam_prb_incd_nocvd) := 0]
+      dt[age < max(design_$sim_prm$ageL, 30L), (colnam_incd_cvd_mltp) := 1]
+      
       # OR for statins on t2dm from Sattar N, Preiss D, Murray HM, Welsh P,
       # Buckley BM, de Craen AJ, et al. Statins and risk of incident diabetes: a
       # collaborative meta-analysis of randomised statin trials. The Lancet

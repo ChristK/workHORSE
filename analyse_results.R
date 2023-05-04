@@ -82,14 +82,28 @@ cumsum_dt = melt(cumsum_dt, id.vars = c("friendly_name", "mc","year", "sex", "ag
                  variable.name = "variable") # long to wide format
 
 cumsum_dt[, auxv := paste0(variable,'~', friendly_name,'~', year,'~', sex,'~', agegrp,'~', qimd,'~', ethnicity)]
+cumsum_dt[, aux_year_qimd := paste0(variable,'~', friendly_name,'~', year,'~', qimd)]
 write_fst(cumsum_dt, "cumsum_dt.fst", 100L)
 
 cumsum_dt = read.fst("./cumsum_dt.fst", as.data.table = TRUE)
 setkey(cumsum_dt, auxv)
-ttt = cumsum_dt[, CKutils::fquantile_byid(value, q = c(0.5, 0.025, 0.975), id = auxv, rounding = TRUE)]
-setnames(ttt, new = c("auxv", "median", "lui", 'hui'))
-ttt[, c("variable", "friendly_name", "year", "sex", "agegrp", "qimd", "ethnicity") := 
+quantile_dt = cumsum_dt[, CKutils::fquantile_byid(value, q = c(0.5, 0.025, 0.975), id = auxv, rounding = TRUE)]
+setnames(quantile_dt, new = c("auxv", "median", "lui", 'hui'))
+quantile_dt[, c("variable", "friendly_name", "year", "sex", "agegrp", "qimd", "ethnicity") := 
       tstrsplit(auxv, '~', fixed = TRUE)]
-setcolorder(ttt, )
+quantile_dt = quantile_dt[, c("year", "friendly_name", "sex" ,"agegrp" ,"qimd" ,"ethnicity", "variable" ,
+                  "median", "lui", "hui" )]
 
-write.csv(cumsum_dt, "analysed_result.csv" )
+write.csv(quantile_dt, "analysed_result.csv" )
+
+# write by year, qimd for bar plot
+setkey(cumsum_dt, aux_year_qimd)
+ttt = cumsum_dt[, CKutils::fquantile_byid(value, q = c(0.5, 0.025, 0.975), id = aux_year_qimd, rounding = TRUE)]
+setnames(ttt, new = c("auxv", "median", "lui", 'hui'))
+quantile_dt[, c("variable", "friendly_name", "year", "qimd") := 
+              tstrsplit(auxv, '~', fixed = TRUE)]
+quantile_dt = quantile_dt[, c("year", "friendly_name", "qimd", "variable" ,
+                              "median", "lui", "hui" )]
+
+write.csv(quantile_dt, "result_year_qimd.csv" )
+
