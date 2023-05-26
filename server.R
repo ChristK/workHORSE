@@ -155,17 +155,16 @@ server = function(input, output, session) {
           value = 0,
           {
             # TODO remove before release
-# 
-            if (file.exists(file.path(design$sim_prm$output_dir, "smk_output.csv")))
-              file.remove(file.path(design$sim_prm$output_dir, "smk_output.csv"))
-            
-            if (file.exists(file.path(design$sim_prm$output_dir, "results.fst"))) {
-              # out <- read_fst(file.path(design$sim_prm$output_dir, "results.fst"), as.data.table = TRUE)
-              # out 
-              # Display results: uncomment two lines of 'out' and comment out [if("smk_output.csv) file.remove]; [file.remove, run_simulation]
-              file.remove(file.path(design$sim_prm$output_dir, "results.fst"))
 
-              run_simulation(parameters, design, FALSE)
+# if (file.exists(file.path(design$sim_prm$output_dir, "smk_output.csv")))
+#   file.remove(file.path(design$sim_prm$output_dir, "smk_output.csv"))
+
+            if (file.exists(file.path(design$sim_prm$output_dir, "results.fst"))) {
+              out <- read_fst(file.path(design$sim_prm$output_dir, "results.fst"), as.data.table = TRUE)
+              out
+              # Display results: uncomment two lines of 'out' and comment out [if("smk_output.csv) file.remove]; [file.remove, run_simulation]
+              # file.remove(file.path(design$sim_prm$output_dir, "results.fst"))
+              # run_simulation(parameters, design, FALSE)
             } else {
               
               run_simulation(parameters, design, FALSE)

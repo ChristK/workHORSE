@@ -12,6 +12,21 @@ design$get_lags(mc_iter)
 # for (i in 1:100) dt0$delete_synthpop(i)
 dt <- SynthPop$new(mc_iter, design) # run until ncc , with problems on 5(frt, veg, smok all, hdl, alcohol)
 
+pop_size <- groupingsets(
+  dt$pop,
+  j = .N,
+  by = c("year", "sex",  "qimd"),
+  # .SDcols = xps,
+  sets = list(
+    c("year", "sex",  "qimd"),
+    c("year", "sex"),
+    c("year", "qimd"),
+    c("year")
+  )
+)[, `:=` (year = year + 2000L)]
+for (j in seq_len(ncol(pop_size)))
+  set(pop_size, which(is.na(pop_size[[j]])), j, "All")
+
 # dt0 <- SynthPop$new(0, design)
 # lapply(dt$pop, anyNA) # chekcing NA
 # anyNA(dt$pop)
@@ -19,7 +34,9 @@ dt <- SynthPop$new(mc_iter, design) # run until ncc , with problems on 5(frt, ve
 pop_orig <- copy(dt$pop)
 
 output_chunk  <- list() # quicker way to start from: here + dt <- SynthPop
-run_scenario("sc1", mc_iter, dt, parameters_dt, design, output_chunk) #sc-the name of the scenario that needs to be checked 
+#run_scenario("sc1", mc_iter, dt, parameters_dt, design, output_chunk) #sc-the name of the scenario that needs to be checked 
+run_simulation(parameters, design) #sc-the name of the scenario that needs to be checked 
+
 pop_sc1 <- copy(dt$pop)
 
 run_scenario("sc2", mc_iter, dt, parameters_dt, design, output_chunk) #sc-the name of the scenario that needs to be checked 

@@ -2772,6 +2772,24 @@ export_smok <- function(mc_,
   )[, `:=` (year = year + 2000L, mc = mc_)]
   for (j in seq_len(ncol(out_smok)))
     set(out_smok, which(is.na(out_smok[[j]])), j, "All")
+  
+  pop_size <- groupingsets(
+    dt,
+    j = .N,
+    by = c("year", "sex", "agegrp10", "qimd", "scenario"),
+    sets = list(
+      c("year", "sex", "agegrp10", "qimd", "scenario"),
+      c("year", "sex", "scenario"),
+      c("year", "agegrp10", "scenario"),
+      c("year", "qimd", "scenario"),
+      c("year", "scenario")
+    )
+  )[, `:=` (year = year + 2000L)]
+  for (j in seq_len(ncol(pop_size)))
+    set(pop_size, which(is.na(pop_size[[j]])), j, "All")
+  
+    absorb_dt(out_smok, pop_size, on = c("year", "sex", "agegrp10", "qimd", "scenario"))
+
   dt[, c(
     "agegrp10",
     "smok_never_smok_xps",
@@ -2780,6 +2798,7 @@ export_smok <- function(mc_,
   ) := NULL]
   
   setkey(out_smok, year)
+    
   if (write_to_disk)
     fwrite_safe(out_smok, output_dir(filenam))
   invisible(out_smok)
@@ -3230,7 +3249,16 @@ run_simulation <- function(parameters, design, final = FALSE) {
 
   while (sink.number() > 0L)
     sink()
-
+  
+  smoke_dt = fread(output_dir("smk_output.csv"), stringsAsFactors = TRUE)
+  smoke_dt = smoke_dt[, .('smok_never_smok_xps' = weighted.mean(smok_never_smok_xps, N),
+                          'smok_active_smok_xps' = weighted.mean(smok_active_smok_xps, N),
+                          'smok_intensity_smok_xps' = weighted.mean(smok_intensity_smok_xps, N),
+                          "N" = sum(N)),
+                      by = .(year, sex, agegrp10, qimd, scenario, mc)]
+  fwrite(smoke_dt, output_dir("smk_output.csv"))
+  rm(smoke_dt)
+  
   output <- fread(output_dir("intermediate_out.csv"), stringsAsFactors = TRUE)
 
   tt <- fromGUI_scenario_names(parameters_dt)

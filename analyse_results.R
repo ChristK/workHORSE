@@ -3,9 +3,8 @@ library(data.table)
 library(ggplot2)
 
 # make the smoke prevalence thingy - 1hr
-dt = read.fst("./results.fst")
-dt = setDT(dt)
-smoke_prev = fread("./smk_output.csv", data.table = TRUE)
+dt = read.fst("/mnt/storage_fast/output/hint/results.fst", as.data.table = TRUE)
+smoke_prev = fread("/mnt/storage_fast/output/hint/smk_output.csv", data.table = TRUE)
 
 # analyse data
 colnames = c('mc', 'friendly_name', 'year', 'sex', 'agegrp', 'qimd', 'ethnicity', 
@@ -74,36 +73,62 @@ cumsum_dt = tt[, `:=`(pops_cml = round(cumsum(pops)),
 by = c("friendly_name", "mc", "sex", "agegrp", "qimd", "ethnicity")]
 
 # filter by timepoint
-cumsum_dt = cumsum_dt[year %in% c(2030, 2047, 2072)] #starting 2023
+#cumsum_dt = cumsum_dt[year %in% c(2030, 2047, 2072)] #starting 2023
+cumsum_dt = cumsum_dt[year %in% c(2030, 2047, 2072, 2045, 2046)] #starting 2023
 
 # wide to long format
 cumsum_dt = melt(cumsum_dt, id.vars = c("friendly_name", "mc","year", "sex", "agegrp", "qimd", "ethnicity"),
                  value.name = "value",
                  variable.name = "variable") # long to wide format
 
-cumsum_dt[, auxv := paste0(variable,'~', friendly_name,'~', year,'~', sex,'~', agegrp,'~', qimd,'~', ethnicity)]
-cumsum_dt[, aux_year_qimd := paste0(variable,'~', friendly_name,'~', year,'~', qimd)]
-write_fst(cumsum_dt, "cumsum_dt.fst", 100L)
+# format to different table
 
-cumsum_dt = read.fst("./cumsum_dt.fst", as.data.table = TRUE)
-setkey(cumsum_dt, auxv)
-quantile_dt = cumsum_dt[, CKutils::fquantile_byid(value, q = c(0.5, 0.025, 0.975), id = auxv, rounding = TRUE)]
+ttt = copy(cumsum_dt)
+ttt[, auxv := paste0(variable,'~', friendly_name,'~', year,'~', sex,'~', agegrp,'~', qimd,'~', ethnicity)]
+setkey(ttt, auxv)
+quantile_dt = ttt[, CKutils::fquantile_byid(value, q = c(0.5, 0.025, 0.975), id = auxv, rounding = TRUE)]
 setnames(quantile_dt, new = c("auxv", "median", "lui", 'hui'))
 quantile_dt[, c("variable", "friendly_name", "year", "sex", "agegrp", "qimd", "ethnicity") := 
-      tstrsplit(auxv, '~', fixed = TRUE)]
-quantile_dt = quantile_dt[, c("year", "friendly_name", "sex" ,"agegrp" ,"qimd" ,"ethnicity", "variable" ,
-                  "median", "lui", "hui" )]
-
-write.csv(quantile_dt, "analysed_result.csv" )
-
-# write by year, qimd for bar plot
-setkey(cumsum_dt, aux_year_qimd)
-ttt = cumsum_dt[, CKutils::fquantile_byid(value, q = c(0.5, 0.025, 0.975), id = aux_year_qimd, rounding = TRUE)]
-setnames(ttt, new = c("auxv", "median", "lui", 'hui'))
-quantile_dt[, c("variable", "friendly_name", "year", "qimd") := 
               tstrsplit(auxv, '~', fixed = TRUE)]
-quantile_dt = quantile_dt[, c("year", "friendly_name", "qimd", "variable" ,
+quantile_dt = quantile_dt[, c("year", "friendly_name", "sex" ,"agegrp" ,"qimd" ,"ethnicity", "variable" ,
                               "median", "lui", "hui" )]
+write.csv(quantile_dt, "/mnt/storage_fast/output/hint/output/quantile_by_all_variable.csv" )
 
-write.csv(quantile_dt, "result_year_qimd.csv" )
+remove(ttt)
+remove(quantile_dt)
+
+ttt = copy(cumsum_dt)
+ttt[, auxv := paste0(variable,'~', friendly_name,'~', year,'~', qimd)]
+setkey(ttt, auxv)
+ttt = ttt[, value := sum(value), by = .(auxv, variable, mc, friendly_name, year, sex, agegrp, qimd)]
+quantile_dt = ttt[, CKutils::fquantile_byid(value, q = c(0.5, 0.025, 0.975), id = auxv, rounding = TRUE)]
+setnames(quantile_dt, new = c("auxv", "median", "lui", 'hui'))
+quantile_dt[, c("variable", "friendly_name", "year",  "qimd") := 
+              tstrsplit(auxv, '~', fixed = TRUE)]
+quantile_dt = quantile_dt[, c("year", "friendly_name", "qimd" , "variable" ,
+                              "median", "lui", "hui" )]
+quantile_dt[year == 2072 & variable == "cpp_all_cause_cml" & friendly_name == "SSS and taxation"]
+quantile_dt[year == 2072 & variable == "cpp_all_cause_cml" & friendly_name == "SSS and taxation", signif(median,2)]
+quantile_dt[year == 2072 & variable == "cpp_all_cause_cml" & friendly_name == "SSS and taxation", signif(lui,2)]
+quantile_dt[year == 2072 & variable == "cpp_all_cause_cml" & friendly_name == "SSS and taxation", signif(hui,2)]
+quantile_dt[year == 2072 & variable == "cypp_all_cause_cml" & friendly_name == "taxation"]
+write.csv(quantile_dt, "/mnt/storage_fast/output/hint/output/quantile_by_qimd_year.csv" )
+
+remove(ttt)
+ttt = copy(cumsum_dt)
+ttt[, auxv := paste0(variable,'~', friendly_name,'~', year)]
+setkey(ttt, auxv)
+ttt = ttt[, value := sum(value), by = .(auxv, mc, variable)]
+quantile_dt = ttt[, CKutils::fquantile_byid(value, q = c(0.5, 0.025, 0.975), id = auxv, rounding = TRUE)]
+setnames(quantile_dt, new = c("auxv", "median", "lui", 'hui'))
+quantile_dt[, c("variable", "friendly_name", "year") := 
+              tstrsplit(auxv, '~', fixed = TRUE)]
+quantile_dt = quantile_dt[, c("year", "friendly_name", "variable" ,
+                              "median", "lui", "hui" )]
+quantile_dt[year %in% c(2046, 2045) & friendly_name %in% c("MALA 21", "SSS") & variable == "cpp_all_cause_cml"]
+quantile_dt[year == 2045 & friendly_name %in% c("MALA 21", "SSS") & variable == "cpp_all_cause_cml", signif(median,2)]
+quantile_dt[year == 2045 & friendly_name %in% c("MALA 21", "SSS") & variable == "cpp_all_cause_cml", signif(lui,2)]
+quantile_dt[year == 2045 & friendly_name %in% c("MALA 21", "SSS") & variable == "cpp_all_cause_cml", signif(hui,2)]
+write.csv(quantile_dt, "/mnt/storage_fast/output/hint/output/quantile_by_year.csv" )
+
 
