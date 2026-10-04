@@ -1,7 +1,7 @@
 Package: workHORSEmisc
 Type: Package
 Title: Utility Functions for workHORSE Model
-Version: 0.0.2
+Version: 0.0.3
 Date: 2019-09-29
 Author: Chris Kypridemos
 Maintainer: Chris Kypridemos <christodoulosk@gmail.com>
@@ -24,6 +24,8 @@ Imports: Rcpp (>= 1.0.2),
          yaml,
          shinythemes,
          foreach
+Suggests: testthat (>= 3.0.0)
 LinkingTo: Rcpp, 
            dqrng
 Config/roxygen2/version: 8.1.0
+Config/testthat/edition: 3

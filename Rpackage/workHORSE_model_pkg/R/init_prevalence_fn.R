@@ -78,7 +78,7 @@ init_prevalence <- function(mc, dt, design_, timing = TRUE) {
   col_nam <- setdiff(names(tbl), names(dt))
   absorb_dt(dt, tbl)
   dt[copd_prvl == 1L,
-     copd_prvl := 2L + qGEOM(dqrunif(.N), clamp(mu - 2, 0, Inf), sigma)] # +2 to avoid 0 and bias prevalence
+     copd_prvl := 2L + qGEOM(p = dqrunif(.N), mu = clamp(mu - 2, 0, Inf))] # +2 to avoid 0 and bias prevalence
   dt[copd_prvl > age, copd_prvl := age]
   dt[, (col_nam) := NULL]
   dt[, copd_prvl := carry_backward(copd_prvl, pid_mrk)] # Not strictly necessary
