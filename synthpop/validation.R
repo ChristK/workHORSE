@@ -82,7 +82,6 @@ dependencies(
     "gamlss.dist",
     # For distr in prevalence.R
     "dqrng",
-    "qs",
     "fst",
     "wrswoR",
     "ggplot2",
@@ -99,7 +98,7 @@ options(datatable.showProgress = FALSE)
 
 design <-
   Design$new("./validation/sim_design_for_trends_validation.yaml")
-parameters <- qread("./validation/parameters.qs")
+parameters <- readRDS("./validation/parameters.rds")
 parameters <- fromGUI_prune(parameters) # TODO delete for production
 design$update_fromGUI(parameters)
 

@@ -152,9 +152,9 @@ server = function(input, output, session) {
         parameters <- fromGUI_prune(reactiveValuesToList(input))
         design$update_fromGUI(parameters)
 
-        qsave(reactiveValuesToList(input, all.names = TRUE),
-          file.path(design$sim_prm$output_dir, "input.qs"))
-        qsave(parameters, file.path(design$sim_prm$output_dir, "parameters.qs"))
+        saveRDS(reactiveValuesToList(input, all.names = TRUE),
+          file.path(design$sim_prm$output_dir, "input.rds"))
+        saveRDS(parameters, file.path(design$sim_prm$output_dir, "parameters.rds"))
 
         withProgress(message = 'Running workHORSE model.',
           detail = 'This may take a couple of minutes...',
@@ -182,9 +182,9 @@ server = function(input, output, session) {
     parameters <- fromGUI_prune(reactiveValuesToList(input))
     design$update_fromGUI(parameters)
 
-    qsave(reactiveValuesToList(input, all.names = TRUE),
-      file.path(design$sim_prm$output_dir, "input.qs"))
-    qsave(parameters, file.path(design$sim_prm$output_dir, "parameters.qs"))
+    saveRDS(reactiveValuesToList(input, all.names = TRUE),
+      file.path(design$sim_prm$output_dir, "input.rds"))
+    saveRDS(parameters, file.path(design$sim_prm$output_dir, "parameters.rds"))
 
     # progress$inc(1/n, detail = paste("Doing part", i))
     withProgress(message = 'Running workHORSE model.',
@@ -213,13 +213,13 @@ server = function(input, output, session) {
         gsub(
           paste0(file.path(design$sim_prm$output_dir, "logs/"), "|.txt$"),
           "", log_files)
-      if (file.exists(file.path(design$sim_prm$output_dir, "input.qs"))) {
+      if (file.exists(file.path(design$sim_prm$output_dir, "input.rds"))) {
         logs$input <-
-          qread(file.path(design$sim_prm$output_dir, "input.qs"))
+          readRDS(file.path(design$sim_prm$output_dir, "input.rds"))
       }
-      if (file.exists(file.path(design$sim_prm$output_dir, "parameters.qs"))) {
+      if (file.exists(file.path(design$sim_prm$output_dir, "parameters.rds"))) {
         logs$parameters <-
-          qread(file.path(design$sim_prm$output_dir, "parameters.qs"))
+          readRDS(file.path(design$sim_prm$output_dir, "parameters.rds"))
       }
       if (file.exists(file.path(design$sim_prm$output_dir, "times.txt"))) {
         logs$times<-

@@ -502,7 +502,6 @@ SynthPop <-
               "gamlss.dist",
               # For distr in prevalence.R
               "dqrng",
-              "qs",
               "fst",
               "CKutils",
               "workHORSEmisc",
@@ -571,7 +570,6 @@ SynthPop <-
               "gamlss.dist",
               # For distr in prevalence.R
               "dqrng",
-              "qs",
               "fst",
               "CKutils",
               "workHORSEmisc",

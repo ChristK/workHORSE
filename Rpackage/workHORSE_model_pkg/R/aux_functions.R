@@ -2188,7 +2188,6 @@ run_simulation <- function(parameters, design, final = FALSE) {
       "workHORSEmisc",
       "gamlss.dist", # For distr in prevalence.R
       "dqrng",
-      "qs",
       "fst",
       "wrswoR",
       "CKutils"
