@@ -167,3 +167,20 @@ You can clone this repository, however, workHORSE uses some large files that
 cannot be uploaded to GitHub repo. These files are uploaded to GitHub releases.
 After you clone this GitHub repo, please source the included R script
 `gh_deploy.R` to download the additional large files.
+
+## Population data
+
+workHORSE scales its synthetic population to ONS population counts for every
+year from 2003 to 2047, so simulations can run up to 2047. Local authorities use
+April 2023 boundaries (296 in England).
+
+- Up to 2025: ONS mid-year estimates.
+- 2026–2047, regions and local authorities: ONS 2022-based subnational
+  population projections (migration category variant, which ONS uses in place
+  of a principal projection for this release).
+- 2026–2047, England: ONS 2024-based national population projections
+  (principal projection). From 2026, England is therefore not the sum of its
+  regions or local authorities.
+
+Sources, licence and how to regenerate the files are in
+[`ONS_data/pop_size/README.md`](ONS_data/pop_size/README.md).
