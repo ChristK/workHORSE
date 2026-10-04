@@ -20,6 +20,7 @@
  Boston, MA 02110-1301 USA. */
 
 #include <Rcpp.h>
+#include <algorithm>
 using namespace Rcpp;
 
 //' @export
@@ -84,7 +85,10 @@ void simsmok(
         case 1: nrow = qimd[i] - 1; break;
         case 2: nrow = qimd[i] + 4; break;
         }
-        if (rn_smok[i] < (pr_relapse(nrow, smok_quit_yrs[i-1] - 1)))
+        // smok_quit_yrs == 0 (quit less than a year ago in the initial
+        // population) is treated as the first year after quitting, so the
+        // column index is clamped at 0.
+        if (rn_smok[i] < (pr_relapse(nrow, std::max(smok_quit_yrs[i-1] - 1, 0))))
         {
           smok_status[i] = 4;
           smok_quit_yrs[i] = 0;
@@ -190,32 +194,36 @@ List simsmok_cessation(const IntegerVector& smok_status,
   IntegerVector out_status = clone(smok_status);
   IntegerVector out_quit_yrs = clone(smok_quit_yrs);
   IntegerVector out_dur = clone(smok_dur);
-  bool marker = false;
+  bool marker = false; // marker == true only while a pid is on the health check (HC) quit path
   int nrow = 0;
 
+  // The scenario follows the baseline trajectory (the clones above) until a
+  // smoker attends a HC and quits (hc_eff == 1 only in the year of the HC, it
+  // is not carried forward). From then on the pid follows its own ex smoker
+  // path (marker == true) until it relapses. After a relapse it follows the
+  // baseline again until a later HC.
   for (int i = 0; i < n; i++)
   {
-    if (!new_pid[i]) // if not a new simulant
-    {
-      if (out_status[i] == 4 && hc_eff[i] == 1) // out_status[i] == 4 not ensured in R side because hc_eff carried forward
-      {
-        marker = true; // marker == true only for pids that quit after a  HC
-        out_status[i] = 3;
-        out_quit_yrs[i] = 1;
-        out_dur[i] = out_dur[i-1];
-      }
-      if (marker && out_status[i-1] == 3 && out_quit_yrs[i-1] <= relapse_cutoff)
+    if (new_pid[i]) marker = false; // reset marker for each pid
+
+    if (marker && out_status[i-1] == 3)
+    { // 1. on the HC quit path. A new HC does not reset smok_quit_yrs
+      if (out_quit_yrs[i-1] <= relapse_cutoff)
       {
         switch (sex[i])
         {
         case 1: nrow = qimd[i] - 1; break;
         case 2: nrow = qimd[i] + 4; break;
         }
-        if (relapse_rn[i] < (pr_relapse(nrow, smok_quit_yrs[i-1] - 1)))
+        // The relapse probability depends on the scenario's own years since
+        // quitting (the baseline may still be a smoker). As in simsmok(), the
+        // column index is clamped at 0.
+        if (relapse_rn[i] < (pr_relapse(nrow, std::max(out_quit_yrs[i-1] - 1, 0))))
         {
           out_status[i] = 4;
           out_quit_yrs[i] = 0;
           out_dur[i] = out_dur[i-1] + 1;
+          marker = false; // back to the baseline until a later HC
         }
         else
         {
@@ -223,25 +231,23 @@ List simsmok_cessation(const IntegerVector& smok_status,
           out_quit_yrs[i] = out_quit_yrs[i-1] + 1;
           out_dur[i] = out_dur[i-1];
         }
-        if (out_status[i-1] == 3 && marker && smok_quit_yrs[i-1] > relapse_cutoff)
-          {
-          out_status[i] = 3;
-          out_quit_yrs[i] = out_quit_yrs[i-1] + 1;
-          out_dur[i] = out_dur[i-1];
-          }
       }
-    }
-    else // if new pid
-    {
-      marker = false; // reset market for each pid
-      if (out_status[i] == 4 && hc_eff[i] == 1) // out_status[i] == 4 not ensured in R side because hc_eff carried forward
-      {
-        marker = true; // marker == true only for pids that quit after a  HC
+      else
+      { // beyond the relapse cut-off: stays an ex smoker, regardless of the baseline
         out_status[i] = 3;
-        out_quit_yrs[i] = 1;
-        out_dur[i] = smok_dur[i] - 1;
+        out_quit_yrs[i] = out_quit_yrs[i-1] + 1;
+        out_dur[i] = out_dur[i-1];
       }
     }
+    else if (out_status[i] == 4 && hc_eff[i] == 1)
+    { // 2. a (baseline) smoker attends a HC this year and quits
+      marker = true;
+      out_status[i] = 3;
+      out_quit_yrs[i] = 1;
+      if (new_pid[i]) out_dur[i] = smok_dur[i] - 1; // no previous year for a new simulant
+      else out_dur[i] = out_dur[i-1];
+    }
+    // 3. otherwise follow the baseline trajectory (the clones)
   }
   return List::create(_["smok_status"]= out_status,
                       _["smok_quit_yrs"]= out_quit_yrs,
