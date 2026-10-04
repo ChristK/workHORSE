@@ -678,15 +678,12 @@ SynthPop <-
       get_unique_LSOAs = function(design_) {
         indx_hlp <-
           read_fst("./synthpop/lsoa_to_locality_indx.fst",
+                   columns = c("LSOA11CD", "LAD23CD"),
                    as.data.table = TRUE)
 
-        if ("England" %in% design_$sim_prm$locality) {
-          lsoas <- indx_hlp[, unique(LSOA11CD)] # national
-        } else {
-          lsoas <-
-            indx_hlp[LAD17NM %in% design_$sim_prm$locality |
-                       RGN11NM %in% design_$sim_prm$locality, unique(LSOA11CD)]
-        }
+        # get_unique_LADs() handles England and stops on unknown names
+        lads <- get_unique_LADs(design_$sim_prm$locality)
+        lsoas <- indx_hlp[LAD23CD %in% lads, unique(LSOA11CD)]
         return(sort(lsoas))
       },
 
@@ -719,8 +716,20 @@ SynthPop <-
 
           lsoas_ <- private$get_unique_LSOAs(design_)
 
+          # Population weights are stored in the primers, so the population
+          # data are part of the checksum. England shares its LSOAs with "all
+          # regions" but uses different population data (2024-based NPP).
+          pop_data <- c(
+            national = "England" %in% design_$sim_prm$locality,
+            vapply(c("./ONS_data/pop_size/pop_proj.fst",
+                     "./ONS_data/pop_size/pop_proj_england.fst"),
+                   function(x) digest::digest(file = x, algo = "md5"),
+                   character(1))
+          )
+
           locality_years_age_id <-
-            digest::digest(paste(lsoas_, fcall, sep = ",", collapse = ","),
+            digest::digest(paste(lsoas_, fcall, pop_data, sep = ",",
+                                 collapse = ","),
                            serialize = FALSE)
           return(locality_years_age_id)
         },
@@ -2187,18 +2196,18 @@ SynthPop <-
       # on ONS. It takes into account synthpop aggregation. So you need to sum
       # all the synthpops belong to the same aggregation to reach the total pop.
       calc_pop_weights = function(dt, design) {
-        tt <-
-          read_fst("./ONS_data/pop_size/pop_proj.fst", as.data.table = TRUE)
-        lads <- get_unique_LADs(design$sim_prm$locality)
-        tt <- tt[LAD17CD %in% lads &
-                   between(age, min(dt$age), max(dt$age)) &
-                   between(year - 2000L, min(dt$year), max(dt$year)),
-                 .(pops = sum(pops)), keyby = .(year, age, sex)]
+        tt <- get_pop_proj(design$sim_prm$locality)[
+          between(age, min(dt$age), max(dt$age)) &
+            between(year - 2000L, min(dt$year), max(dt$year))]
         tt[, year := year - 2000L]
         dt[, wt := .N, by = .(year, age, sex)]
         absorb_dt(dt, tt)
         dt[, wt := pops / (wt * design$sim_prm$n_synthpop_aggregation)]
         dt[, pops := NULL]
+        if (anyNA(dt$wt))
+          stop("ONS population is missing for some year/age/sex cells of ",
+               "the synthpop. ./ONS_data/pop_size/pop_proj*.fst must cover ",
+               min(dt$year) + 2000L, "-", max(dt$year) + 2000L, ".")
 
         invisible(dt)
       }

@@ -28,15 +28,19 @@ if (!require(CKutils)) {
   remotes::install_github("ChristK/CKutils", force = TRUE, upgrade = "never")
   library(CKutils)
 }
-if (!require(workHORSEmisc)) {
+# (re)install when missing or older than the source (bump Version in
+# DESCRIPTION when the package changes)
+if (!nzchar(system.file(package = "workHORSEmisc")) ||
+    packageVersion("workHORSEmisc") <
+    read.dcf("./Rpackage/workHORSE_model_pkg/DESCRIPTION", "Version")[[1]]) {
   if (!require(remotes))
     install.packages("remotes")
   roxygen2::roxygenise("./Rpackage/workHORSE_model_pkg/", clean = TRUE)
   # TODO remove before deployment
   remotes::install_local("./Rpackage/workHORSE_model_pkg/", force = TRUE,
     upgrade = "never")
-  library(workHORSEmisc)
 }
+library(workHORSEmisc)
 
 options(rgl.useNULL = TRUE)  # suppress error by demography in rstudio server
 dependencies(yaml::read_yaml("./dependencies.yaml"))

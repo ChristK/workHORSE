@@ -158,6 +158,13 @@ Design <-
       #' @param GUI_prm A GUI parameter object.
       #' @return The `Design` object.
       update_fromGUI = function(GUI_prm) {
+        # synthpops (and population data) only extend to the maximum horizon
+        timeframe <- fromGUI_timeframe(GUI_prm)
+        if (timeframe[["init year"]] + timeframe[["horizon"]] >
+            self$sim_prm$init_year_long + self$sim_prm$sim_horizon_max)
+          stop("The simulation cannot go beyond ",
+               self$sim_prm$init_year_long + self$sim_prm$sim_horizon_max,
+               " (init_year_long + sim_horizon_max in the design file).")
         self$sim_prm$national_qimd       <- GUI_prm$national_qimd_checkbox
         # T = use national qimd, F = use local qimd
         self$sim_prm$init_year_fromGUI   <-

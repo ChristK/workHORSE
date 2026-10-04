@@ -20,33 +20,55 @@
 ## Boston, MA 02110-1301 USA.
 
 
-# get all unique LADs included in locality vector. KEEP!!!
+# get all unique LADs (April 2023 boundaries) included in locality vector.
+# KEEP!!!
 #' @export
 get_unique_LADs <- function(locality) {
   indx_hlp <-
     read_fst("./synthpop/lsoa_to_locality_indx.fst",
+             columns = c("LAD23CD", "LAD23NM", "RGN11NM"),
              as.data.table = TRUE)
 
+  unknown <- setdiff(locality, c("England", levels(indx_hlp$LAD23NM),
+                                 levels(indx_hlp$RGN11NM)))
+  if (length(unknown) > 0L)
+    stop("Unknown locality: ", paste(unknown, collapse = ", "),
+         ". Local authorities use April 2023 boundaries.")
+
   if ("England" %in% locality) {
-    lads <- indx_hlp[, unique(LAD17CD)] # national
+    lads <- indx_hlp[, unique(LAD23CD)] # national
   } else {
     lads <-
-      indx_hlp[LAD17NM %in% locality |
-                 RGN11NM %in% locality, unique(LAD17CD)]
+      indx_hlp[LAD23NM %in% locality |
+                 RGN11NM %in% locality, unique(LAD23CD)]
   }
-  return(lads)
+  return(as.character(lads))
+}
+
+# Get ONS population (estimates and projections) by year, age and sex for the
+# input localities. England uses the 2024-based NPP from 2026, so it is not the
+# sum of its LAs (2022-based SNPP). KEEP!!!
+#' @export
+get_pop_proj <- function(locality) {
+  if ("England" %in% locality) { # national
+    tt <- read_fst("./ONS_data/pop_size/pop_proj_england.fst",
+                   as.data.table = TRUE)
+  } else {
+    lads <- get_unique_LADs(locality)
+    tt <- read_fst("./ONS_data/pop_size/pop_proj.fst",
+                   columns = c("year", "age", "sex", "LAD23CD", "pops"),
+                   as.data.table = TRUE)[LAD23CD %in% lads]
+  }
+  tt[, .(pops = sum(pops)), keyby = .(year, age, sex)]
 }
 
 # Get dt projections for the input localities. KEEP!!!
 #' @export
 get_pop_size <- function(design, parameters) {
-  tt <- read_fst("./ONS_data/pop_size/pop_proj.fst", as.data.table = TRUE)
-  lads <- get_unique_LADs(parameters$locality_select)
-  tt <- tt[LAD17CD %in% lads &
-             between(age, design$ageL, design$ageH) &
+  tt <- get_pop_proj(parameters$locality_select)
+  tt <- tt[between(age, design$ageL, design$ageH) &
              between(year, parameters$ininit_year_slider_sc1,
-                     parameters$inout_year_slider),
-           .(pops = sum(pops)), keyby = .(year, age, sex)]
+                     parameters$inout_year_slider)]
 
   return(tt)
 }
