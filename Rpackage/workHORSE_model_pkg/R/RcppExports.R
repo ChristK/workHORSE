@@ -91,6 +91,32 @@ my_qDPO <- function(p, mu, sigma, lower_tail = TRUE, log_p = FALSE, max_value = 
     .Call('_workHORSEmisc_my_qDPO', PACKAGE = 'workHORSEmisc', p, mu, sigma, lower_tail, log_p, max_value, n_cpu)
 }
 
+#' Quantile function of the generalised Poisson distribution
+#'
+#' Replaces \code{gamlss.dist::qGPO}, which is broken in gamlss.dist 6.1-11
+#' (\code{dGPO} returns the Poisson density whenever \code{sigma > 1e-06}, so
+#' that \code{qGPO} returns Poisson quantiles). \code{my_qGPO} reproduces the
+#' results of \code{qGPO} from gamlss.dist 6.1-1, the last release with a
+#' correct generalised Poisson, but is much faster. The quantile is the
+#' smallest integer \code{x} for which the cdf is at least \code{p}. The cdf is
+#' the sum of the pmf up to \code{x}, except for \code{sigma < 1e-04} where it
+#' is the Poisson cdf.
+#'
+#' @param p vector of probabilities.
+#' @param mu,sigma vectors of the parameters of the distribution. Both must be
+#'   positive and finite. \code{mu} is the mean and the variance is
+#'   \code{mu * (1 + sigma * mu)^2}. Vectors of length one are recycled.
+#' @param lower_tail,log_p as in \code{\link[stats]{qpois}}.
+#' @param max_value the largest quantile that can be returned.
+#' @param n_cpu number of OpenMP threads, if the package is built with OpenMP.
+#'   It does not affect the results.
+#' @return A numeric vector of non-negative whole numbers, \code{Inf} for
+#'   \code{p} within 1e-09 of 1, as \code{gamlss.dist::qGPO} does.
+#' @export
+my_qGPO <- function(p, mu, sigma, lower_tail = TRUE, log_p = FALSE, max_value = 10000L, n_cpu = 1L) {
+    .Call('_workHORSEmisc_my_qGPO', PACKAGE = 'workHORSEmisc', p, mu, sigma, lower_tail, log_p, max_value, n_cpu)
+}
+
 #' @export
 run_impactncd_simulation <- function(simulationStructureList, frame, input_list) {
     .Call('_workHORSEmisc_run_impactncd_simulation', PACKAGE = 'workHORSEmisc', simulationStructureList, frame, input_list)

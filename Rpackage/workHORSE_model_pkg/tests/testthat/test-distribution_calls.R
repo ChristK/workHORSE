@@ -67,7 +67,9 @@ test_that("gamlss.dist d/p/q/r calls bind only distribution parameters", {
                    label = paste0(f, ": ", paste(deparse(cl, width.cutoff = 500L), collapse = " ")))
     }
   }
-  expect_true(all(c("qNBI", "qPIG", "qGEOM", "qGPO") %in% seen)) # the sweep found the calls
+  expect_true(all(c("qNBI", "qPIG", "qGEOM") %in% seen)) # the sweep found the calls
+  # qGPO of gamlss.dist 6.1-11 returns Poisson quantiles; the package uses my_qGPO()
+  expect_false("qGPO" %in% seen)
   # every gamlss.dist function called is imported, not found through the search path
   expect_identical(setdiff(unique(seen), ls(parent.env(asNamespace("workHORSEmisc")))), character())
 })

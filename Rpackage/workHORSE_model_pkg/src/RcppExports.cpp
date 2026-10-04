@@ -312,6 +312,23 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// my_qGPO
+NumericVector my_qGPO(const NumericVector& p, const NumericVector& mu, const NumericVector& sigma, const bool& lower_tail, const bool& log_p, const int& max_value, const int& n_cpu);
+RcppExport SEXP _workHORSEmisc_my_qGPO(SEXP pSEXP, SEXP muSEXP, SEXP sigmaSEXP, SEXP lower_tailSEXP, SEXP log_pSEXP, SEXP max_valueSEXP, SEXP n_cpuSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const NumericVector& >::type p(pSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< const NumericVector& >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< const bool& >::type lower_tail(lower_tailSEXP);
+    Rcpp::traits::input_parameter< const bool& >::type log_p(log_pSEXP);
+    Rcpp::traits::input_parameter< const int& >::type max_value(max_valueSEXP);
+    Rcpp::traits::input_parameter< const int& >::type n_cpu(n_cpuSEXP);
+    rcpp_result_gen = Rcpp::wrap(my_qGPO(p, mu, sigma, lower_tail, log_p, max_value, n_cpu));
+    return rcpp_result_gen;
+END_RCPP
+}
 // run_impactncd_simulation
 List run_impactncd_simulation(const List& simulationStructureList, const DataFrame& frame, const List& input_list);
 RcppExport SEXP _workHORSEmisc_run_impactncd_simulation(SEXP simulationStructureListSEXP, SEXP frameSEXP, SEXP input_listSEXP) {
@@ -746,6 +763,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_workHORSEmisc_my_dDPO", (DL_FUNC) &_workHORSEmisc_my_dDPO, 5},
     {"_workHORSEmisc_my_pDPO", (DL_FUNC) &_workHORSEmisc_my_pDPO, 5},
     {"_workHORSEmisc_my_qDPO", (DL_FUNC) &_workHORSEmisc_my_qDPO, 7},
+    {"_workHORSEmisc_my_qGPO", (DL_FUNC) &_workHORSEmisc_my_qGPO, 7},
     {"_workHORSEmisc_run_impactncd_simulation", (DL_FUNC) &_workHORSEmisc_run_impactncd_simulation, 3},
     {"_workHORSEmisc_my_qMN4", (DL_FUNC) &_workHORSEmisc_my_qMN4, 7},
     {"_workHORSEmisc_my_dSICHEL", (DL_FUNC) &_workHORSEmisc_my_dSICHEL, 6},

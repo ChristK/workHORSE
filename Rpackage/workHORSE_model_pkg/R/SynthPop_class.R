@@ -1784,7 +1784,11 @@ SynthPop <-
             col_nam <-
               setdiff(names(tbl), intersect(names(dt), names(tbl)))
             absorb_dt(dt, tbl)
-            dt[t2dm_prvl == 1L, t2dm_prvl := 2L + rpois(.N, 3L) + qGPO(dqrunif(.N), mu, sigma)] # +2 to avoid confussion with incd
+            # my_qGPO() returns Inf for p >= 1 - 1e-9 (as gamlss.dist), which
+            # would be NA in the integer column; cap p just below
+            dt[t2dm_prvl == 1L, t2dm_prvl := 2L + rpois(.N, 3L) +
+                 my_qGPO(p = pmin(dqrunif(.N), 1 - 2e-9), mu = mu, sigma = sigma,
+                         n_cpu = design_$sim_prm$n_cpus)] # +2 to avoid confussion with incd
             # rpois(.N, 3L) to assume 3 year mean period from onset till
             # diagnosis because the model was fitted in diagnosed patients
             dt[t2dm_prvl > age, t2dm_prvl := age]

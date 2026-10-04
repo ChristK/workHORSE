@@ -36,7 +36,7 @@
 #' @importFrom mc2d qpert
 #' @importFrom cowplot ggsave2
 #' @importFrom gamlss fitDist fitDistPred predictAll
-#' @importFrom gamlss.dist qGB1 qGEOM qGPO qNBI qPIG qZINBI rBE
+#' @importFrom gamlss.dist qGB1 qGEOM qNBI qPIG qZINBI rBE
 #' @importFrom stats as.formula na.omit qunif var weighted.mean loess predict qbinom
 #' @importFrom stats quantile rbinom rpois runif
 #' @importFrom utils tail

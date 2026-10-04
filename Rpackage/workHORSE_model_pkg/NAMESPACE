@@ -112,6 +112,7 @@ export(my_qBCT)
 export(my_qBNB)
 export(my_qDEL)
 export(my_qDPO)
+export(my_qGPO)
 export(my_qMN4)
 export(my_qSICHEL)
 export(my_qZABNB)
@@ -183,7 +184,6 @@ importFrom(gamlss,
 importFrom(gamlss.dist,
   qGB1,
   qGEOM,
-  qGPO,
   qNBI,
   qPIG,
   qZINBI,
