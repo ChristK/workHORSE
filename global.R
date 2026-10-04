@@ -98,7 +98,7 @@ localities_indx <- read_fst("./synthpop/lsoa_to_locality_indx.fst", as.data.tabl
 localitities_list <- list(
   "Country" = list("England"),
   "Region" = sort(as.character((localities_indx[, unique(RGN11NM)]))),
-  "Local Authority" = sort(as.character((localities_indx[, unique(LAD17NM)])))
+  "Local Authority" = sort(as.character((localities_indx[, unique(LAD23NM)])))
 )
 rm(localities_indx)
 

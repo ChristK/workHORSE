@@ -8,7 +8,7 @@ export_xps: no
 n_synthpop_aggregation: 2 # number of synthpops to aggregate together
 n_primers: 10 # better be some multiple of n_synthpop_aggregation
 init_year_long: 2013
-sim_horizon_max: 28 # population projections do not support longer horizon
+sim_horizon_max: 34 # 2013 + 34 = 2047, the last year of the population data (ONS_data/pop_size)
 ageL: 30
 ageH: 89
 cvd_lag: 4

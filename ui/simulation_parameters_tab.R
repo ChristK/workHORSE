@@ -55,9 +55,9 @@ tabPanel(
       sliderInput(
         "simulation_period_slider",
         "Period to simulate",
-        2013,
-        2041,
-        c(2021, 2041),
+        design$sim_prm$init_year_long,
+        design$sim_prm$init_year_long + design$sim_prm$sim_horizon_max,
+        c(2021, design$sim_prm$init_year_long + design$sim_prm$sim_horizon_max),
         1,
         sep = "",
         ticks = FALSE
