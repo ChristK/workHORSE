@@ -1,7 +1,7 @@
 Package: workHORSEmisc
 Type: Package
 Title: Utility Functions for workHORSE Model
-Version: 0.0.5
+Version: 0.0.6
 Date: 2019-09-29
 Author: Chris Kypridemos
 Maintainer: Chris Kypridemos <christodoulosk@gmail.com>
@@ -17,6 +17,7 @@ Imports: Rcpp (>= 1.0.2),
          dqrng,
          CKutils, 
          gamlss,
+         gamlss.dist,
          cowplot,
          mc2d,
          digest,

@@ -1180,7 +1180,7 @@ SynthPop <-
             absorb_dt(dt, tbl)
             dt[, fruit :=
                  my_qZISICHEL(rank_fruit,
-                              mu, sigma, nu, tau, n_cpu = design_$sim_prm$n_cpu) * 80L]  # g/d
+                              mu, sigma, nu, tau, n_cpu = design_$sim_prm$n_cpus) * 80L]  # g/d
             dt[, (col_nam) := NULL]
             dt[, rank_fruit := NULL]
 
@@ -1193,7 +1193,7 @@ SynthPop <-
               setdiff(names(tbl), intersect(names(dt), names(tbl)))
             absorb_dt(dt, tbl)
             dt[, veg :=
-                 my_qDEL(rank_veg, mu, sigma, nu, n_cpu = design_$sim_prm$n_cpu) * 80L]  # g/d
+                 my_qDEL(rank_veg, mu, sigma, nu, n_cpu = design_$sim_prm$n_cpus) * 80L]  # g/d
             dt[, (col_nam) := NULL]
             dt[, rank_veg := NULL]
 
@@ -1474,7 +1474,7 @@ SynthPop <-
                                      sigma,
                                      nu,
                                      tau,
-                                     n_cpu = design_$sim_prm$n_cpu)]
+                                     n_cpu = design_$sim_prm$n_cpus)]
             dt[, (col_nam) := NULL]
 
             simsmok_cig(dt) # carry forward smok_cig if smok_status == 3
@@ -1538,7 +1538,7 @@ SynthPop <-
             col_nam <-
               setdiff(names(tbl), intersect(names(dt), names(tbl)))
             absorb_dt(dt, tbl)
-            dt[, bmi := my_qBCPEo(rank_bmi, mu, sigma, nu, tau, n_cpu = design_$sim_prm$n_cpu)]
+            dt[, bmi := my_qBCPEo(rank_bmi, mu, sigma, nu, tau, n_cpu = design_$sim_prm$n_cpus)]
             dt[, rank_bmi := NULL]
             dt[, (col_nam) := NULL]
 
@@ -1550,7 +1550,7 @@ SynthPop <-
             col_nam <-
               setdiff(names(tbl), intersect(names(dt), names(tbl)))
             absorb_dt(dt, tbl)
-            dt[, sbp := my_qBCPEo(rank_sbp, mu, sigma, nu, tau, n_cpu = design_$sim_prm$n_cpu)]
+            dt[, sbp := my_qBCPEo(rank_sbp, mu, sigma, nu, tau, n_cpu = design_$sim_prm$n_cpus)]
             dt[, rank_sbp := NULL]
             dt[, (col_nam) := NULL]
 
@@ -1580,7 +1580,7 @@ SynthPop <-
             col_nam <-
               setdiff(names(tbl), intersect(names(dt), names(tbl)))
             absorb_dt(dt, tbl)
-            dt[, tchol := my_qBCT(rank_tchol, mu, sigma, nu, tau, n_cpu = design_$sim_prm$n_cpu)]
+            dt[, tchol := my_qBCT(rank_tchol, mu, sigma, nu, tau, n_cpu = design_$sim_prm$n_cpus)]
             dt[, rank_tchol := NULL]
             dt[, (col_nam) := NULL]
 
@@ -1778,6 +1778,8 @@ SynthPop <-
             # t2dm duration (GPO)
             tbl <-
               read_fst("./lifecourse_models/dm_dur_table.fst", as.data.table = TRUE)
+            stopifnot(c("sex", "age", "mu", "sigma") %in% names(tbl),
+                      tbl[, all(mu > 0)], tbl[, all(sigma > 0)])
             tbl[, t2dm_prvl := 1L]
             col_nam <-
               setdiff(names(tbl), intersect(names(dt), names(tbl)))

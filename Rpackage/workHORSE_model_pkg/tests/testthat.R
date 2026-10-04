@@ -20,7 +20,6 @@
 ## Boston, MA 02110-1301 USA.
 
 library(testthat)
-library(gamlss.dist) # q* functions are found via the search path
 library(workHORSEmisc)
 
 test_check("workHORSEmisc")

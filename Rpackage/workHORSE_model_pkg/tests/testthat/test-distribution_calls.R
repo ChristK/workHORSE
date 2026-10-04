@@ -19,8 +19,6 @@
 ## to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 ## Boston, MA 02110-1301 USA.
 
-library(gamlss.dist) # package code finds q* functions via the search path (until declared in Imports)
-
 # Guards against gamlss.dist d/p/q/r calls binding arguments positionally to
 # lower.tail/log.p/log/max.value, and checks the COPD duration statement.
 
@@ -70,9 +68,11 @@ test_that("gamlss.dist d/p/q/r calls bind only distribution parameters", {
     }
   }
   expect_true(all(c("qNBI", "qPIG", "qGEOM", "qGPO") %in% seen)) # the sweep found the calls
+  # every gamlss.dist function called is imported, not found through the search path
+  expect_identical(setdiff(unique(seen), ls(parent.env(asNamespace("workHORSEmisc")))), character())
 })
 
-test_that("COPD duration statement (init_prevalence_fn.R:80-81) runs and is geometric", {
+test_that("COPD duration statement in init_prevalence() runs and is geometric", {
   stmt <- Filter(function(s) "qGEOM" %in% all.names(s),
                  as.list(body(workHORSEmisc::init_prevalence))[-1L])
   expect_length(stmt, 1L)

@@ -180,6 +180,15 @@ importFrom(gamlss,
   fitDistPred,
   predictAll
 )
+importFrom(gamlss.dist,
+  qGB1,
+  qGEOM,
+  qGPO,
+  qNBI,
+  qPIG,
+  qZINBI,
+  rBE
+)
 importFrom(mc2d,qpert)
 importFrom(stats,
   as.formula,
@@ -192,7 +201,6 @@ importFrom(stats,
   rbinom,
   rpois,
   runif,
-  sigma,
   var,
   weighted.mean
 )

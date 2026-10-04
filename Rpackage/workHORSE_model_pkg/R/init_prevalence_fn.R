@@ -31,6 +31,7 @@ init_prevalence <- function(mc, dt, design_, timing = TRUE) {
   tbl <-
     read_fst("./lifecourse_models/chd_duration_table.fst",
       as.data.table = TRUE)
+  stopifnot(c("age", "sex", "mu", "sigma") %in% names(tbl), tbl[, all(mu > 2)])
   tbl[, chd_prvl := 1L]
   col_nam <- setdiff(names(tbl), names(dt))
   absorb_dt(dt, tbl)
@@ -49,6 +50,7 @@ init_prevalence <- function(mc, dt, design_, timing = TRUE) {
   tbl <-
     read_fst("./lifecourse_models/stroke_duration_table.fst",
       as.data.table = TRUE)
+  stopifnot(c("age", "qimd", "mu", "sigma") %in% names(tbl), tbl[, all(mu > 2)])
   tbl[, stroke_prvl := 1L]
   col_nam <- setdiff(names(tbl), names(dt))
   absorb_dt(dt, tbl)
@@ -74,6 +76,7 @@ init_prevalence <- function(mc, dt, design_, timing = TRUE) {
   tbl <-
     read_fst("./lifecourse_models/copd_duration_table.fst",
       as.data.table = TRUE)
+  stopifnot(c("age", "sex", "mu") %in% names(tbl), tbl[, all(mu > 2)])
   tbl[, copd_prvl := 1L]
   col_nam <- setdiff(names(tbl), names(dt))
   absorb_dt(dt, tbl)
