@@ -12,153 +12,163 @@ To be completed...
 \examples{
 
 ## ------------------------------------------------
-## Method `Design$new`
+## Method `Design$new()`
 ## ------------------------------------------------
 
 design <- Design$new("./validation/design_for_trends_validation.yaml")
 }
 \section{Public fields}{
-\if{html}{\out{<div class="r6-fields">}}
-\describe{
-\item{\code{sim_prm}}{The simulation parameters.}
+  \if{html}{\out{<div class="r6-fields">}}
+  \describe{
+    \item{\code{sim_prm}}{The simulation parameters.}
 
-\item{\code{lags_mc}}{The disease lag times.}
+    \item{\code{lags_mc}}{The disease lag times.}
 
-\item{\code{max_lag_mc}}{The longest disease lag time.}
-}
-\if{html}{\out{</div>}}
+    \item{\code{max_lag_mc}}{The longest disease lag time.}
+  }
+  \if{html}{\out{</div>}}
 }
 \section{Methods}{
 \subsection{Public methods}{
-\itemize{
-\item \href{#method-Design-new}{\code{Design$new()}}
-\item \href{#method-Design-save_to_disk}{\code{Design$save_to_disk()}}
-\item \href{#method-Design-update_fromGUI}{\code{Design$update_fromGUI()}}
-\item \href{#method-Design-get_lags}{\code{Design$get_lags()}}
-\item \href{#method-Design-print}{\code{Design$print()}}
-\item \href{#method-Design-clone}{\code{Design$clone()}}
-}
+  \itemize{
+    \item \href{#method-Design-initialize}{\code{Design$new()}}
+    \item \href{#method-Design-save_to_disk}{\code{Design$save_to_disk()}}
+    \item \href{#method-Design-update_fromGUI}{\code{Design$update_fromGUI()}}
+    \item \href{#method-Design-get_lags}{\code{Design$get_lags()}}
+    \item \href{#method-Design-print}{\code{Design$print()}}
+    \item \href{#method-Design-clone}{\code{Design$clone()}}
+  }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Design-new"></a>}}
-\if{latex}{\out{\hypertarget{method-Design-new}{}}}
-\subsection{Method \code{new()}}{
-Create a new design object.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Design$new(sim_prm)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{sim_prm}}{Either a path to a yaml file or a list with
+\if{html}{\out{<a id="method-Design-initialize"></a>}}
+\if{latex}{\out{\hypertarget{method-Design-initialize}{}}}
+\subsection{\code{Design$new()}}{
+  Create a new design object.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Design$new(sim_prm)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{sim_prm}}{Either a path to a yaml file or a list with
 appropriate format.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    A new `Design` object.
+  }
+  \subsection{Examples}{
+    \if{html}{\out{<div class="r example copy">}}
+    \preformatted{design <- Design$new("./validation/design_for_trends_validation.yaml")
 }
-\if{html}{\out{</div>}}
+    \if{html}{\out{</div>}}
+  }
 }
-\subsection{Returns}{
-A new `Design` object.
-}
-\subsection{Examples}{
-\if{html}{\out{<div class="r example copy">}}
-\preformatted{design <- Design$new("./validation/design_for_trends_validation.yaml")
-}
-\if{html}{\out{</div>}}
 
-}
-
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Design-save_to_disk"></a>}}
 \if{latex}{\out{\hypertarget{method-Design-save_to_disk}{}}}
-\subsection{Method \code{save_to_disk()}}{
-Create a new design object.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Design$save_to_disk(path)}\if{html}{\out{</div>}}
+\subsection{\code{Design$save_to_disk()}}{
+  Create a new design object.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Design$save_to_disk(path)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{path}}{Path including file name and extension to save a yaml
+file with the simulation parameters.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    The `Design` object.
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{path}}{Path including file name and extension to save a yaml
-file with the simulation parameters.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-The `Design` object.
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Design-update_fromGUI"></a>}}
 \if{latex}{\out{\hypertarget{method-Design-update_fromGUI}{}}}
-\subsection{Method \code{update_fromGUI()}}{
-Updates the design object from GUI.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Design$update_fromGUI(GUI_prm)}\if{html}{\out{</div>}}
+\subsection{\code{Design$update_fromGUI()}}{
+  Updates the design object from GUI.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Design$update_fromGUI(GUI_prm)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{GUI_prm}}{A GUI parameter object.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    The `Design` object.
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{GUI_prm}}{A GUI parameter object.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-The `Design` object.
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Design-get_lags"></a>}}
 \if{latex}{\out{\hypertarget{method-Design-get_lags}{}}}
-\subsection{Method \code{get_lags()}}{
-Generates the lag per disease for a given Monte
+\subsection{\code{Design$get_lags()}}{
+  Generates the lag per disease for a given Monte
   Carlo iteration (`mc`).
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Design$get_lags(mc_)}\if{html}{\out{</div>}}
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Design$get_lags(mc_)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{mc_}}{An integer for the Monte Carlo iteration.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    The `Design` object invisibly. Updates the fields
+  `lags_mc` and `max_lag_mc`
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{mc_}}{An integer for the Monte Carlo iteration.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-The `Design` object invisibly. Updates the fields
-  `lags_mc` and `max_lag_mc`
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Design-print"></a>}}
 \if{latex}{\out{\hypertarget{method-Design-print}{}}}
-\subsection{Method \code{print()}}{
-Print the simulation parameters.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Design$print()}\if{html}{\out{</div>}}
+\subsection{\code{Design$print()}}{
+  Print the simulation parameters.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Design$print()}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    The `Design` object.
+  }
 }
 
-\subsection{Returns}{
-The `Design` object.
-}
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Design-clone"></a>}}
 \if{latex}{\out{\hypertarget{method-Design-clone}{}}}
-\subsection{Method \code{clone()}}{
-The objects of this class are cloneable with this method.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Design$clone(deep = FALSE)}\if{html}{\out{</div>}}
+\subsection{\code{Design$clone()}}{
+  The objects of this class are cloneable with this method.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Design$clone(deep = FALSE)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{deep}}{Whether to make a deep clone.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{deep}}{Whether to make a deep clone.}
-}
-\if{html}{\out{</div>}}
-}
-}
 }

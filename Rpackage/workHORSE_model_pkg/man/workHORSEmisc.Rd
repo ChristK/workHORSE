@@ -2,6 +2,7 @@
 % Please edit documentation in R/workHORSEmisc.R
 \docType{package}
 \name{workHORSEmisc}
+\alias{workHORSEmisc-package}
 \alias{workHORSEmisc}
 \title{workHORSEmisc: A package with functions for the workHORSE model.}
 \description{
