@@ -51,3 +51,4 @@ lifecourse_models/*.fst
 ONS_data/pop_size/raw/
 simulation/health_econ/productivity_costs_l.fst
 simulation/health_econ/informal_care_costs_l.fst
+*.part

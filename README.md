@@ -166,7 +166,9 @@ sudo docker run -d -v /var/run/docker.sock:/var/run/docker.sock --net sp-example
 You can clone this repository, however, workHORSE uses some large files that
 cannot be uploaded to GitHub repo. These files are uploaded to GitHub releases.
 After you clone this GitHub repo, please source the included R script
-`gh_deploy.R` to download the additional large files.
+`gh_deploy.R` to download the additional large files. It checks every file
+against `gh_deploy_files.csv` and skips files that are already present and
+intact, so it is safe to run again.
 
 ## Population data
 
