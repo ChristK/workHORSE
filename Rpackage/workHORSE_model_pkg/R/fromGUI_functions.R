@@ -47,7 +47,7 @@ fromGUI_prune <- function(parameters) {
   parameters[grepl(tt, names(parameters))] <- NULL
   tt <- "^shinyjs-delay-|^btn-|inTabset|^out_|^next_|shinytheme_selector|previous_"
   parameters[grepl(tt, names(parameters))] <- NULL
-  tt <- "^collapse_panel_|^res_|^load_|^run_simulation_|level|scenario_select"
+  tt <- "^collapse_panel_|^res_|^load_|^run_simulation_|level|scenario_select|^inout_"
   parameters[grepl(tt, names(parameters))] <- NULL
   tt <- "^produce_report|_validator$"
   parameters[grepl(tt, names(parameters))] <- NULL
