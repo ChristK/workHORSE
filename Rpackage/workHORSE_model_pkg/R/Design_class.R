@@ -165,10 +165,10 @@ Design <-
         self$sim_prm$sim_horizon_fromGUI <-
           fromGUI_timeframe(GUI_prm)["horizon"]
         self$sim_prm$locality <- GUI_prm$locality_select
-        if (!GUI_prm$national_qimd_checkbox && "lqimd" %in% self$sim_prm$cols_for_output) {
-          self$sim_prm$cols_for_output <-
-            c(setdiff(self$sim_prm$cols_for_output, "lqimd"), "nqimd")
-        }
+        # if (!GUI_prm$national_qimd_checkbox && "lqimd" %in% self$sim_prm$cols_for_output) {
+        #   self$sim_prm$cols_for_output <-
+        #     c(setdiff(self$sim_prm$cols_for_output, "lqimd"), "nqimd")
+        # }
         self$sim_prm$iteration_n            <- GUI_prm$iteration_n_gui
         self$sim_prm$iteration_n_final      <- GUI_prm$iteration_n_final_gui
         self$sim_prm$n_cpus                 <- GUI_prm$n_cpus_gui
