@@ -432,8 +432,28 @@ server = function(input, output, session) {
   })
 
 
-  diff_year <- reactive({
-    input$inout_year_slider - input$simulation_period_slider[1]
+  # Year 0 for discounting is the first simulated year in the results (Green
+  # Book 2026, para 6.10; NICE PMG36 does not define year 0). It is read from
+  # the results, not from the live Period slider, which can move after a run.
+  discount_base_year <- reactive({
+    res <- if (input$produce_report > 0L) out_report() else out()
+    min(res$year)
+  })
+
+  # The last year comes from the data being shown (it follows the Year filter),
+  # not from the slider: the Year slider is re-rendered when the Period slider
+  # moves after a run.
+  horizon_text <- reactive({
+    yrs <- out_proc()$year
+    req(length(yrs) > 0L)
+    n_years <- max(yrs) - discount_base_year() + 1L
+    paste0(
+      "From ", discount_base_year(), " to ", max(yrs),
+      " (", n_years, if (n_years == 1L) " year; " else " years; ",
+      cost_price_year, " prices; costs discounted at ",
+      input$out_discount_costs_slider, "% and QALYs at ",
+      input$out_discount_qalys_slider, "% a year to ", discount_base_year(), ")"
+    )
   })
 
 
@@ -492,10 +512,7 @@ server = function(input, output, session) {
 
     HTML(
       paste0(
-        "With time horizon of ",
-        diff_year(),
-        " years, starting in year ",
-        input$simulation_period_slider[1],
+        horizon_text(),
         ", the most cost-effective scenario was ",
         order_bcr_sc_nam()[1L],
       " scenario. ",
@@ -573,12 +590,9 @@ server = function(input, output, session) {
 
     HTML(
       paste0(
-        "With time horizon of ",
-        diff_year(),
-        " years, starting in year ",
-        input$simulation_period_slider[1],
-        ": and based on valuing QALYs at ",
-        input$out_wtp_box,
+        horizon_text(),
+        ", and valuing QALYs at £",
+        format(input$out_wtp_box, big.mark = ",", scientific = FALSE),
         ", the scenario with the greatest ",
         tolower(input$health_econ_perspective_checkbox),
         " benefit:cost ratio was ",

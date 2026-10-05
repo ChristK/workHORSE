@@ -184,3 +184,88 @@ April 2023 boundaries (296 in England).
 
 Sources, licence and how to regenerate the files are in
 [`ONS_data/pop_size/README.md`](ONS_data/pop_size/README.md).
+
+## Health economics: discounting and prices
+
+The Output tab discounts costs and QALYs before it calculates cumulative
+values, net monetary benefit (NMB), incremental cost-effectiveness ratios
+(ICERs), benefit:cost ratios and the inequality indices. The settings are in the
+Health Economics menu of the Output tab, where each has an information icon. The
+explanatory text on the Dashboard and Cost-effectiveness tabs states the years
+covered, the price year and the discount rates.
+
+- **Year 0 is the first simulated year.** It is read from the simulation
+  results, not from the Period slider, so moving that slider after a run does
+  not change how results are discounted. Nothing is discounted in year 0. This
+  follows the HM Treasury [Green
+  Book](https://www.gov.uk/government/publications/the-green-book-appraisal-and-evaluation-in-central-government)
+  (2026, paragraph 6.10 and Table 8) and Annex A of its [supplementary guidance
+  on
+  discounting](https://www.gov.uk/government/publications/green-book-supplementary-guidance-discounting).
+  The NICE [health technology evaluations
+  manual](https://www.nice.org.uk/process/pmg36) (PMG36, 4.5.1) requires present
+  values over the time horizon of the analysis but does not define year 0.
+- **Formula.** A cost or a QALY that occurs t years after year 0 is multiplied
+  by `1 / (1 + r)^t`, where r is the annual rate. At 3.5% the factors for years
+  1 to 3 are 0.9662, 0.9335 and 0.9019, and at 1.5% they are 0.9852, 0.9707 and
+  0.9563 (Annex A, Tables A.1 and A.2). The factors are applied to the annual
+  values, before the cumulative sums.
+- **Defaults.** 3.5% a year for costs, 1.5% a year for QALYs, and willingness to
+  pay of £20,000 per QALY. The Green Book discounts costs at 3.5% and health
+  effects at 1.5% in years 1 to 30, and at lower rates after that (3.0% and
+  1.286% in years 31 to 75, Table 3.A of the supplementary guidance). workHORSE
+  applies the rate you choose to every year, which makes no difference within 30
+  years of year 0. The NICE reference case discounts costs and health effects at
+  3.5%, with 1.5% for both as an alternative analysis in specific circumstances
+  (PMG36, 4.5.1 to 4.5.3); to use the NICE rates, set both sliders to 3.5%.
+  NICE guidelines (PMG20) generally consider an ICER below £20,000 per QALY
+  gained cost effective, and technology appraisals (PMG36) have used £25,000 to
+  £35,000 per QALY gained since April 2026.
+- **What is discounted.** Every cost column (names ending in `_cost`, including
+  the net and total costs) and `net_utility`. Total QALYs (`eq5d`), which the
+  relative inequality index and "Most effective" use, are not discounted yet.
+- **Prices.** Costs are in 2019 prices, the price year of the unit costs in
+  `simulation/health_econ/input/` (as in O'Flaherty et al., *Health Technology
+  Assessment* 2021;25(35)), so enter scenario costs in 2019 prices. Costs are
+  discounted but not uprated, whereas the Green Book (paragraph 6.47) would
+  express them in year 0 prices.
+- **CSV downloads.** The summarised results and the raw model output end with
+  six columns that record the settings: `discount_year0`,
+  `discount_rate_costs_pct`, `discount_rate_qalys_pct`, `price_year`,
+  `perspective` and `wtp_gbp_per_qaly`.
+
+### Change from the previous method
+
+Costs and QALYs in year `y` used to be multiplied by `(1 - r)^(y - 2019)`, which
+discounts to 2019, as in the HTA report cited above. Two things have changed:
+
+1. The factor is now the standard `1 / (1 + r)^t`. The previous multiplier was
+   smaller by `(1 - r^2)^t`, which is 1.2% after ten years at 3.5%, so it
+   over-discounted.
+2. Year 0 is now the first simulated year instead of 2019. Costs and QALYs are
+   discounted at different rates, so with 2019 as year 0 their relative weights,
+   and therefore NMB and ICERs, depended on how far the first simulated year was
+   from 2019. For a cost in 2031 in a simulation that starts in 2021, the
+   multiplier at 3.5% is now 0.7089 (it was 0.6521). For a QALY at 1.5% it is
+   now 0.8617 (it was 0.8341).
+
+For example, take a simulation of Rutland from 2021 to 2047 with ten Monte Carlo
+iterations, comparing a scenario that adds a smoking cessation programme to
+health checks against the baseline scenario, at the default settings and with
+the healthcare perspective. With the new method the median cumulative net QALYs
+are 162.4 instead of 156.9, the incremental cost-effectiveness ratio in the
+explanatory text is £10,851 instead of £10,343 per QALY (4.9% higher), and the
+benefit:cost ratio is 1.89 instead of 1.98. The size of the change depends on
+the scenario and on how far the first simulated year is from 2019.
+
+### Differential discounting
+
+With different rates for costs and QALYs, an ICER depends on how long after year
+0 a scenario's costs and QALYs occur (Keeler and Cretin, *Management Science*
+1983;29(3):300-306). If the whole stream of a scenario starts d years later, its
+discounted costs are divided by `1.035^d` and its discounted QALYs by `1.015^d`,
+so its ICER is multiplied by `(1.015 / 1.035)^d` through discounting alone: by
+0.981 for d = 1, 0.962 for d = 2 and 0.907 for d = 5. A scenario that starts
+later therefore looks more cost effective only because of discounting. Take care
+when comparing scenarios whose programmes start in different years, or use the
+same rate for costs and QALYs.

@@ -59,6 +59,11 @@ options(datatable.showProgress = FALSE)
 
 strata_for_gui <- c("mc", "friendly_name", design$sim_prm$strata_for_output)
 
+# Price year of the unit costs in simulation/health_econ/input (2019 prices, as
+# in HTA 2021;25(35)). Costs are discounted but not uprated. The year is shown
+# in the UI and written to the CSV downloads.
+cost_price_year <- 2019L
+
 def_col <- viridis(16, option = "D")
 def_col_small <- def_col[c(1, 9, 5, 3, 7, 2, 8, 4, 6)]
 

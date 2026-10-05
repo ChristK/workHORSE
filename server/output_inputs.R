@@ -72,6 +72,27 @@ output$out_scenario_select <- renderUI({
   )
 })
 
+# Discounting ----
+# Year 0, the rates and the discounted columns are defined once here for all
+# output tables. Year 0 is the first simulated year (discount_base_year() in
+# server.R). Applied to annual values, before the cumulative sums.
+discount_outputs <- function(dt) {
+  workHORSEmisc::discount_dt(dt,
+                             rate_costs = input$out_discount_costs_slider,
+                             rate_qalys = input$out_discount_qalys_slider,
+                             base_year  = discount_base_year())
+}
+
+# Written to the CSV downloads so that the files are self-describing
+csv_metadata <- reactive(data.table(
+  discount_year0          = discount_base_year(),
+  discount_rate_costs_pct = input$out_discount_costs_slider,
+  discount_rate_qalys_pct = input$out_discount_qalys_slider,
+  price_year              = cost_price_year,
+  perspective             = input$health_econ_perspective_checkbox,
+  wtp_gbp_per_qaly        = input$out_wtp_box
+))
+
 # out_proc_raw ----
 
 out_proc_raw <- reactive(
@@ -122,35 +143,10 @@ out_proc_raw <- reactive(
     }
 
 
-    dt[, `:=` (
-      # TODO use lapply and grep _cost$, and net utility
-      # discounting
-      net_utility = deflate(net_utility, input$out_discount_qalys_slider, year, 2019L),
-      invitation_cost = deflate(invitation_cost, input$out_discount_costs_slider, year, 2019L),
-      attendees_cost = deflate(attendees_cost, input$out_discount_costs_slider, year, 2019L),
-      active_days_cost = deflate(active_days_cost, input$out_discount_costs_slider, year, 2019L),
-      bmi_cost = deflate(bmi_cost, input$out_discount_costs_slider, year, 2019L),
-      alcohol_cost = deflate(alcohol_cost, input$out_discount_costs_slider, year, 2019L),
-      smoking_cost = deflate(smoking_cost, input$out_discount_costs_slider, year, 2019L),
-      healthcare_cost = deflate(healthcare_cost, input$out_discount_costs_slider, year, 2019L),
-      socialcare_cost = deflate(socialcare_cost, input$out_discount_costs_slider, year, 2019L),
-      productivity_cost = deflate(productivity_cost, input$out_discount_costs_slider, year, 2019L),
-      informal_care_cost = deflate(informal_care_cost, input$out_discount_costs_slider, year, 2019L),
-      smkcess_ovrhd_cost = deflate(smkcess_ovrhd_cost, input$out_discount_costs_slider, year, 2019L),
-      wghtloss_ovrhd_cost = deflate(wghtloss_ovrhd_cost, input$out_discount_costs_slider, year, 2019L),
-      pa_ovrhd_cost = deflate(pa_ovrhd_cost, input$out_discount_costs_slider, year, 2019L),
-      alcoholreduc_ovrhd_cost = deflate(alcoholreduc_ovrhd_cost, input$out_discount_costs_slider, year, 2019L),
-      policy_cost = deflate(policy_cost, input$out_discount_costs_slider, year, 2019L),
-      net_policy_cost = deflate(net_policy_cost, input$out_discount_costs_slider, year, 2019L),
-      net_healthcare_cost = deflate(net_healthcare_cost, input$out_discount_costs_slider, year, 2019L),
-      net_socialcare_cost = deflate(net_socialcare_cost, input$out_discount_costs_slider, year, 2019L),
-      net_informal_care_cost = deflate(net_informal_care_cost, input$out_discount_costs_slider, year, 2019L),
-      net_productivity_cost = deflate(net_productivity_cost, input$out_discount_costs_slider, year, 2019L),
-      total_hcp_cost = deflate(total_hcp_cost, input$out_discount_costs_slider, year, 2019L),
-      total_hscp_cost = deflate(total_hscp_cost, input$out_discount_costs_slider, year, 2019L),
-      societal_cost = deflate(societal_cost, input$out_discount_costs_slider, year, 2019L)
-    )
-    ][,
+    # Discount annual costs and QALYs to year 0 (see discount_outputs())
+    discount_outputs(dt)
+
+    dt[,
       `:=` (
         invitation_cost_cml = round(cumsum(invitation_cost)),
         attendees_cost_cml = round(cumsum(attendees_cost)),
@@ -287,15 +283,8 @@ out_proc <- reactive(
     }
     dt <- sum_dt(dt)
 
-    # Discounting costs and utility
-    nam <- grep("_utility$", names(dt), value = TRUE)
-    for (j in nam) {
-      set(dt, NULL, j, deflate(dt[[j]], input$out_discount_qalys_slider, dt$year, 2019L))
-    }
-    nam <- grep("_cost$", names(dt), value = TRUE)
-    for (j in nam) {
-      set(dt, NULL, j, deflate(dt[[j]], input$out_discount_costs_slider, dt$year, 2019L))
-    }
+    # Discount annual costs and QALYs to year 0 (see discount_outputs())
+    discount_outputs(dt)
 
     setkey(dt, year, friendly_name, mc)
     dt[,
@@ -437,15 +426,8 @@ out_proc_qimd <- reactive(
     dt <- sum_dt(dt, c("year", "friendly_name", "mc", "qimd"))
 
 
-    # Discounting costs and utility
-    nam <- grep("_utility$", names(dt), value = TRUE)
-    for (j in nam) {
-      set(dt, NULL, j, deflate(dt[[j]], input$out_discount_qalys_slider, dt$year, 2019L))
-    }
-    nam <- grep("_cost$", names(dt), value = TRUE)
-    for (j in nam) {
-      set(dt, NULL, j, deflate(dt[[j]], input$out_discount_costs_slider, dt$year, 2019L))
-    }
+    # Discount annual costs and QALYs to year 0 (see discount_outputs())
+    discount_outputs(dt)
 
     setkey(dt, year, friendly_name, qimd, mc)
     dt[,
@@ -1927,7 +1909,13 @@ output$download_raw <- downloadHandler(
     paste("workHORSE_raw_", Sys.Date(), ".csv", sep = "")
   },
   content = function(file) {
-    fwrite(out_proc_raw(), file)
+    # The metadata columns are added by reference, to avoid copying this large
+    # table, and removed again when the download ends
+    s <- csv_metadata()
+    dt <- out_proc_raw()
+    dt[, (names(s)) := s]
+    on.exit(dt[, (names(s)) := NULL], add = TRUE)
+    fwrite(dt, file)
   }
 )
 
@@ -1980,7 +1968,8 @@ output$download_summary <- downloadHandler(
     paste("workHORSE_summary_", Sys.Date(), ".csv", sep = "")
   },
   content = function(file) {
-    fwrite(out_summary(), file)
+    s <- csv_metadata()
+    fwrite(copy(out_summary())[, (names(s)) := s], file)
   }
 )
 

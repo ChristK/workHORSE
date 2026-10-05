@@ -128,7 +128,20 @@ tabPanel(
             sep = "",
             ticks = FALSE,
             post  = " %"
-          ),
+          ) %>%
+            shinyInput_label_embed(
+              icon("info") %>%
+                bs_embed_popover(
+                  title = "Discount rate for costs",
+                  content = paste0(
+                    "A cost in year t after the first simulated year (year 0) ",
+                    "is divided by (1 + rate)^t; year 0 is not discounted. ",
+                    "Costs are in ", cost_price_year, " prices, so please ",
+                    "enter scenario costs in ", cost_price_year, " prices. ",
+                    "The HM Treasury Green Book and the NICE reference case ",
+                    "use 3.5%."),
+                  placement = "right", container = "body")
+            ),
           sliderInput(
             "out_discount_qalys_slider",
             "Annual discount rate for QALYs",
@@ -139,7 +152,19 @@ tabPanel(
             sep = "",
             ticks = FALSE,
             post  = " %"
-          ),
+          ) %>%
+            shinyInput_label_embed(
+              icon("info") %>%
+                bs_embed_popover(
+                  title = "Discount rate for QALYs",
+                  content = paste0(
+                    "QALYs in year t after the first simulated year (year 0) ",
+                    "are divided by (1 + rate)^t; year 0 is not discounted. ",
+                    "The NICE reference case uses 3.5%, with 1.5% as a ",
+                    "sensitivity analysis. The HM Treasury Green Book uses ",
+                    "1.5% for health effects."),
+                  placement = "right", container = "body")
+            ),
           numericInput(
             "out_wtp_box",
             "Willingness to pay (cost per QALY)",
@@ -147,7 +172,21 @@ tabPanel(
             0,
             1e5L,
             1e3L
-          ),
+          ) %>%
+            shinyInput_label_embed(
+              icon("info") %>%
+                bs_embed_popover(
+                  title = "Willingness to pay per QALY",
+                  content = paste0(
+                    "The value of one QALY, used for the net monetary benefit ",
+                    "and the benefit:cost ratio. NICE guidelines, including ",
+                    "public health guidelines (PMG20), generally consider an ",
+                    "intervention cost effective if its incremental ",
+                    "cost-effectiveness ratio is below £20,000 per QALY ",
+                    "gained. For technology appraisals, NICE (PMG36) has used ",
+                    "£25,000 to £35,000 per QALY gained since April 2026."),
+                  placement = "right", container = "body")
+            ),
           icon = icon("toolbox")
         ),
         br(),
