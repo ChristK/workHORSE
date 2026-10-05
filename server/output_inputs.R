@@ -75,12 +75,17 @@ output$out_scenario_select <- renderUI({
 # Discounting ----
 # Year 0, the rates and the discounted columns are defined once here for all
 # output tables. Year 0 is the first simulated year (discount_base_year() in
-# server.R). Applied to annual values, before the cumulative sums.
+# server.R). Applied to annual values, before the cumulative sums. Costs are the
+# *_cost columns. QALYs are net_utility and eq5d (total QALYs), so that
+# net_utility = eq5d(scenario) - eq5d(baseline) also holds for discounted values
+# and eq5d_cml is comparable with net_utility_cml (relative inequality index,
+# "Most effective").
 discount_outputs <- function(dt) {
   workHORSEmisc::discount_dt(dt,
                              rate_costs = input$out_discount_costs_slider,
                              rate_qalys = input$out_discount_qalys_slider,
-                             base_year  = discount_base_year())
+                             base_year  = discount_base_year(),
+                             qaly_cols  = grep("_utility$|^eq5d$", names(dt), value = TRUE))
 }
 
 # Written to the CSV downloads so that the files are self-describing

@@ -222,8 +222,10 @@ covered, the price year and the discount rates.
   gained cost effective, and technology appraisals (PMG36) have used £25,000 to
   £35,000 per QALY gained since April 2026.
 - **What is discounted.** Every cost column (names ending in `_cost`, including
-  the net and total costs) and `net_utility`. Total QALYs (`eq5d`), which the
-  relative inequality index and "Most effective" use, are not discounted yet.
+  the net and total costs) at the cost rate, and `net_utility` and total QALYs
+  (`eq5d`) at the QALY rate. The "Most effective" ranking therefore compares
+  discounted QALYs, and the relative inequality index divides discounted net
+  QALYs by discounted total QALYs.
 - **Prices.** Costs are in 2019 prices, the price year of the unit costs in
   `simulation/health_econ/input/` (as in O'Flaherty et al., *Health Technology
   Assessment* 2021;25(35)), so enter scenario costs in 2019 prices. Costs are
