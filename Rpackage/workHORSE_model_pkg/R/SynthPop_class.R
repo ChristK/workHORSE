@@ -29,6 +29,28 @@
 `[.SynthPop` = function(x, ...)
   x$pop[...]
 
+# Versions of the code that determine the values stored in a synthpop, as a
+# named character vector: the model code (workHORSEmisc), the distributions
+# (gamlss.dist), the random number generator (dqrng), CKutils, and R itself
+# (major.minor), because base random number functions (rpois, sample, ...) can
+# change between R versions. They are hashed into the synthpop checksum (see
+# private$gen_checksum() of SynthPop), which is part of the synthpop file names,
+# and they are saved in the synthpop metafile. Without them, a synthpop cached
+# before a change in the code or in a dependency that changes the generated
+# values would be silently reused, together with its population weights.
+# NOTE The workHORSEmisc version is the only way a change in the package code
+# (e.g. src/*.cpp, SynthPop_class.R, init_prevalence_fn.R) reaches the
+# checksum. Bump the Version in the DESCRIPTION whenever package code that
+# affects the synthpops changes. To track another dependency add it here.
+# Internal, not exported.
+synthpop_code_versions <- function() {
+  pkgs <- c("workHORSEmisc", "gamlss.dist", "dqrng", "CKutils")
+  c(vapply(pkgs,
+           function(x) as.character(utils::packageVersion(x)),
+           character(1L)),
+    R = paste(R.version$major, sub("\\..*$", "", R.version$minor), sep = "."))
+}
+
 #' R6 Class representing a synthetic population
 #'
 #' @description
@@ -705,6 +727,13 @@ SynthPop <-
         )]
       },
 
+      # the metadata saved in the metafile of a synthpop: the characteristics
+      # that define it plus the versions of the code that generated it
+      get_metadata = function(design_) {
+        c(private$get_unique_characteristics(design_),
+          list(code_versions = as.list(synthpop_code_versions())))
+      },
+
       # gen synthpop unique checksum for the given set of inputs
       gen_checksum =
         function(design_) {
@@ -725,9 +754,16 @@ SynthPop <-
                    character(1))
           )
 
+          # The versions of the code and dependencies that determine the
+          # generated values are part of the checksum, otherwise a synthpop
+          # cached before a change in them (with its population weights) would
+          # be silently reused. See synthpop_code_versions().
+          code_versions <- synthpop_code_versions()
+          code_versions <- paste0(names(code_versions), "=", code_versions)
+
           locality_years_age_id <-
-            digest::digest(paste(lsoas_, fcall, pop_data, sep = ",",
-                                 collapse = ","),
+            digest::digest(paste(lsoas_, fcall, pop_data, code_versions,
+                                 sep = ",", collapse = ","),
                            serialize = FALSE)
           return(locality_years_age_id)
         },
@@ -891,9 +927,10 @@ SynthPop <-
           # files exist the function has finished. If only metafile exists the
           # function probably still runs.
 
-          # Save synthpop metadata
+          # Save synthpop metadata (including the code versions that generate
+          # it)
           if (!file.exists(filename_$metafile)) {
-            yaml::write_yaml(private$get_unique_characteristics(design_),
+            yaml::write_yaml(private$get_metadata(design_),
                              filename_$metafile)
           }
           # NOTE In shiny app if 2 users click the  button at the same time, 2
