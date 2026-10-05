@@ -1,7 +1,7 @@
 Package: workHORSEmisc
 Type: Package
 Title: Utility Functions for workHORSE Model
-Version: 0.0.8
+Version: 0.1.0
 Date: 2019-09-29
 Author: Chris Kypridemos
 Maintainer: Chris Kypridemos <christodoulosk@gmail.com>

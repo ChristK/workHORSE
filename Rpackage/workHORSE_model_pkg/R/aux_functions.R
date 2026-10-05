@@ -48,15 +48,151 @@ fwrite_safe <- function(x,
 }
 
 
+#' Constant-rate price adjustment
+#'
+#' \code{inflate()} compounds \code{x} forward at a constant annual rate and
+#' \code{deflate()} is its exact inverse, so
+#' \code{deflate(inflate(x, r, y, b), r, y, b)} returns \code{x}. They adjust
+#' price levels; they do not discount, because discounting is distinct from
+#' adjusting for inflation (HM Treasury Green Book 2026, para 6.56). Use
+#' \code{\link{discount}} to discount costs and QALYs.
+#'
+#' @param x Numeric vector of values.
+#' @param percentage_rate Annual rate in percent, e.g. 2 for 2\%.
+#' @param year Calendar year(s) of \code{x}.
+#' @param baseline_year Year in which the adjustment factor is 1.
+#' @return A numeric vector. \code{x} and \code{year} are recycled to a common
+#'   length.
+#' @examples
+#' inflate(100, 3.5, 2030L, 2021L)
+#' deflate(inflate(100, 3.5, 2030L, 2021L), 3.5, 2030L, 2021L) # 100
 #' @export
 inflate <- function(x, percentage_rate, year, baseline_year) {
   x * (1 + percentage_rate / 100) ^ (year - baseline_year)
 }
 # inflate(1000, 3, 2011:2020, 2013)
 
+#' @rdname inflate
 #' @export
 deflate <- function(x, percentage_rate, year, baseline_year) {
-  x * (1 - percentage_rate / 100) ^ (year - baseline_year)
+  x / (1 + percentage_rate / 100) ^ (year - baseline_year)
+}
+
+#' Discount factors and present values
+#'
+#' \code{discount_factor()} gives the factor that converts a cost or a QALY
+#' that occurs in \code{year} into its present value in \code{base_year}, at a
+#' constant annual discount rate. \code{discount()} multiplies \code{x} by that
+#' factor.
+#'
+#' With \code{r = percentage_rate / 100} and \code{t = year - base_year}, the
+#' discount factor is \code{1 / (1 + r)^t} (HM Treasury Green Book
+#' supplementary guidance on discounting, February 2026, para 2.9; Green Book
+#' 2026, para 6.55).
+#'
+#' \code{base_year} is year 0, the first year of the appraisal, and its factor
+#' is 1: nothing is discounted in year 0. This convention comes from the Green
+#' Book (Green Book 2026, para 6.10 and Table 8; Annex A of the supplementary
+#' guidance on discounting). NICE PMG36 (4.5.1) requires present values over
+#' the time horizon of the analysis but does not define year 0. Years before
+#' \code{base_year} are an error, because discounting is not applied
+#' retrospectively (Green Book 2026, para 6.59).
+#'
+#' The Green Book discounts costs at the social time preference rate of
+#' 3.5\% and health effects at 1.5\% for years 1 to 30 of an appraisal (Green
+#' Book 2026, para 6.54 and 6.58), and then at declining rates, for example
+#' 3.0\% for costs and 1.286\% for health effects in years 31 to 75
+#' (supplementary guidance, Table 3.A). These functions use a constant rate:
+#' for years 1 to 30 their factors equal those in Tables A.1 (3.5\%) and A.2
+#' (1.5\%) of Annex A, but for later years they do not follow the declining
+#' rates.
+#'
+#' @param percentage_rate Annual discount rate in percent, e.g. 3.5 for
+#'   3.5\%: a single number >= 0.
+#' @param year Calendar year(s) in which \code{x} occurs. None may be before
+#'   \code{base_year}.
+#' @param base_year Year 0: a single finite year, normally the first simulated
+#'   year.
+#' @param x Numeric vector of annual costs or QALYs that occur in \code{year}.
+#' @return \code{discount_factor()}: factors in (0, 1], \code{NA} where
+#'   \code{year} is \code{NA}. \code{discount()}: \code{x} times its discount
+#'   factor, with \code{x} and \code{year} recycled to a common length.
+#' @references HM Treasury (2026). \emph{The Green Book: UK government guidance
+#'   on appraisal}.
+#'   \url{https://www.gov.uk/government/publications/the-green-book-appraisal-and-evaluation-in-central-government}
+#'
+#'   HM Treasury (2026). \emph{Green Book supplementary guidance: discounting}.
+#'   \url{https://www.gov.uk/government/publications/green-book-supplementary-guidance-discounting}
+#'
+#'   NICE. \emph{NICE health technology evaluations: the manual} (PMG36).
+#'   \url{https://www.nice.org.uk/process/pmg36}
+#' @examples
+#' # Green Book Annex A, Table A.1 (3.5 percent): 1.0000 0.9662 0.9335 0.9019
+#' round(discount_factor(3.5, 2021:2024, 2021L), 4)
+#' # Table A.2 (health, 1.5 percent): 1.0000 0.9852 0.9707 0.9563
+#' round(discount_factor(1.5, 2021:2024, 2021L), 4)
+#' discount(100, 1.5, 2022L, 2021L) # 98.52
+#' @export
+discount_factor <- function(percentage_rate, year, base_year) {
+  if (!is.numeric(percentage_rate) || length(percentage_rate) != 1L ||
+      is.na(percentage_rate) || percentage_rate < 0)
+    stop("percentage_rate must be a single non-negative number.")
+  if (!is.numeric(base_year) || length(base_year) != 1L ||
+      !is.finite(base_year))
+    stop("base_year must be a single finite year.")
+  if (any(year < base_year, na.rm = TRUE))
+    stop("Years before base_year (", base_year, ") cannot be discounted.")
+  (1 + percentage_rate / 100) ^ -(year - base_year)
+}
+
+#' @rdname discount_factor
+#' @export
+discount <- function(x, percentage_rate, year, base_year) {
+  x * discount_factor(percentage_rate, year, base_year)
+}
+
+#' Discount the annual cost and QALY columns of a results table in place
+#'
+#' Multiplies, by reference, the cost columns of \code{dt} by the discount
+#' factor at \code{rate_costs} and the QALY columns by the discount factor at
+#' \code{rate_qalys} (see \code{\link{discount_factor}}). All other columns are
+#' left unchanged. An invalid rate, base year or year, or a column name that is
+#' not in \code{dt}, raises an error before any column is modified. It is meant
+#' to be called once per output table, before cumulative sums, net monetary
+#' benefit, ICERs and benefit:cost ratios are calculated, so that the base year
+#' and the rates are defined in one place.
+#'
+#' @param dt A data.table with a year column. It is modified by reference.
+#' @param rate_costs,rate_qalys Annual discount rates in percent, e.g. 3.5 and
+#'   1.5, the Green Book 2026 rates for costs and for health effects in years 1
+#'   to 30.
+#' @param base_year Year 0 (the first simulated year).
+#' @param cost_cols,qaly_cols Columns to discount at \code{rate_costs} and at
+#'   \code{rate_qalys}. By default, all columns whose names end in
+#'   \code{_cost} and \code{_utility}.
+#' @param year_col Name of the year column.
+#' @return \code{dt}, invisibly.
+#' @examples
+#' dt <- data.table::data.table(
+#'   year = 2021:2023, policy_cost = 100, net_utility = 1, eq5d = 0.8
+#' )
+#' discount_dt(dt, rate_costs = 3.5, rate_qalys = 1.5, base_year = 2021L)
+#' dt # policy_cost and net_utility are discounted, eq5d is not
+#' @export
+discount_dt <- function(dt, rate_costs, rate_qalys, base_year,
+                        cost_cols = grep("_cost$", names(dt), value = TRUE),
+                        qaly_cols = grep("_utility$", names(dt), value = TRUE),
+                        year_col = "year") {
+  stopifnot(is.data.table(dt), year_col %in% names(dt),
+            all(c(cost_cols, qaly_cols) %in% names(dt)),
+            !anyDuplicated(c(cost_cols, qaly_cols)))
+  # Both factors are computed before any column is modified, so that an invalid
+  # rate or year leaves dt untouched
+  f_costs <- discount_factor(rate_costs, dt[[year_col]], base_year)
+  f_qalys <- discount_factor(rate_qalys, dt[[year_col]], base_year)
+  for (j in cost_cols) set(dt, NULL, j, dt[[j]] * f_costs)
+  for (j in qaly_cols) set(dt, NULL, j, dt[[j]] * f_qalys)
+  invisible(dt)
 }
 
 # Necessary aux functions
