@@ -543,12 +543,12 @@ server = function(input, output, session) {
 
     most_nmb_sc_val <-
       reactive({
-        net_monetary_benefit_value(
+        round(net_monetary_benefit_value(
           out_proc(),
           input$health_econ_perspective_checkbox,
           input$out_wtp_box,
           order_bcr_sc_nam()[1L]
-        )
+        ))
       })
 
     icer_1st_vs_2nd <-

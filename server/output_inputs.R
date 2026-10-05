@@ -190,7 +190,7 @@ out_proc_raw <- reactive(
         pa_ovrhd_cost_cml = round(cumsum(pa_ovrhd_cost)),
         alcoholreduc_ovrhd_cost_cml = round(cumsum(alcoholreduc_ovrhd_cost)),
         policy_cost_cml = round(cumsum(policy_cost)),
-        net_utility_cml = signif(cumsum(net_utility), 2L),
+        net_utility_cml = cumsum(net_utility),
         net_policy_cost_cml = round(cumsum(net_policy_cost)),
         net_healthcare_cost_cml = round(cumsum(net_healthcare_cost)),
         net_socialcare_cost_cml = round(cumsum(net_socialcare_cost)),
@@ -338,7 +338,7 @@ out_proc <- reactive(
          pa_ovrhd_cost_cml = round(cumsum(pa_ovrhd_cost)),
          alcoholreduc_ovrhd_cost_cml = round(cumsum(alcoholreduc_ovrhd_cost)),
          policy_cost_cml = round(cumsum(policy_cost)),
-         net_utility_cml = signif(cumsum(net_utility), 2L),
+         net_utility_cml = cumsum(net_utility),
          net_policy_cost_cml = round(cumsum(net_policy_cost)),
          net_healthcare_cost_cml = round(cumsum(net_healthcare_cost)),
          net_socialcare_cost_cml = round(cumsum(net_socialcare_cost)),
@@ -488,7 +488,7 @@ out_proc_qimd <- reactive(
          pa_ovrhd_cost_cml = round(cumsum(pa_ovrhd_cost)),
          alcoholreduc_ovrhd_cost_cml = round(cumsum(alcoholreduc_ovrhd_cost)),
          policy_cost_cml = round(cumsum(policy_cost)),
-         net_utility_cml = signif(cumsum(net_utility), 2L),
+         net_utility_cml = cumsum(net_utility),
          net_policy_cost_cml = round(cumsum(net_policy_cost)),
          net_healthcare_cost_cml = round(cumsum(net_healthcare_cost)),
          net_socialcare_cost_cml = round(cumsum(net_socialcare_cost)),
@@ -600,7 +600,9 @@ output$cep1_1 <- renderPlotly({
     layout(
       p,
       yaxis = list(title = "Incremental cumulative cost (£)"),
-      xaxis = list(title = "Incremental cumulative effects (QALYS)"),
+      xaxis = list(title = "Incremental cumulative effects (QALYS)",
+                   # display only (2 significant digits): the plotted values keep full precision
+                   hoverformat = ",.2~r"),
       shapes = list(
         list(type = "rect",
              fillcolor = "green", line = list(color = "green"), opacity = 0.3,
@@ -677,7 +679,9 @@ output$cep1 <- renderPlotly({
     layout(
       p,
       yaxis = list(title = "Incremental cumulative cost (£)"),
-      xaxis = list(title = "Incremental cumulative effects (QALYS)"),
+      xaxis = list(title = "Incremental cumulative effects (QALYS)",
+                   # display only (2 significant digits): the plotted values keep full precision
+                   hoverformat = ",.2~r"),
       shapes = list(
         list(type = "rect",
              fillcolor = "green", line = list(color = "green"), opacity = 0.3,
@@ -747,7 +751,9 @@ output$cep_anim <- renderPlotly({
     layout(
       p,
       yaxis = list(title = "Incremental cumulative cost (£)"),
-      xaxis = list(title = "Incremental cumulative effects (QALYS)"),
+      xaxis = list(title = "Incremental cumulative effects (QALYS)",
+                   # display only (2 significant digits): the plotted values keep full precision
+                   hoverformat = ",.2~r"),
       shapes = list(
         list(type = "rect",
              fillcolor = "green", line = list(color = "green"), opacity = 0.3,
